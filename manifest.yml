@@ -1,12 +1,12 @@
 ---
 applications:
-  - name: ai-tool-chat
+  - name: tanzu-biking
     buildpacks:
       - java_buildpack_offline
     memory: 1G
     instances: 1
     path: target/cf-mcp-client-0.0.1-SNAPSHOT.jar
     env:
-      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 17.+ } }'
+      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
     services:
       - chat-llm
