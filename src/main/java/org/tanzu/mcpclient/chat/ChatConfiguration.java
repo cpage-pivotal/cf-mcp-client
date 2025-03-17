@@ -1,7 +1,8 @@
 package org.tanzu.mcpclient.chat;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.pivotal.cfenv.core.CfCredentials;
+import io.pivotal.cfenv.core.CfEnv;
+import io.pivotal.cfenv.core.CfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -22,7 +23,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Configuration
 public class ChatConfiguration {
@@ -34,42 +34,21 @@ public class ChatConfiguration {
         return new InMemoryChatMemory();
     }
 
-    private static final String VCAP_SERVICES = "VCAP_SERVICES";
-    private static final String USER_PROVIDED_SERVICE = "user-provided";
     private static final String MCP_SERVICE_URL = "mcpServiceURL";
 
     @Bean
     public List<String> mcpServiceURLs() {
+        CfEnv cfEnv = new CfEnv();
+        List<CfService> cfServices = cfEnv.findAllServices();
         List<String> mcpServiceURLs = new ArrayList<>();
 
-        String vcapServices = System.getenv(VCAP_SERVICES);
-        if (vcapServices == null || vcapServices.trim().isEmpty()) {
-            return mcpServiceURLs;
-        }
-
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(vcapServices);
-
-            JsonNode userProvidedServicesNode = root.get(USER_PROVIDED_SERVICE);
-            if (userProvidedServicesNode == null || !userProvidedServicesNode.isArray()) {
-                logger.info("No services found of type: " + USER_PROVIDED_SERVICE);
-                return mcpServiceURLs;
+        for (CfService cfService : cfServices) {
+            CfCredentials cfCredentials = cfService.getCredentials();
+            String mcpServiceUrl = cfCredentials.getString(MCP_SERVICE_URL);
+            if (mcpServiceUrl != null) {
+                mcpServiceURLs.add(mcpServiceUrl);
+                logger.info("Bound to MCP Service: {}", mcpServiceUrl);
             }
-
-            // Search through service instances
-            for (JsonNode serviceNode : userProvidedServicesNode) {
-                JsonNode credentials = serviceNode.get("credentials");
-                Map<String, String> map = mapper.convertValue(credentials, Map.class);
-                logger.info("Found credentials:\n" + map);
-                String mcpServiceURL = map.get(MCP_SERVICE_URL);
-                if (mcpServiceURL != null) {
-                    mcpServiceURLs.add(mcpServiceURL);
-                    logger.info("Bound to MCP Service: " + mcpServiceURL);
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error parsing VCAP_SERVICES", e);
         }
 
         return mcpServiceURLs;
