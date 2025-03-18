@@ -29,11 +29,6 @@ public class ChatConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatConfiguration.class);
 
-    @Bean
-    ChatMemory chatMemory() {
-        return new InMemoryChatMemory();
-    }
-
     private static final String MCP_SERVICE_URL = "mcpServiceURL";
 
     @Bean

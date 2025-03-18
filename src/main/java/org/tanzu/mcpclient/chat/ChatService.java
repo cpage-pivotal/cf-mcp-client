@@ -13,6 +13,8 @@ import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.tanzu.mcpclient.memgpt.MemGPTChatMemory;
+import org.tanzu.mcpclient.memgpt.MemGPTMessageChatMemoryAdvisor;
 
 import javax.net.ssl.SSLContext;
 import java.net.http.HttpClient;
@@ -34,10 +36,17 @@ public class ChatService {
 
     public ChatService(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory, List<String> mcpServiceURLs,
                        SSLContext sslContext) {
-        this.chatClient = chatClientBuilder.
-                defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory), new SimpleLoggerAdvisor()).
-                defaultAdvisors(a -> a.param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)).
-                build();
+
+        ChatClient.Builder builder;
+        if (chatMemory instanceof MemGPTChatMemory memGPTChatMemory) {
+            builder = chatClientBuilder.
+                    defaultAdvisors(new MemGPTMessageChatMemoryAdvisor(memGPTChatMemory, "CF Conversation"));
+        } else {
+            builder = chatClientBuilder.
+                    defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory), new SimpleLoggerAdvisor()).
+                    defaultAdvisors(a -> a.param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10));
+        }
+        this.chatClient = builder.build();
         this.mcpServiceURLs = mcpServiceURLs;
         this.sslContext = sslContext;
     }
