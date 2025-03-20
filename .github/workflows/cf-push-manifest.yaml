@@ -1,0 +1,24 @@
+name: cf-push-manifest-workflow
+on: [push]
+jobs:
+  cf_push_job:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    name: CF Push Application with Manifest File
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'liberica'
+          java-version: '21'
+      - name: CF Push
+        uses: cpage-pivotal/cf-push-manifest-action@v8
+        with:
+          cf_api: api.sys.tas.vmtanzu.com
+          cf_user: corby
+          cf_password: ${{ secrets.CF_PASSWORD }}
+          cf_org: tanzu-biking
+          cf_space: ai
+          manifest_file: ./manifest.yml
