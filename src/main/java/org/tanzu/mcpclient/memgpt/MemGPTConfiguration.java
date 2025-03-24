@@ -18,23 +18,33 @@ public class MemGPTConfiguration {
     private static final String MEM_GPT = "memGPTUrl";
     private static final Logger logger = LoggerFactory.getLogger(MemGPTConfiguration.class);
 
-    ChatMemory chatMemory() {
-        return new InMemoryChatMemory();
-    }
+    private String memGPTUrl = null;
 
-    @Bean
-    public ChatMemory chatMemory(WebClient.Builder clientBuilder) {
+    public MemGPTConfiguration(WebClient.Builder clientBuilder) {
         CfEnv cfEnv = new CfEnv();
 
-        return cfEnv.findAllServices().stream()
+        cfEnv.findAllServices().stream()
                 .map(CfService::getCredentials)
                 .map(credentials -> credentials.getString(MEM_GPT))
                 .filter(Objects::nonNull)
                 .findFirst()
-                .map(memGptUrl -> {
-                    logger.info("Bound to MemGPT Service: {}", memGptUrl);
-                    return (ChatMemory) new MemGPTRestChatMemory(clientBuilder, memGptUrl);
-                })
-                .orElse(new InMemoryChatMemory());
+                .ifPresent(memGPTUrl -> {
+                    this.memGPTUrl = memGPTUrl;
+                    logger.info("Bound to MemGPT Service: {}", memGPTUrl);
+                });
+    }
+
+    @Bean
+    public ChatMemory chatMemory(WebClient.Builder clientBuilder) {
+        if (memGPTUrl == null) {
+            return new InMemoryChatMemory();
+        } else {
+            return new MemGPTRestChatMemory(clientBuilder, memGPTUrl);
+        }
+    }
+
+    @Bean
+    public String memGPTUrl() {
+        return memGPTUrl;
     }
 }

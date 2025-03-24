@@ -27,6 +27,8 @@ import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvis
 @Service
 public class ChatService {
 
+    public static final String CONVERSATION_NAME = "CF Conversation";
+
     private final ChatClient chatClient;
     private final List<String> mcpServiceURLs;
     private final SSLContext sslContext;
@@ -40,7 +42,7 @@ public class ChatService {
         ChatClient.Builder builder;
         if (chatMemory instanceof MemGPTChatMemory memGPTChatMemory) {
             builder = chatClientBuilder.
-                    defaultAdvisors(new MemGPTMessageChatMemoryAdvisor(memGPTChatMemory, "CF Conversation"));
+                    defaultAdvisors(new MemGPTMessageChatMemoryAdvisor(memGPTChatMemory, CONVERSATION_NAME));
         } else {
             builder = chatClientBuilder.
                     defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory), new SimpleLoggerAdvisor()).
