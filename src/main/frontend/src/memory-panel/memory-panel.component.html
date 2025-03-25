@@ -1,0 +1,35 @@
+<div class="memory-container">
+  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" [disabled]="disabled">
+    <mat-icon>memory</mat-icon>
+  </button>
+</div>
+
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true">
+    <div class="sidenav-header">
+      <h2>Memory</h2>
+      <button mat-icon-button (click)="sidenav.close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="metrics-content">
+      <div class="metric-item">
+        <span class="metric-label">Context Size:</span>
+        <span class="metric-value">{{ metrics.contextSize }}</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Human Block Value:</span>
+        <span class="metric-value">{{ metrics.humanBlockValue }}</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Persona Block Value:</span>
+        <span class="metric-value">{{ metrics.personaBlockValue }}</span>
+      </div>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <!-- This is intentionally empty -->
+  </mat-sidenav-content>
+</mat-sidenav-container>

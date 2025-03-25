@@ -21,14 +21,12 @@ main {
   bottom: 0;
   left: 0;
   right: 0;
-  /* Adjust the top position to account for toolbar */
-  top: 64px; /* Set explicitly to toolbar height */
+  top: 64px; /* Same as toolbar height */
   padding: 15px;
   width: 90%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  /* Add z-index to ensure it stays below the toolbar */
   z-index: 1;
 }
 
@@ -98,4 +96,11 @@ main {
   100% {
     opacity: 0;
   }
+}
+
+/* Memory panel component */
+app-memory-panel {
+  /* This component handles its own positioning */
+  position: static;
+  z-index: 10;
 }

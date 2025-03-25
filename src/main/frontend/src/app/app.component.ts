@@ -18,10 +18,11 @@ import {MatInput, MatInputModule} from '@angular/material/input';
 import {MatCard, MatCardContent} from '@angular/material/card';
 import {MatToolbar} from '@angular/material/toolbar';
 import {MarkdownComponent} from 'ngx-markdown';
+import {MemoryPanelComponent} from '../memory-panel/memory-panel.component';
 
 @Component({
   selector: 'app-root',
-  imports: [MatButton, FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MatToolbar, MarkdownComponent, MatInputModule],
+  imports: [MatButton, FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MatToolbar, MarkdownComponent, MatInputModule, MemoryPanelComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
