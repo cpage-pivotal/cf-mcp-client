@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.tanzu.mcpclient.chat.ChatConfiguration;
 import org.tanzu.mcpclient.chat.ChatService;
 
 @RestController
@@ -39,7 +38,10 @@ public class MemGPTController {
                 .build()
                 .toString();
         try {
-            return restTemplate.getForEntity(targetURL, Object.class);
+            ResponseEntity<Object> responseEntity = restTemplate.getForEntity(targetURL, Object.class);
+            return ResponseEntity
+                    .status(responseEntity.getStatusCode())
+                    .body(responseEntity.getBody());
         }
         catch (RestClientException ex) {
             logger.error("Error retrieving metrics: {}", ex.getMessage());
