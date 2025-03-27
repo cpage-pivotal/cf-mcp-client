@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.tanzu.mcpclient.chat.ChatService;
 
 @RestController
 public class MemGPTController {
@@ -24,8 +24,8 @@ public class MemGPTController {
         this.memGPTConfiguration = memGPTConfiguration;
     }
 
-    @GetMapping("/memory/metrics")
-    public ResponseEntity<Object> getMetrics() {
+    @GetMapping("/memory/metrics/{conversationId}")
+    public ResponseEntity<Object> getMetrics(@PathVariable String conversationId) {
         if ( memGPTConfiguration.memGPTUrl() == null ) {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).
                     body("No available memGPT service");
@@ -34,7 +34,7 @@ public class MemGPTController {
         String targetURL = UriComponentsBuilder
                 .fromUriString(memGPTConfiguration.memGPTUrl())
                 .path(METRICS_PATH)
-                .path(ChatService.CONVERSATION_NAME)
+                .path(conversationId)
                 .build()
                 .toString();
         try {

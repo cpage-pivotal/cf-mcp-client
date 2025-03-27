@@ -5,12 +5,15 @@ import {CommonModule, DOCUMENT} from '@angular/common';
 import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {FormsModule} from '@angular/forms';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
 import {interval} from 'rxjs';
 
 @Component({
   selector: 'app-memory-panel',
   imports: [
-    CommonModule, MatSidenavModule, MatButtonModule, MatIconModule
+    CommonModule, MatSidenavModule, MatButtonModule, MatIconModule, FormsModule, MatFormFieldModule, MatInputModule
   ],
   templateUrl: './memory-panel.component.html',
   styleUrl: './memory-panel.component.css'
@@ -22,6 +25,7 @@ export class MemoryPanelComponent {
     personaBlockValue: ''
   };
   disabled = false;
+  conversationId: string = 'default';
   private destroyRef = inject(DestroyRef);
 
   @ViewChild('sidenav') sidenav!: MatSidenav;
@@ -57,7 +61,7 @@ export class MemoryPanelComponent {
     }
     protocol = this.document.location.protocol;
 
-    this.httpClient.get<MemoryMetrics>(`${protocol}//${host}/memory/metrics`)
+    this.httpClient.get<MemoryMetrics>(`${protocol}//${host}/memory/metrics/${this.conversationId}`)
       .subscribe({
         next: (data) => {
           this.metrics = data;

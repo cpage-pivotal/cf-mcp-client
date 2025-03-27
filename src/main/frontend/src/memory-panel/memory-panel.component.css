@@ -76,3 +76,28 @@ mat-sidenav {
 mat-sidenav-content {
   background: transparent;
 }
+
+.sidenav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.sidenav-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.conversation-id-container {
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.conversation-id-field {
+  width: 100%;
+}

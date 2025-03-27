@@ -1,8 +1,10 @@
-<div class="memory-container">
-  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" [disabled]="disabled">
-    <mat-icon>memory</mat-icon>
-  </button>
-</div>
+@if (!disabled) {
+  <div class="memory-container">
+    <button mat-icon-button class="toggle-button" (click)="toggleSidenav()">
+      <mat-icon>memory</mat-icon>
+    </button>
+  </div>
+}
 
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true">
@@ -11,6 +13,12 @@
       <button mat-icon-button (click)="sidenav.close()">
         <mat-icon>close</mat-icon>
       </button>
+    </div>
+    <div class="conversation-id-container">
+      <mat-form-field appearance="outline" class="conversation-id-field">
+        <mat-label>Conversation ID</mat-label>
+        <input matInput [(ngModel)]="conversationId" placeholder="Enter conversation ID">
+      </mat-form-field>
     </div>
 
     <div class="metrics-content">
