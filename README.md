@@ -7,7 +7,9 @@ CF-MCP-Client is a Spring chatbot application that can be deployed to Cloud Foun
 ## Prerequisites
 
 - Java 21 or higher
+  - eg using [sdkman](https://sdkman.io/) `sdk install java 21.0.7-oracle`
 - Maven 3.8+
+  - eg using [sdkman](https://sdkman.io/) `sdk install maven`
 - Access to a Cloud Foundry Foundation with the GenAI tile or other LLM services
 - Developer access to your Cloud Foundry environment
 
