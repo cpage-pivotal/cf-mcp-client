@@ -29,7 +29,7 @@ mvn clean package
 cf push
 ```
 
-### Binding to LLM Models
+### Binding to Large Language Models (LLM's)
 
 1. Create a service instance that provides chat LLM capabilities:
 
