@@ -8,6 +8,16 @@
           <mat-card-content>
             @if (message.persona == 'user') {
               {{ message.text }}
+            } @else if (message.persona == 'zantu') {
+              @if (message.typing) {
+                <div class="typing__dot"></div><div class="typing__dot"></div><div class="typing__dot"></div>
+              } @else {
+                <div class="zantu-header">
+                  <mat-icon>smart_toy</mat-icon>
+                  <span>Zantu</span>
+                </div>
+                <markdown [data]="message.text"></markdown>
+              }
             } @else {
               @if (message.typing) {
                 <div class="typing__dot"></div><div class="typing__dot"></div><div class="typing__dot"></div>

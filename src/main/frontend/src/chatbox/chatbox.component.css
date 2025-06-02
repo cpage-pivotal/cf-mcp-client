@@ -45,6 +45,40 @@
   flex-grow: 1;
 }
 
+.zantu-toggle-container {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.zantu-toggle-container mat-slide-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zantu-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--mat-sys-tertiary);
+}
+
+.zantu-header mat-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+}
+
+.chat-message.zantu {
+  border-left: 3px solid var(--mat-sys-tertiary);
+}
+
+.chat-message.zantu mat-card {
+  background-color: var(--mat-sys-tertiary-container) !important;
+}
+
 /* Typing CSS */
 .typing__dot {
   float: left;

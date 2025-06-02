@@ -18,11 +18,12 @@ import {MatInput, MatInputModule} from '@angular/material/input';
 import {MatCard, MatCardContent} from '@angular/material/card';
 import {MarkdownComponent} from 'ngx-markdown';
 import {PlatformMetrics} from '../app/app.component';
+import {MatIcon} from '@angular/material/icon';
 
 @Component({
   selector: 'app-chatbox',
   standalone: true,
-  imports: [MatButton, FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule],
+  imports: [MatButton, FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIcon],
   templateUrl: './chatbox.component.html',
   styleUrl: './chatbox.component.css'
 })
@@ -163,6 +164,6 @@ export class ChatboxComponent {
 
 interface ChatboxMessage {
   text: string;
-  persona: 'user' | 'bot';
+  persona: 'user' | 'bot' | 'zantu';
   typing?: boolean;
 }
