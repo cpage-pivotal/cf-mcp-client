@@ -41,19 +41,30 @@
   margin-bottom: 15px;
 }
 
-.chatbox-footer input {
+.chat-input-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-input-field {
   flex-grow: 1;
 }
 
-.zantu-toggle-container {
-  margin-bottom: 10px;
-  text-align: center;
+.zantu-toggle {
+  flex-shrink: 0;
 }
 
-.zantu-toggle-container mat-slide-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.zantu-toggle mat-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+}
+
+.send-button {
+  flex-shrink: 0;
+  align-self: flex-end;
+  margin-bottom: 1.34375em; /* Align with mat-form-field baseline */
 }
 
 .zantu-header {

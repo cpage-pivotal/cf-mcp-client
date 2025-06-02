@@ -4,7 +4,9 @@
     @for (message of messages; track message) {
       <div class="chat-message {{message.persona}}">
         <mat-card appearance="outlined"
-                  [style.background-color]="message.persona == 'user' ? 'var(--mat-sys-primary-container)' : 'var(--mat-sys-surface)'">
+                  [style.background-color]="message.persona == 'user' ? 'var(--mat-sys-primary-container)' :
+                                          message.persona == 'zantu' ? 'var(--mat-sys-tertiary-container)' :
+                                          'var(--mat-sys-surface)'">
           <mat-card-content>
             @if (message.persona == 'user') {
               {{ message.text }}
@@ -31,13 +33,36 @@
     }
   </div>
   <div class="chatbox-footer">
-    <ng-form style="display: flex;">
-      <mat-form-field style="flex-grow: 1">
-        <input name="chatbox-input" placeholder="Type a message..." matInput [(ngModel)]="chatMessage" type="text"
+    <ng-form class="chat-input-form">
+      <mat-form-field class="chat-input-field">
+        <input name="chatbox-input"
+               [placeholder]="zantuMode ? 'Ask Zantu...' : 'Type a message...'"
+               matInput
+               [(ngModel)]="chatMessage"
+               type="text"
                (keydown.enter)="sendChatMessage()">
       </mat-form-field>
-      &nbsp;&nbsp;
-      <button mat-flat-button type="button" (click)="sendChatMessage()" style="margin-top: 5px;">Send</button>
+
+      <mat-slide-toggle
+        name="zantu-toggle"
+        class="zantu-toggle"
+        [(ngModel)]="zantuMode"
+        color="accent"
+        [disabled]="!isZantuAvailable()"
+        matTooltip="Chat with Zantu">
+        <mat-icon>smart_toy</mat-icon>
+      </mat-slide-toggle>
+
+      <button mat-flat-button
+              type="button"
+              (click)="sendChatMessage()"
+              class="send-button"
+              [color]="zantuMode ? 'accent' : 'primary'">
+        @if (zantuMode) {
+          <mat-icon>smart_toy</mat-icon>
+        }
+        Send
+      </button>
     </ng-form>
   </div>
 </div>
