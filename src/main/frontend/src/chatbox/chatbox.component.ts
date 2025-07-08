@@ -1,11 +1,13 @@
 import {
   afterNextRender,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Inject,
   Injector,
   Input,
   NgZone,
+  OnDestroy,
   runInInjectionContext,
   ViewChild,
   signal,
@@ -29,11 +31,14 @@ import {
 } from '../prompt-selection-dialog/prompt-selection-dialog.component';
 import {PromptResolutionService} from '../services/prompt-resolution.service';
 import {MatTooltip} from '@angular/material/tooltip';
+import {ThinkTagParser} from './think-tag-parser';
 
 interface ChatboxMessage {
   text: string;
   persona: 'user' | 'bot';
   typing?: boolean;
+  reasoning?: string;
+  showReasoning?: boolean;
 }
 
 @Component({
@@ -41,9 +46,10 @@ interface ChatboxMessage {
   standalone: true,
   imports: [MatButton, FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatIconButton, MatTooltip],
   templateUrl: './chatbox.component.html',
-  styleUrl: './chatbox.component.css'
+  styleUrl: './chatbox.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChatboxComponent {
+export class ChatboxComponent implements OnDestroy {
   @Input() documentIds: string[] = [];
 
   @Input() set metrics(value: PlatformMetrics) {
@@ -122,8 +128,69 @@ export class ChatboxComponent {
     return 'Send message';
   });
 
+  // Computed signals for optimized rendering
+  readonly messagesWithReasoningFlags = computed(() => {
+    return this._messages().map((message, index) => ({
+      ...message,
+      index,
+      hasReasoning: message.persona === 'bot' && 
+                   !!message.reasoning && 
+                   message.reasoning.trim().length > 0,
+      reasoningToggleId: `reasoning-toggle-${index}`,
+      reasoningContentId: `reasoning-content-${index}`
+    }));
+  });
+
+  readonly lastBotMessageIndex = computed(() => {
+    const msgs = this._messages();
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].persona === 'bot') {
+        return i;
+      }
+    }
+    return -1;
+  });
+
+  readonly streamingMessageIndex = computed(() => {
+    const lastBotIndex = this.lastBotMessageIndex();
+    const msgs = this._messages();
+    return lastBotIndex >= 0 && msgs[lastBotIndex]?.typing ? lastBotIndex : -1;
+  });
+
+  // Optimized computed signals for UI state
+  readonly shouldShowScrollToBottom = computed(() => {
+    const msgs = this._messages();
+    return msgs.length > 3; // Only show scroll to bottom if more than 3 messages
+  });
+
+  readonly totalReasoningMessages = computed(() => {
+    return this._messages().filter(msg => 
+      msg.persona === 'bot' && msg.reasoning && msg.reasoning.trim().length > 0
+    ).length;
+  });
+
+  readonly visibleReasoningCount = computed(() => {
+    return this._messages().filter(msg => 
+      msg.persona === 'bot' && msg.showReasoning === true
+    ).length;
+  });
+
+  // Helper method for template - now uses computed signals
+  messageHasReasoning(message: ChatboxMessage): boolean {
+    return message.persona === 'bot' && 
+           !!message.reasoning && 
+           message.reasoning.trim().length > 0;
+  }
+
   private host = '';
   private protocol = '';
+  private thinkTagParser = new ThinkTagParser();
+  private updateBatchTimeout?: number;
+  private pendingUpdate: {
+    mainContent: string;
+    reasoningContent: string;
+    typing: boolean;
+  } | null = null;
 
   @ViewChild("chatboxMessages") private chatboxMessages?: ElementRef<HTMLDivElement>;
 
@@ -145,49 +212,97 @@ export class ChatboxComponent {
     // Effects for side effects
     this.setupEffects();
   }
+  
+  ngOnDestroy(): void {
+    if (this.updateBatchTimeout) {
+      clearTimeout(this.updateBatchTimeout);
+    }
+    
+    // Flush any pending update before destroying
+    if (this.pendingUpdate) {
+      this.immediateUpdateMessage(
+        this.pendingUpdate.mainContent,
+        this.pendingUpdate.reasoningContent,
+        this.pendingUpdate.typing
+      );
+    }
+  }
 
   private setupEffects(): void {
-    // Auto-scroll when messages change
+    // Optimized auto-scroll - only trigger on message count changes, not content changes
     effect(() => {
-      const messages = this._messages();
-      if (messages.length > 0) {
-        // Use a small delay to ensure DOM is updated
-        setTimeout(() => this.scrollChatToBottom(), 10);
+      const messageCount = this._messages().length;
+      const lastBotIndex = this.lastBotMessageIndex();
+      
+      if (messageCount > 0) {
+        // Only scroll if we have a new message or the last bot message finished typing
+        const lastBot = lastBotIndex >= 0 ? this._messages()[lastBotIndex] : null;
+        if (!lastBot?.typing) {
+          // Use requestAnimationFrame for better performance
+          requestAnimationFrame(() => this.scrollChatToBottom());
+        }
       }
     });
 
-    // Log streaming state changes for debugging
+    // Optimized state logging - only log on actual state changes
     effect(() => {
       const streaming = this._isStreaming();
       const connecting = this._isConnecting();
+      
+      // Only log when state actually changes to true
       if (streaming || connecting) {
-        console.log('Chat state:', { streaming, connecting });
+        console.log('Chat state changed:', { streaming, connecting });
       }
     });
 
-    // Debug metrics changes
+    // Optimized metrics logging - only log meaningful changes
     effect(() => {
-      const metrics = this._metricsInput();
-      console.log('Chatbox received metrics:', {
-        hasPrompts: !!metrics.prompts,
-        available: metrics.prompts?.available,
-        totalPrompts: metrics.prompts?.totalPrompts,
-        hasAvailablePrompts: this.hasAvailablePrompts()
+      const hasAvailablePrompts = this.hasAvailablePrompts();
+      const chatModel = this._metricsInput().chatModel;
+      
+      console.log('Chat capabilities:', {
+        hasModel: !!chatModel,
+        hasPrompts: hasAvailablePrompts,
+        modelName: chatModel
       });
     });
 
-    // Validate chat model availability
+    // Model validation - only warn when user tries to send without model
     effect(() => {
-      const metrics = this._metricsInput();
-      const hasModel = metrics.chatModel !== '';
-      if (!hasModel && this._chatMessage().trim().length > 0) {
-        console.warn('Chat model not available');
+      const canSend = this.canSendMessage();
+      const hasModel = this._metricsInput().chatModel !== '';
+      const hasMessage = this._chatMessage().trim().length > 0;
+      
+      if (hasMessage && !hasModel && !canSend) {
+        console.warn('Cannot send: Chat model not available');
       }
     });
   }
 
   updateChatMessage(message: string): void {
     this._chatMessage.set(message);
+  }
+
+  toggleReasoning(messageIndex: number): void {
+    this._messages.update(msgs => {
+      if (messageIndex < 0 || messageIndex >= msgs.length) return msgs;
+      
+      const message = msgs[messageIndex];
+      if (message.persona !== 'bot' || !message.reasoning || message.reasoning.trim() === '') {
+        return msgs;
+      }
+      
+      const updatedMessage = {
+        ...message,
+        showReasoning: !message.showReasoning
+      };
+      
+      return [
+        ...msgs.slice(0, messageIndex),
+        updatedMessage,
+        ...msgs.slice(messageIndex + 1)
+      ];
+    });
   }
 
   async sendChatMessage(): Promise<void> {
@@ -199,6 +314,9 @@ export class ChatboxComponent {
     this.addBotMessagePlaceholder();
     this._chatMessage.set('');
     this._isConnecting.set(true);
+    
+    // Reset the parser for the new message
+    this.thinkTagParser.reset();
 
     // Create HTTP params
     let params: HttpParams = new HttpParams().set('chat', messageText);
@@ -252,20 +370,107 @@ export class ChatboxComponent {
   }
 
   private addBotMessagePlaceholder(): ChatboxMessage {
-    const botMessage: ChatboxMessage = { text: '', persona: 'bot', typing: true };
+    const botMessage: ChatboxMessage = { 
+      text: '', 
+      persona: 'bot', 
+      typing: true,
+      reasoning: '',
+      showReasoning: false
+    };
     this._messages.update(msgs => [...msgs, botMessage]);
     return botMessage;
   }
 
   private updateBotMessage(content: string, typing: boolean = false): void {
+    if (!content && !typing) return;
+    
+    // Fast path: if no think tags detected and none encountered before, skip parsing
+    const hasThinkTags = content ? ThinkTagParser.containsThinkTags(content) : false;
+    const hasEncounteredTags = this.thinkTagParser.hasEncounteredThinkTags();
+    
+    if (!hasThinkTags && !hasEncounteredTags && content) {
+      // Pure text content, no parsing needed - use debounced updates for smoother rendering
+      this.updateMessageContent(content, '', typing);
+      return;
+    }
+    
+    try {
+      // Parse the chunk to separate main content from reasoning
+      const parseResult = this.thinkTagParser.processChunk(content || '');
+      
+      // Only update if there's actually new content to avoid unnecessary re-renders
+      if (parseResult.mainContent || parseResult.reasoningContent || typing !== undefined) {
+        this.updateMessageContent(parseResult.mainContent, parseResult.reasoningContent, typing);
+      }
+    } catch (error) {
+      console.warn('Error parsing think tags, falling back to plain text:', error);
+      // Fallback: treat all content as main content
+      this.updateMessageContent(content || '', '', typing);
+    }
+  }
+
+  private updateMessageContent(mainContent: string, reasoningContent: string, typing: boolean): void {
+    // For streaming content, use immediate updates to maintain responsiveness
+    if (this._isStreaming() && (mainContent || reasoningContent)) {
+      this.debouncedUpdateMessage(mainContent, reasoningContent, typing);
+    } else {
+      // For non-streaming updates (like typing state), update immediately
+      this.immediateUpdateMessage(mainContent, reasoningContent, typing);
+    }
+  }
+
+  private debouncedUpdateMessage(mainContent: string, reasoningContent: string, typing: boolean): void {
+    // Accumulate the content
+    if (this.pendingUpdate) {
+      this.pendingUpdate.mainContent += mainContent;
+      this.pendingUpdate.reasoningContent += reasoningContent;
+      this.pendingUpdate.typing = typing;
+    } else {
+      this.pendingUpdate = { mainContent, reasoningContent, typing };
+    }
+
+    // Clear existing timeout
+    if (this.updateBatchTimeout) {
+      clearTimeout(this.updateBatchTimeout);
+    }
+
+    // Set new timeout for batched update
+    this.updateBatchTimeout = window.setTimeout(() => {
+      if (this.pendingUpdate) {
+        this.immediateUpdateMessage(
+          this.pendingUpdate.mainContent,
+          this.pendingUpdate.reasoningContent,
+          this.pendingUpdate.typing
+        );
+        this.pendingUpdate = null;
+      }
+      this.updateBatchTimeout = undefined;
+    }, 16); // ~60fps update rate
+  }
+
+  private immediateUpdateMessage(mainContent: string, reasoningContent: string, typing: boolean): void {
     this._messages.update(msgs => {
       const lastIndex = msgs.length - 1;
       if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
+        const currentMessage = msgs[lastIndex];
+        
+        // Check if we actually need to update to avoid unnecessary re-renders
+        const needsUpdate = 
+          mainContent || 
+          reasoningContent || 
+          currentMessage.typing !== typing;
+          
+        if (!needsUpdate) {
+          return msgs;
+        }
+        
         const updatedMessage = {
-          ...msgs[lastIndex],
-          text: msgs[lastIndex].text + content,
+          ...currentMessage,
+          text: currentMessage.text + mainContent,
+          reasoning: (currentMessage.reasoning || '') + reasoningContent,
           typing
         };
+        
         return [
           ...msgs.slice(0, lastIndex),
           updatedMessage

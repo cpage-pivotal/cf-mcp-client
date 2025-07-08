@@ -1,19 +1,53 @@
 <div class="chatbox" id="chatbox">
   <div #chatboxMessages class="chatbox-messages">
     <!-- Chat messages will be dynamically inserted here -->
-    @for (message of messages(); track message) {
-      <div class="chat-message {{message.persona}}">
+    @for (messageData of messagesWithReasoningFlags(); track messageData.index) {
+      <div class="chat-message {{messageData.persona}}">
         <mat-card appearance="outlined"
-                  [style.background-color]="message.persona == 'user' ? 'var(--mat-sys-primary-container)' : 'var(--mat-sys-surface)'">
+                  [style.background-color]="messageData.persona == 'user' ? 'var(--mat-sys-primary-container)' : 'var(--mat-sys-surface)'">
           <mat-card-content>
-            @if (message.persona == 'user') {
-              <div class="user-message-content">{{ message.text }}</div>
+            @if (messageData.persona == 'user') {
+              <div class="user-message-content">{{ messageData.text }}</div>
             } @else {
-              @if (message.typing) {
-                <div class="typing__dot"></div><div class="typing__dot"></div><div class="typing__dot"></div>
-              } @else {
-                <markdown [data]="message.text"></markdown>
-              }
+              <div class="bot-message-container">
+                @if (messageData.hasReasoning) {
+                  <button mat-icon-button 
+                          class="reasoning-toggle"
+                          (click)="toggleReasoning(messageData.index)"
+                          [id]="messageData.reasoningToggleId"
+                          [attr.aria-pressed]="messageData.showReasoning"
+                          [attr.aria-label]="messageData.showReasoning ? 'Hide reasoning' : 'Show reasoning'"
+                          [attr.aria-controls]="messageData.reasoningContentId"
+                          [matTooltip]="messageData.showReasoning ? 'Hide reasoning' : 'Show reasoning'"
+                          type="button"
+                          role="button">
+                    <mat-icon [attr.aria-hidden]="true">{{ messageData.showReasoning ? 'lightbulb' : 'lightbulb_outline' }}</mat-icon>
+                  </button>
+                }
+                @if (messageData.typing) {
+                  <div class="typing__dot"></div><div class="typing__dot"></div><div class="typing__dot"></div>
+                } @else {
+                  <div class="main-content">
+                    <markdown [data]="messageData.text"></markdown>
+                  </div>
+                  @if (messageData.showReasoning && messageData.reasoning) {
+                    <div class="reasoning-section" 
+                         role="region" 
+                         [id]="messageData.reasoningContentId"
+                         [attr.aria-label]="'AI reasoning for this response'"
+                         [attr.aria-expanded]="messageData.showReasoning"
+                         [attr.aria-labelledby]="messageData.reasoningToggleId">
+                      <div class="reasoning-header">
+                        <mat-icon class="reasoning-icon" [attr.aria-hidden]="true">psychology</mat-icon>
+                        <span class="reasoning-label">Reasoning</span>
+                      </div>
+                      <div class="reasoning-content" role="article">
+                        <markdown [data]="messageData.reasoning"></markdown>
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
             }
           </mat-card-content>
         </mat-card>
