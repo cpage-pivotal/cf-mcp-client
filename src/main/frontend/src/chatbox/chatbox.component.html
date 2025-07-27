@@ -10,20 +10,36 @@
               <div class="user-message-content">{{ messageData.text }}</div>
             } @else {
               <div class="bot-message-container">
-                @if (messageData.hasReasoning) {
-                  <button mat-icon-button 
-                          class="reasoning-toggle"
-                          (click)="toggleReasoning(messageData.index)"
-                          [id]="messageData.reasoningToggleId"
-                          [attr.aria-pressed]="messageData.showReasoning"
-                          [attr.aria-label]="messageData.showReasoning ? 'Hide reasoning' : 'Show reasoning'"
-                          [attr.aria-controls]="messageData.reasoningContentId"
-                          [matTooltip]="messageData.showReasoning ? 'Hide reasoning' : 'Show reasoning'"
-                          type="button"
-                          role="button">
-                    <mat-icon [attr.aria-hidden]="true">{{ messageData.showReasoning ? 'lightbulb' : 'lightbulb_outline' }}</mat-icon>
-                  </button>
-                }
+                <div class="message-toggles">
+                  @if (messageData.hasReasoning) {
+                    <button mat-icon-button 
+                            class="reasoning-toggle"
+                            (click)="toggleReasoning(messageData.index)"
+                            [id]="messageData.reasoningToggleId"
+                            [attr.aria-pressed]="messageData.showReasoning"
+                            [attr.aria-label]="messageData.showReasoning ? 'Hide reasoning' : 'Show reasoning'"
+                            [attr.aria-controls]="messageData.reasoningContentId"
+                            [matTooltip]="messageData.showReasoning ? 'Hide reasoning' : 'Show reasoning'"
+                            type="button"
+                            role="button">
+                      <mat-icon [attr.aria-hidden]="true">{{ messageData.showReasoning ? 'lightbulb' : 'lightbulb_outline' }}</mat-icon>
+                    </button>
+                  }
+                  @if (messageData.hasError) {
+                    <button mat-icon-button 
+                            class="error-toggle"
+                            (click)="toggleError(messageData.index)"
+                            [id]="messageData.errorToggleId"
+                            [attr.aria-pressed]="messageData.showError"
+                            [attr.aria-label]="messageData.showError ? 'Hide error details' : 'Show error details'"
+                            [attr.aria-controls]="messageData.errorContentId"
+                            [matTooltip]="messageData.showError ? 'Hide error details' : 'Show error details'"
+                            type="button"
+                            role="button">
+                      <mat-icon [attr.aria-hidden]="true">{{ messageData.showError ? 'error' : 'error_outline' }}</mat-icon>
+                    </button>
+                  }
+                </div>
                 @if (messageData.typing) {
                   <div class="typing__dot"></div><div class="typing__dot"></div><div class="typing__dot"></div>
                 } @else {
@@ -43,6 +59,33 @@
                       </div>
                       <div class="reasoning-content" role="article">
                         <markdown [data]="messageData.reasoning"></markdown>
+                      </div>
+                    </div>
+                  }
+                  @if (messageData.showError && messageData.error) {
+                    <div class="error-section" 
+                         role="region" 
+                         [id]="messageData.errorContentId"
+                         [attr.aria-label]="'Error details for this response'"
+                         [attr.aria-expanded]="messageData.showError"
+                         [attr.aria-labelledby]="messageData.errorToggleId">
+                      <div class="error-header">
+                        <mat-icon class="error-icon" [attr.aria-hidden]="true">bug_report</mat-icon>
+                        <span class="error-label">Error Details</span>
+                      </div>
+                      <div class="error-content" role="article">
+                        <div class="error-field">
+                          <strong>Type:</strong> {{ messageData.error.errorType }}
+                        </div>
+                        <div class="error-field">
+                          <strong>Time:</strong> {{ messageData.error.timestamp }}
+                        </div>
+                        @if (messageData.error.stackTrace) {
+                          <div class="error-field">
+                            <strong>Stack Trace:</strong>
+                            <pre class="error-stacktrace">{{ messageData.error.stackTrace }}</pre>
+                          </div>
+                        }
                       </div>
                     </div>
                   }

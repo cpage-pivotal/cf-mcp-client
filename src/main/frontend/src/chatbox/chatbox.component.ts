@@ -33,12 +33,22 @@ import {PromptResolutionService} from '../services/prompt-resolution.service';
 import {MatTooltip} from '@angular/material/tooltip';
 import {ThinkTagParser} from './think-tag-parser';
 
+interface ErrorInfo {
+  message: string;
+  errorType: string;
+  timestamp: string;
+  stackTrace?: string;
+  context?: Record<string, string>;
+}
+
 interface ChatboxMessage {
   text: string;
   persona: 'user' | 'bot';
   typing?: boolean;
   reasoning?: string;
   showReasoning?: boolean;
+  error?: ErrorInfo;
+  showError?: boolean;
 }
 
 @Component({
@@ -136,8 +146,11 @@ export class ChatboxComponent implements OnDestroy {
       hasReasoning: message.persona === 'bot' && 
                    !!message.reasoning && 
                    message.reasoning.trim().length > 0,
+      hasError: message.persona === 'bot' && !!message.error,
       reasoningToggleId: `reasoning-toggle-${index}`,
-      reasoningContentId: `reasoning-content-${index}`
+      reasoningContentId: `reasoning-content-${index}`,
+      errorToggleId: `error-toggle-${index}`,
+      errorContentId: `error-content-${index}`
     }));
   });
 
@@ -175,12 +188,6 @@ export class ChatboxComponent implements OnDestroy {
     ).length;
   });
 
-  // Helper method for template - now uses computed signals
-  messageHasReasoning(message: ChatboxMessage): boolean {
-    return message.persona === 'bot' && 
-           !!message.reasoning && 
-           message.reasoning.trim().length > 0;
-  }
 
   private host = '';
   private protocol = '';
@@ -304,6 +311,29 @@ export class ChatboxComponent implements OnDestroy {
       ];
     });
   }
+
+  toggleError(messageIndex: number): void {
+    this._messages.update(msgs => {
+      if (messageIndex < 0 || messageIndex >= msgs.length) return msgs;
+      
+      const message = msgs[messageIndex];
+      if (message.persona !== 'bot' || !message.error) {
+        return msgs;
+      }
+      
+      const updatedMessage = {
+        ...message,
+        showError: !message.showError
+      };
+      
+      return [
+        ...msgs.slice(0, messageIndex),
+        updatedMessage,
+        ...msgs.slice(messageIndex + 1)
+      ];
+    });
+  }
+
 
   async sendChatMessage(): Promise<void> {
     if (!this.canSendMessage()) return;
@@ -517,6 +547,30 @@ export class ChatboxComponent implements OnDestroy {
     });
   }
 
+  private handleServerError(errorDetails: ErrorInfo): void {
+    this.ngZone.run(() => {
+      this.setBotMessageTyping(false);
+      this._messages.update(msgs => {
+        const lastIndex = msgs.length - 1;
+        if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
+          return [
+            ...msgs.slice(0, lastIndex),
+            { 
+              ...msgs[lastIndex], 
+              text: errorDetails.message, 
+              typing: false,
+              error: errorDetails,
+              showError: false
+            }
+          ];
+        }
+        return msgs;
+      });
+      this._isStreaming.set(false);
+      this._isConnecting.set(false);
+    });
+  }
+
   private handlePromptSelection(result: PromptSelectionResult): void {
     const promptId = `${result.prompt.serverId}:${result.prompt.name}`;
 
@@ -613,6 +667,21 @@ export class ChatboxComponent implements OnDestroy {
         this.handleChatError('Sorry, I encountered an error processing your request.');
         reject(error);
       };
+
+      // Listen for error events
+      eventSource.addEventListener('error', (event: MessageEvent) => {
+        this.ngZone.run(() => {
+          try {
+            const errorDetails: ErrorInfo = JSON.parse(event.data);
+            this.handleServerError(errorDetails);
+          } catch (e) {
+            console.error('Failed to parse error details:', e);
+            this.handleChatError('Sorry, I encountered an error processing your request.');
+          }
+        });
+        eventSource.close();
+        resolve();
+      });
 
       // Listen for successful completion
       eventSource.addEventListener('close', () => {

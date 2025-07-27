@@ -54,10 +54,10 @@ public class ChatController {
                                                 .data(jsonData)
                                                 .name("message"));
                                     } catch (IOException e) {
-                                        emitter.completeWithError(e);
+                                        handleChatError(emitter, e, conversationId);
                                     }
                                 },
-                                emitter::completeWithError,
+                                error -> handleChatError(emitter, error, conversationId),
                                 () -> {
                                     try {
                                         emitter.send(SseEmitter.event()
@@ -71,11 +71,42 @@ public class ChatController {
                         );
 
             } catch (Exception e) {
-                emitter.completeWithError(e);
+                handleChatError(emitter, e, conversationId);
             }
         });
 
         return emitter;
+    }
+
+    /**
+     * Handles chat errors by sending detailed error information via SSE and completing the emitter.
+     */
+    private void handleChatError(SseEmitter emitter, Throwable error, String conversationId) {
+        try {
+            // Create context information
+            Map<String, String> context = Map.of(
+                    "conversationId", conversationId,
+                    "timestamp", java.time.Instant.now().toString()
+            );
+
+            // Create error details
+            ErrorDetails errorDetails = ErrorDetails.fromException(
+                    "Sorry, I encountered an error processing your request.",
+                    error instanceof Exception ? (Exception) error : new RuntimeException(error),
+                    context
+            );
+
+            // Send error details via SSE
+            String errorJson = objectMapper.writeValueAsString(errorDetails);
+            emitter.send(SseEmitter.event()
+                    .data(errorJson)
+                    .name("error"));
+
+            emitter.complete();
+        } catch (Exception e) {
+            // Fallback: complete with error if we can't send the detailed error
+            emitter.completeWithError(e);
+        }
     }
 
     /**
@@ -89,13 +120,11 @@ public class ChatController {
     private List<String> determineDocumentIds(Optional<String> documentId, Optional<List<String>> documentIds) {
         // If documentIds is provided and not empty, use it
         if (documentIds.isPresent() && !documentIds.get().isEmpty()) {
-            // Filter out null or empty strings
             return documentIds.get().stream()
                     .filter(id -> id != null && !id.trim().isEmpty())
                     .toList();
         }
 
-        // Fall back to single documentId for backward compatibility
         if (documentId.isPresent() && !documentId.get().trim().isEmpty()) {
             return List.of(documentId.get());
         }
