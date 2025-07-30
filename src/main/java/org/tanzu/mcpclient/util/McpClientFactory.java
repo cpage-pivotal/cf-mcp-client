@@ -19,7 +19,7 @@ import java.time.Duration;
 public class McpClientFactory {
 
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(30);
-    private static final Duration DEFAULT_REQUEST_TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration DEFAULT_REQUEST_TIMEOUT = Duration.ofMinutes(5);
     private static final Duration HEALTH_CHECK_TIMEOUT = Duration.ofSeconds(10);
 
     private final SSLContext sslContext;
