@@ -50,6 +50,16 @@
     </span>
       </div>
     </div>
+
+    <div class="motivation-container">
+      <button mat-raised-button color="accent" (click)="showMotivationalMessage()" class="motivation-button">
+        <mat-icon>favorite</mat-icon>
+        Motivate Me
+      </button>
+      <div *ngIf="showMessage" class="motivation-message" [@fadeInOut]>
+        {{ currentMessage }}
+      </div>
+    </div>
   </mat-sidenav>
 
   <mat-sidenav-content>

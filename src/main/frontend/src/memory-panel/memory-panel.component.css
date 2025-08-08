@@ -147,3 +147,30 @@ mat-sidenav-content {
 .status-text {
   font-size: 14px;
 }
+
+.motivation-container {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.motivation-button {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.motivation-button mat-icon {
+  margin-right: 8px;
+}
+
+.motivation-message {
+  background-color: #E8F5E8;
+  border: 1px solid #4CAF50;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  font-weight: 500;
+  color: #2E7D2E;
+  font-size: 14px;
+  line-height: 1.4;
+}
