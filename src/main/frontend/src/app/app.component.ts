@@ -1,5 +1,6 @@
 import { Component, DestroyRef, Inject, inject, signal, effect } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
+import { MatButton } from '@angular/material/button';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
 import { DocumentPanelComponent } from '../document-panel/document-panel.component';
@@ -13,15 +14,25 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, AgentsPanelComponent, ChatboxComponent],
+  imports: [MatToolbar, MatButton, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, AgentsPanelComponent, ChatboxComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
   title = 'pulseui';
 
+  // Predefined motivational messages
+  private readonly motivationalMessages = [
+    "You're doing amazing! Keep up the great work! 🚀",
+    "Every challenge is an opportunity to grow stronger! 💪",
+    "Your dedication and effort make a real difference! ⭐",
+    "Believe in yourself - you've got this! 🌟",
+    "Success is built one step at a time, and you're moving forward! 🎯"
+  ];
+
   // Use signals for reactive state management
   private readonly _currentDocumentIds = signal<string[]>([]);
+  private readonly _motivationalMessage = signal<string>('');
   private readonly _metrics = signal<PlatformMetrics>({
     conversationId: '',
     chatModel: '',
@@ -38,6 +49,7 @@ export class AppComponent {
 
   // Public readonly signals
   readonly currentDocumentIds = this._currentDocumentIds.asReadonly();
+  readonly motivationalMessage = this._motivationalMessage.asReadonly();
   readonly metrics = this._metrics.asReadonly();
 
   private readonly destroyRef = inject(DestroyRef);
@@ -59,6 +71,18 @@ export class AppComponent {
   // Method to handle document selection from DocumentPanelComponent
   onDocumentIdsChanged(documentIds: string[]): void {
     this._currentDocumentIds.set([...documentIds]);
+  }
+
+  // Method to show random motivational message
+  showMotivation(): void {
+    const randomIndex = Math.floor(Math.random() * this.motivationalMessages.length);
+    const message = this.motivationalMessages[randomIndex];
+    this._motivationalMessage.set(message);
+    
+    // Clear message after 3 seconds
+    setTimeout(() => {
+      this._motivationalMessage.set('');
+    }, 3000);
   }
 
   // Initialize metrics polling with improved error handling
