@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>21</java.version>
-		<spring-ai.version>1.0.0</spring-ai.version>
+		<spring-ai.version>1.0.1</spring-ai.version>
 		<java-cfenv.version>3.5.0</java-cfenv.version>
 	</properties>
 

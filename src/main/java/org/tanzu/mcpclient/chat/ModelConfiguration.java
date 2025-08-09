@@ -1,24 +1,29 @@
 package org.tanzu.mcpclient.chat;
 
 import io.pivotal.cfenv.boot.genai.GenaiLocator;
-import io.pivotal.cfenv.boot.genai.GenaiLocatorAutoConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.OpenAiEmbeddingModel;
+import org.springframework.ai.openai.OpenAiEmbeddingOptions;
+import org.springframework.ai.openai.api.OpenAiApi;
+import org.springframework.ai.document.MetadataMode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
- * Configuration for models, supporting both GenAI Locator and traditional Spring AI auto-configuration
+ * Configuration for models, supporting both GenAI Locator and traditional Spring AI autoconfiguration
  */
-@AutoConfiguration
-@AutoConfigureAfter(GenaiLocatorAutoConfiguration.class)  // Ensure this runs AFTER GenaiLocator is created
+@Configuration
 public class ModelConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(ModelConfiguration.class);
@@ -41,6 +46,46 @@ public class ModelConfiguration {
     }
 
     /**
+     * Fallback ChatModel using OpenAI when API key is configured and GenAI Locator is not available
+     */
+    @Bean
+    @ConditionalOnMissingBean(GenaiLocator.class)
+    @ConditionalOnProperty(name = {"spring.ai.openai.api-key", "spring.ai.openai.chat.api-key"})
+    public ChatModel openAiChatModel(
+            @Value("${spring.ai.openai.api-key:}") String apiKey,
+            @Value("${spring.ai.openai.chat.api-key:}") String chatApiKey,
+            @Value("${spring.ai.openai.base-url:https://api.openai.com}") String baseUrl,
+            @Value("${spring.ai.openai.chat.options.model:gpt-4o-mini}") String model) {
+
+        String effectiveApiKey = !chatApiKey.isEmpty() ? chatApiKey : apiKey;
+
+        if (effectiveApiKey.isEmpty()) {
+            logger.warn("No OpenAI API key configured, ChatModel will not be available");
+            return null;
+        }
+
+        try {
+            OpenAiApi openAiApi = OpenAiApi.builder()
+                    .apiKey(effectiveApiKey)
+                    .baseUrl(baseUrl)
+                    .build();
+
+            ChatModel chatModel = OpenAiChatModel.builder()
+                    .openAiApi(openAiApi)
+                    .defaultOptions(OpenAiChatOptions.builder()
+                            .model(model)
+                            .build())
+                    .build();
+
+            logger.info("Created OpenAI ChatModel with model: {}", model);
+            return chatModel;
+        } catch (Exception e) {
+            logger.error("Failed to create OpenAI ChatModel", e);
+            return null;
+        }
+    }
+
+    /**
      * Primary EmbeddingModel bean using GenAI Locator when available
      */
     @Bean
@@ -58,20 +103,44 @@ public class ModelConfiguration {
     }
 
     /**
-     * Fallback ChatModel validation when GenAI Locator is not available
-     * This only runs when GenaiLocator is missing, then checks if ChatModel exists from another source
+     * Fallback EmbeddingModel using OpenAI when API key is configured and GenAI Locator is not available
      */
     @Bean
     @ConditionalOnMissingBean(GenaiLocator.class)
-    public ChatModelValidator chatModelValidator(@Autowired(required = false) ChatModel chatModel) {
-        if (chatModel == null) {
-            logger.warn("No ChatModel available and no GenAI Locator configured. " +
-                    "Please either bind to a GenAI service or configure Spring AI properties.");
-            throw new IllegalStateException(
-                    "No ChatModel available. Either configure GenAI service binding or Spring AI properties.");
+    @ConditionalOnProperty(name = {"spring.ai.openai.api-key", "spring.ai.openai.embedding.api-key"})
+    public EmbeddingModel openAiEmbeddingModel(
+            @Value("${spring.ai.openai.api-key:}") String apiKey,
+            @Value("${spring.ai.openai.embedding.api-key:}") String embeddingApiKey,
+            @Value("${spring.ai.openai.base-url:https://api.openai.com}") String baseUrl,
+            @Value("${spring.ai.openai.embedding.options.model:text-embedding-3-small}") String model) {
+
+        String effectiveApiKey = !embeddingApiKey.isEmpty() ? embeddingApiKey : apiKey;
+
+        if (effectiveApiKey.isEmpty()) {
+            logger.warn("No OpenAI API key configured, EmbeddingModel will not be available");
+            return null;
         }
-        logger.info("Using fallback ChatModel: {}", chatModel.getClass().getSimpleName());
-        return new ChatModelValidator();
+
+        try {
+            OpenAiApi openAiApi = OpenAiApi.builder()
+                    .apiKey(effectiveApiKey)
+                    .baseUrl(baseUrl)
+                    .build();
+
+            EmbeddingModel embeddingModel = new OpenAiEmbeddingModel(
+                    openAiApi,
+                    MetadataMode.EMBED,
+                    OpenAiEmbeddingOptions.builder()
+                            .model(model)
+                            .build()
+            );
+
+            logger.info("Created OpenAI EmbeddingModel with model: {}", model);
+            return embeddingModel;
+        } catch (Exception e) {
+            logger.warn("Failed to create OpenAI EmbeddingModel: {}", e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -88,13 +157,6 @@ public class ModelConfiguration {
                 chatModel != null ? chatModel.getClass().getSimpleName() : "None",
                 embeddingModel != null ? embeddingModel.getClass().getSimpleName() : "None"
         );
-    }
-
-    /**
-     * Simple validator class to ensure ChatModel is available
-     */
-    public static class ChatModelValidator {
-        // Empty class, just used as a marker bean
     }
 
     /**

@@ -36,6 +36,7 @@ public class ChatService {
     private final List<String> mcpServiceURLs;
     private final McpClientFactory mcpClientFactory;
     private final GenaiLocator genaiLocator;
+    private final ChatModel chatModel;
 
     @Value("classpath:/prompts/system-prompt.st")
     private Resource systemChatPrompt;
@@ -56,41 +57,42 @@ public class ChatService {
 
         // Use GenAI Locator if available, otherwise fall back to injected ChatModel
         ChatModel selectedChatModel = selectChatModel(chatModel);
+        this.chatModel = selectedChatModel;
 
-        // Build ChatClient with the selected model
-        ChatClient.Builder chatClientBuilder = ChatClient.builder(selectedChatModel);
-        chatClientBuilder = chatClientBuilder.defaultAdvisors(memoryAdvisor, new SimpleLoggerAdvisor());
-        this.chatClient = chatClientBuilder.build();
-
-        logger.info("ChatService initialized with chat model: {}",
-                selectedChatModel.getClass().getSimpleName());
+        // Build ChatClient with the selected model (or null if no model available)
+        if (selectedChatModel != null) {
+            ChatClient.Builder chatClientBuilder = ChatClient.builder(selectedChatModel);
+            chatClientBuilder = chatClientBuilder.defaultAdvisors(memoryAdvisor, new SimpleLoggerAdvisor());
+            this.chatClient = chatClientBuilder.build();
+            logger.info("ChatService initialized with chat model: {}", selectedChatModel.getClass().getSimpleName());
+        } else {
+            this.chatClient = null;
+            logger.warn("ChatService initialized without chat model - chat functionality will be disabled");
+        }
     }
 
     /**
      * Select the appropriate chat model using GenAI Locator if available,
-     * otherwise fall back to the injected ChatModel
+     * otherwise fall back to the injected ChatModel. Returns null if no model is available.
      */
     private ChatModel selectChatModel(ChatModel fallbackChatModel) {
         if (genaiLocator != null) {
             try {
                 ChatModel chatModel = genaiLocator.getFirstAvailableChatModel();
-                logger.info("Using chat model from GenAI Locator: {}",
-                        getModelInfo(chatModel));
+                logger.info("Using chat model from GenAI Locator: {}", getModelInfo(chatModel));
                 return chatModel;
             } catch (Exception e) {
-                logger.warn("Failed to get chat model from GenAI Locator, falling back to injected model: {}",
-                        e.getMessage());
+                logger.warn("Failed to get chat model from GenAI Locator, falling back to injected model: {}", e.getMessage());
             }
         }
 
         if (fallbackChatModel != null) {
-            logger.info("Using fallback injected chat model: {}",
-                    fallbackChatModel.getClass().getSimpleName());
+            logger.info("Using fallback injected chat model: {}", fallbackChatModel.getClass().getSimpleName());
             return fallbackChatModel;
         }
 
-        throw new IllegalStateException(
-                "No chat model available. Either GenAI Locator must be configured or a ChatModel must be injected.");
+        logger.warn("No chat model available. Chat functionality will be disabled.");
+        return null;
     }
 
     /**
@@ -111,6 +113,10 @@ public class ChatService {
      * Get the name/info of the currently selected model
      */
     public String getCurrentChatModelInfo() {
+        if (chatModel == null) {
+            return "";
+        }
+
         if (genaiLocator != null) {
             try {
                 List<String> chatModels = genaiLocator.getModelNamesByCapability("CHAT");
@@ -119,10 +125,13 @@ public class ChatService {
                 logger.debug("Error getting current chat model info: {}", e.getMessage());
             }
         }
-        return "Unknown";
+        return getModelInfo(chatModel);
     }
 
     private String getModelInfo(ChatModel chatModel) {
+        if (chatModel == null) {
+            return "None";
+        }
         // Try to extract useful information about the model
         // This might need to be adapted based on the actual ChatModel implementation
         String className = chatModel.getClass().getSimpleName();
@@ -133,6 +142,12 @@ public class ChatService {
      * Updated method to handle multiple document IDs
      */
     public Flux<String> chatStream(String chat, String conversationId, List<String> documentIds) {
+        // Check if chat model is available
+        if (chatClient == null || chatModel == null) {
+            logger.warn("Chat request attempted but no chat model is available");
+            return Flux.error(new IllegalStateException("No chat model is available. Please configure an API key or bind to a GenAI service."));
+        }
+
         try (Stream<McpSyncClient> mcpSyncClients = createAndInitializeMcpClients()) {
             ToolCallbackProvider[] toolCallbackProviders = mcpSyncClients
                     .map(SyncMcpToolCallbackProvider::new)

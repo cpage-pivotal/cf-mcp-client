@@ -106,10 +106,20 @@ public class GenAIService {
             }
         }
 
-        // Fallback to property-based
-        String propertyModel = Objects.requireNonNullElse(environment.getProperty(CHAT_MODEL), "");
-        logger.debug("Chat model name from properties: {}", propertyModel);
-        return propertyModel;
+        // Fallback to property-based (only if API key is present)
+        String apiKey = environment.getProperty("spring.ai.openai.api-key");
+        String chatApiKey = environment.getProperty("spring.ai.openai.chat.api-key");
+
+        if ((apiKey != null && !apiKey.trim().isEmpty()) || (chatApiKey != null && !chatApiKey.trim().isEmpty())) {
+            String propertyModel = Objects.requireNonNullElse(environment.getProperty(CHAT_MODEL), "");
+            if (!propertyModel.isEmpty()) {
+                logger.debug("Chat model name from properties: {}", propertyModel);
+                return propertyModel;
+            }
+        }
+
+        logger.debug("No chat model available");
+        return "";
     }
 
     /**
