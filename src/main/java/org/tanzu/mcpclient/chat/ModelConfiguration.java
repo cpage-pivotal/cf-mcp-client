@@ -1,22 +1,24 @@
 package org.tanzu.mcpclient.chat;
 
 import io.pivotal.cfenv.boot.genai.GenaiLocator;
+import io.pivotal.cfenv.boot.genai.GenaiLocatorAutoConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
  * Configuration for models, supporting both GenAI Locator and traditional Spring AI auto-configuration
  */
-@Configuration
+@AutoConfiguration
+@AutoConfigureAfter(GenaiLocatorAutoConfiguration.class)  // Ensure this runs AFTER GenaiLocator is created
 public class ModelConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(ModelConfiguration.class);
@@ -57,6 +59,7 @@ public class ModelConfiguration {
 
     /**
      * Fallback ChatModel validation when GenAI Locator is not available
+     * This only runs when GenaiLocator is missing, then checks if ChatModel exists from another source
      */
     @Bean
     @ConditionalOnMissingBean(GenaiLocator.class)
