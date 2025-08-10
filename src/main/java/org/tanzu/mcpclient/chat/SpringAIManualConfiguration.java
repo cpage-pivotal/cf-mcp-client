@@ -1,6 +1,7 @@
 package org.tanzu.mcpclient.chat;
 
 import io.micrometer.observation.ObservationRegistry;
+import io.pivotal.cfenv.boot.genai.GenaiLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -22,18 +23,18 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.lang.Nullable;
 import org.springframework.retry.support.RetryTemplate;
 import org.tanzu.mcpclient.util.GenAIService;
 
 import java.util.Objects;
 
 /**
- * Manual Spring AI configuration that preserves graceful degradation principles.
- * This replaces the auto-configuration while maintaining the same behavior:
- * - Application starts successfully without models
- * - Beans are created but may be non-functional
- * - Validation occurs at service level, not configuration level
- * - NO DEFAULT MODELS are applied - empty configuration means no models
+ * Manual Spring AI configuration that supports both traditional property-based configuration
+ * and the new GenaiLocator-based configuration for Tanzu Platform 10.2+.
+ *
+ * When GenaiLocator is available, it takes precedence and provides properly configured models.
+ * Falls back to property-based configuration when GenaiLocator is not available.
  */
 @Configuration
 public class SpringAIManualConfiguration {
@@ -41,27 +42,51 @@ public class SpringAIManualConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(SpringAIManualConfiguration.class);
 
     private final Environment environment;
+    private final GenaiLocator genaiLocator; // Optional - may be null
 
-    public SpringAIManualConfiguration(Environment environment) {
+    public SpringAIManualConfiguration(Environment environment, @Nullable GenaiLocator genaiLocator) {
         this.environment = environment;
+        this.genaiLocator = genaiLocator;
+
+        if (genaiLocator != null) {
+            logger.info("GenaiLocator available - will use locator-provided models");
+        } else {
+            logger.info("GenaiLocator not available - using property-based model configuration");
+        }
     }
 
     /**
-     * Creates OpenAI API client. Returns a functional client if API key is available,
-     * or a minimal client that will fail gracefully at runtime if not.
+     * Creates OpenAI API client only when using property-based configuration.
+     * When GenaiLocator is available, models are created by the locator itself.
      */
     @Bean
     @ConditionalOnMissingBean
     public OpenAiApi openAiApi() {
+        // If GenaiLocator is available, we don't need a centralized OpenAiApi
+        // because the locator creates its own APIs for each model
+        if (genaiLocator != null) {
+            logger.debug("GenaiLocator available - creating minimal OpenAiApi bean for compatibility");
+            // Create a minimal API client for compatibility, but it won't be used
+            return OpenAiApi.builder()
+                    .apiKey("not-used-with-genai-locator")
+                    .baseUrl("https://api.openai.com") // Default URL
+                    .build();
+        }
+
         String apiKey = getApiKey();
         String baseUrl = getBaseUrl();
 
         logger.debug("Creating OpenAiApi with baseUrl={}, hasApiKey={}",
                 baseUrl, apiKey != null && !apiKey.isEmpty());
 
-        // Always create the API client - graceful degradation happens at service level
+        // Only create functional API client if we have proper credentials
+        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("placeholder")) {
+            logger.warn("No valid API key found for OpenAI models - models will be non-functional");
+            apiKey = "no-api-key-configured"; // Avoid the "placeholder" that triggers specific OpenAI error
+        }
+
         return OpenAiApi.builder()
-                .apiKey(apiKey != null ? apiKey : "placeholder") // Avoid null
+                .apiKey(apiKey)
                 .baseUrl(baseUrl)
                 .build();
     }
@@ -106,43 +131,78 @@ public class SpringAIManualConfiguration {
     }
 
     /**
-     * Creates ChatModel bean using the correct Spring AI 1.0.1 constructor.
-     * Always creates the bean but it may be non-functional if no model or API key is configured.
-     * This preserves graceful degradation.
+     * Creates ChatModel bean with proper priority handling.
+     * Uses GenaiLocator if available, otherwise falls back to property-based configuration.
      */
     @Bean
     @ConditionalOnMissingBean
     public ChatModel chatModel(OpenAiApi openAiApi, RetryTemplate retryTemplate,
                                ObservationRegistry observationRegistry, ToolCallingManager toolCallingManager) {
+
+        // Priority 1: Use GenaiLocator if available and has chat models
+        if (genaiLocator != null) {
+            try {
+                ChatModel locatorModel = genaiLocator.getFirstAvailableChatModel();
+                logger.info("Using ChatModel from GenaiLocator");
+                return locatorModel;
+            } catch (Exception e) {
+                logger.warn("Failed to get ChatModel from GenaiLocator, falling back to property-based configuration: {}",
+                        e.getMessage());
+            }
+        }
+
+        // Priority 2: Use property-based configuration
         String model = getChatModel();
 
-        logger.debug("Creating ChatModel with model='{}'", model);
+        if (model == null || model.isEmpty()) {
+            logger.warn("No chat model configured - creating non-functional ChatModel bean");
+            model = "no-model-configured";
+        }
+
+        logger.debug("Creating property-based ChatModel with model='{}'", model);
 
         OpenAiChatOptions options = OpenAiChatOptions.builder()
-                .model(model) // Use configured model directly, may be empty
+                .model(model)
                 .temperature(0.8)
                 .build();
 
-        // Use the correct constructor signature for Spring AI 1.0.1
         return new OpenAiChatModel(openAiApi, options, toolCallingManager, retryTemplate, observationRegistry);
     }
 
     /**
-     * Creates EmbeddingModel bean. Always creates the bean but it may be non-functional
-     * if no model or API key is configured. This preserves graceful degradation.
+     * Creates EmbeddingModel bean with proper priority handling.
+     * Uses GenaiLocator if available, otherwise falls back to property-based configuration.
      */
     @Bean
     @ConditionalOnMissingBean
     public EmbeddingModel embeddingModel(OpenAiApi openAiApi, RetryTemplate retryTemplate) {
+
+        // Priority 1: Use GenaiLocator if available and has embedding models
+        if (genaiLocator != null) {
+            try {
+                EmbeddingModel locatorModel = genaiLocator.getFirstAvailableEmbeddingModel();
+                logger.info("Using EmbeddingModel from GenaiLocator");
+                return locatorModel;
+            } catch (Exception e) {
+                logger.warn("Failed to get EmbeddingModel from GenaiLocator, falling back to property-based configuration: {}",
+                        e.getMessage());
+            }
+        }
+
+        // Priority 2: Use property-based configuration
         String model = getEmbeddingModel();
 
-        logger.debug("Creating EmbeddingModel with model='{}'", model);
+        if (model == null || model.isEmpty()) {
+            logger.warn("No embedding model configured - creating non-functional EmbeddingModel bean");
+            model = "no-model-configured";
+        }
+
+        logger.debug("Creating property-based EmbeddingModel with model='{}'", model);
 
         OpenAiEmbeddingOptions options = OpenAiEmbeddingOptions.builder()
-                .model(model) // Use configured model directly, may be empty
+                .model(model)
                 .build();
 
-        // Use the correct constructor signature for Spring AI 1.0.1
         return new OpenAiEmbeddingModel(openAiApi, MetadataMode.EMBED, options, retryTemplate);
     }
 

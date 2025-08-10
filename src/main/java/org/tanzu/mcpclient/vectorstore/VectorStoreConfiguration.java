@@ -37,12 +37,18 @@ public class VectorStoreConfiguration {
 
         if (genAIServiceUtil.isEmbeddingModelAvailable()) {
             try {
+                // Try to get dimensions from the embedding model
                 dimensions = embeddingModel.dimensions();
                 logger.info("Using embedding model dimensions: {}", dimensions);
             } catch (Exception e) {
-                logger.warn("Could not determine embedding dimensions, using default: {}",
-                        PgVectorStore.OPENAI_EMBEDDING_DIMENSION_SIZE);
+                logger.warn("Could not determine embedding dimensions (this may be expected with GenaiLocator): {}. Using default: {}",
+                        e.getMessage(), PgVectorStore.OPENAI_EMBEDDING_DIMENSION_SIZE);
                 dimensions = PgVectorStore.OPENAI_EMBEDDING_DIMENSION_SIZE;
+
+                // Log additional context for GenaiLocator case
+                if (genAIServiceUtil.isEmbeddingModelAvailableFromLocator()) {
+                    logger.info("Embedding model is available from GenaiLocator");
+                }
             }
         } else {
             logger.info("No embedding model configured, using default dimensions: {}", dimensions);

@@ -36,7 +36,8 @@ public class ChatConfiguration {
     public ChatConfiguration(GenAIService genAIService, ApplicationEventPublisher eventPublisher, McpClientFactory mcpClientFactory) {
         this.chatModel = genAIService.getChatModelName();
         this.agentServices = genAIService.getMcpServiceNames();
-        this.allMcpServiceURLs = genAIService.getMcpServiceUrls();
+        // Updated to use combined MCP service URLs from both GenaiLocator and CF services
+        this.allMcpServiceURLs = genAIService.getAllMcpServiceUrls();
         this.eventPublisher = eventPublisher;
         this.mcpClientFactory = mcpClientFactory;
         this.agentsWithHealth = new ArrayList<>();
@@ -68,19 +69,24 @@ public class ChatConfiguration {
 
     /**
      * Test the health of all configured MCP servers by attempting to initialize them.
+     * Updated to handle MCP service URLs from both GenaiLocator and CF services.
      */
     private void testMcpServerHealth() {
         agentsWithHealth.clear();
         healthyMcpServiceURLs.clear();
         serverNamesByUrl.clear();
 
-        if (agentServices.isEmpty() || allMcpServiceURLs.isEmpty()) {
+        if (allMcpServiceURLs.isEmpty()) {
             logger.debug("No MCP services configured for health checking");
             return;
         }
 
-        for (int i = 0; i < agentServices.size() && i < allMcpServiceURLs.size(); i++) {
-            String serviceName = agentServices.get(i);
+        // If we have more URLs than service names (e.g., from GenaiLocator),
+        // create synthetic service names
+        List<String> serviceNames = ensureServiceNames(agentServices, allMcpServiceURLs);
+
+        for (int i = 0; i < serviceNames.size() && i < allMcpServiceURLs.size(); i++) {
+            String serviceName = serviceNames.get(i);
             String serviceUrl = allMcpServiceURLs.get(i);
 
             Agent agent = testMcpServerHealthAndGetTools(serviceName, serviceUrl);
@@ -105,6 +111,48 @@ public class ChatConfiguration {
         if (healthyCount < totalCount) {
             logger.warn("Some MCP servers are unhealthy and will not be used for chat operations");
         }
+    }
+
+    /**
+     * Ensures we have service names for all URLs.
+     * When using GenaiLocator, we might have URLs without corresponding CF service names.
+     */
+    private List<String> ensureServiceNames(List<String> cfServiceNames, List<String> allUrls) {
+        List<String> result = new ArrayList<>(cfServiceNames);
+
+        // If we have more URLs than service names, generate synthetic names
+        while (result.size() < allUrls.size()) {
+            String url = allUrls.get(result.size());
+            String syntheticName = generateServiceNameFromUrl(url);
+            result.add(syntheticName);
+            logger.debug("Generated synthetic service name '{}' for URL '{}'", syntheticName, url);
+        }
+
+        return result;
+    }
+
+    /**
+     * Generates a service name from a URL for MCP servers discovered via GenaiLocator.
+     */
+    private String generateServiceNameFromUrl(String url) {
+        try {
+            java.net.URI uri = java.net.URI.create(url);
+            String host = uri.getHost();
+            int port = uri.getPort();
+
+            if (host != null) {
+                if (port != -1 && port != 80 && port != 443) {
+                    return host + "-" + port;
+                } else {
+                    return host;
+                }
+            }
+        } catch (Exception e) {
+            logger.debug("Failed to parse URL '{}' for service name generation: {}", url, e.getMessage());
+        }
+
+        // Fallback: use URL hash
+        return "mcp-server-" + Math.abs(url.hashCode() % 10000);
     }
 
     /**
