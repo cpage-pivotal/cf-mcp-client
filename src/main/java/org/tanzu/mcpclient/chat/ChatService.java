@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.tanzu.mcpclient.document.DocumentService;
+import org.tanzu.mcpclient.util.GenAIService;
 import org.tanzu.mcpclient.util.McpClientFactory;
 import reactor.core.publisher.Flux;
 
@@ -32,26 +33,37 @@ public class ChatService {
     private final VectorStore vectorStore;
     private final List<String> mcpServiceURLs;
     private final McpClientFactory mcpClientFactory;
+    private final GenAIService genAIService; // Add this field
 
     @Value("classpath:/prompts/system-prompt.st")
     private Resource systemChatPrompt;
 
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
+    // Update constructor to inject GenAIService
     public ChatService(ChatClient.Builder chatClientBuilder, BaseChatMemoryAdvisor memoryAdvisor,
-                       List<String> mcpServiceURLs, VectorStore vectorStore, McpClientFactory mcpClientFactory) {
+                       List<String> mcpServiceURLs, VectorStore vectorStore, McpClientFactory mcpClientFactory,
+                       GenAIService genAIService) {
         chatClientBuilder = chatClientBuilder.defaultAdvisors(memoryAdvisor, new SimpleLoggerAdvisor());
         this.chatClient = chatClientBuilder.build();
 
         this.mcpServiceURLs = mcpServiceURLs;
         this.vectorStore = vectorStore;
         this.mcpClientFactory = mcpClientFactory;
+        this.genAIService = genAIService; // Store the service
     }
 
     /**
      * Updated method to handle multiple document IDs
      */
     public Flux<String> chatStream(String chat, String conversationId, List<String> documentIds) {
+        // Validate chat model availability - this is where graceful degradation happens
+        String chatModel = genAIService.getChatModelName();
+        if (chatModel == null || chatModel.isEmpty()) {
+            logger.warn("Chat request attempted but no chat model configured");
+            return Flux.error(new IllegalStateException("No chat model configured"));
+        }
+
         try (Stream<McpSyncClient> mcpSyncClients = createAndInitializeMcpClients()) {
             ToolCallbackProvider[] toolCallbackProviders = mcpSyncClients
                     .map(SyncMcpToolCallbackProvider::new)
@@ -60,14 +72,6 @@ public class ChatService {
             logger.info("CHAT STREAM REQUEST: conversationID = {}, documentIds = {}", conversationId, documentIds);
             return buildAndExecuteStreamChatRequest(chat, conversationId, documentIds, toolCallbackProviders);
         }
-    }
-
-    /**
-     * Legacy method for backward compatibility - converts single documentId to List
-     */
-    public Flux<String> chatStream(String chat, String conversationId, java.util.Optional<String> documentId) {
-        List<String> documentIds = documentId.map(List::of).orElse(List.of());
-        return chatStream(chat, conversationId, documentIds);
     }
 
     private Stream<McpSyncClient> createAndInitializeMcpClients() {

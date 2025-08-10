@@ -33,12 +33,20 @@ public class VectorStoreConfiguration {
     @Bean
     @Conditional(DatabaseAvailableCondition.class)
     public VectorStore vectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel embeddingModel) {
-
         int dimensions = PgVectorStore.OPENAI_EMBEDDING_DIMENSION_SIZE;
+
         if (genAIServiceUtil.isEmbeddingModelAvailable()) {
-            dimensions = embeddingModel.dimensions();
+            try {
+                dimensions = embeddingModel.dimensions();
+                logger.info("Using embedding model dimensions: {}", dimensions);
+            } catch (Exception e) {
+                logger.warn("Could not determine embedding dimensions, using default: {}",
+                        PgVectorStore.OPENAI_EMBEDDING_DIMENSION_SIZE);
+                dimensions = PgVectorStore.OPENAI_EMBEDDING_DIMENSION_SIZE;
+            }
+        } else {
+            logger.info("No embedding model configured, using default dimensions: {}", dimensions);
         }
-        logger.info("Embedding dimensions: {}", dimensions);
 
         return PgVectorStore.builder(jdbcTemplate, embeddingModel)
                 .dimensions(dimensions)
@@ -48,7 +56,6 @@ public class VectorStoreConfiguration {
                 .schemaName("public")
                 .vectorTableName("vector_store")
                 .maxDocumentBatchSize(10000)
-                .initializeSchema(true)
                 .build();
     }
 

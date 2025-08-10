@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 /**
  * Service for detecting and getting information about GenAI services.
+ * Updated to apply the same defaults as SpringAIManualConfiguration when API key is available.
  */
 @Service
 public class GenAIService {
@@ -24,6 +25,10 @@ public class GenAIService {
 
     public static final String CHAT_MODEL = "spring.ai.openai.chat.options.model";
     public static final String EMBEDDING_MODEL = "spring.ai.openai.embedding.options.model";
+
+    // Default model names that match SpringAIManualConfiguration
+    private static final String DEFAULT_CHAT_MODEL = "gpt-4o-mini";
+    private static final String DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small";
 
     private final Environment environment;
     private final CfEnv cfEnv;
@@ -37,12 +42,84 @@ public class GenAIService {
         return environment.getProperty(EMBEDDING_MODEL) != null;
     }
 
+    /**
+     * Gets the embedding model name. Applies defaults when API key is available
+     * but model not specified, otherwise returns empty for graceful degradation.
+     */
     public String getEmbeddingModelName() {
-        return Objects.requireNonNullElse(environment.getProperty(EMBEDDING_MODEL), "");
+        String model = environment.getProperty(EMBEDDING_MODEL);
+
+        // If explicitly configured, return it
+        if (model != null && !model.isEmpty()) {
+            return model;
+        }
+
+        // If not configured but we have an API key, apply default (same as manual config)
+        if (hasApiKey()) {
+            logger.debug("No embedding model configured but API key available, using default: {}", DEFAULT_EMBEDDING_MODEL);
+            return DEFAULT_EMBEDDING_MODEL;
+        }
+
+        // No API key - graceful degradation
+        return "";
     }
 
+    /**
+     * Gets the chat model name. Applies defaults when API key is available
+     * but model not specified, otherwise returns empty for graceful degradation.
+     */
     public String getChatModelName() {
-        return Objects.requireNonNullElse(environment.getProperty(CHAT_MODEL), "");
+        String model = environment.getProperty(CHAT_MODEL);
+
+        // If explicitly configured, return it
+        if (model != null && !model.isEmpty()) {
+            return model;
+        }
+
+        // If not configured but we have an API key, apply default (same as manual config)
+        if (hasApiKey()) {
+            logger.debug("No chat model configured but API key available, using default: {}", DEFAULT_CHAT_MODEL);
+            return DEFAULT_CHAT_MODEL;
+        }
+
+        // No API key - graceful degradation
+        return "";
+    }
+
+    /**
+     * Checks if a chat model is explicitly configured via properties.
+     */
+    public boolean isChatModelExplicitlyConfigured() {
+        String model = environment.getProperty(CHAT_MODEL);
+        return model != null && !model.isEmpty();
+    }
+
+    /**
+     * Checks if an embedding model is explicitly configured via properties.
+     */
+    public boolean isEmbeddingModelExplicitlyConfigured() {
+        String model = environment.getProperty(EMBEDDING_MODEL);
+        return model != null && !model.isEmpty();
+    }
+
+    /**
+     * Checks if any OpenAI API key is configured.
+     * Uses the same priority logic as SpringAIManualConfiguration.
+     */
+    private boolean hasApiKey() {
+        // Check in order: specific chat key, specific embedding key, general key
+        String key = environment.getProperty("spring.ai.openai.chat.api-key");
+        if (key != null && !key.isEmpty()) {
+            return true;
+        }
+
+        key = environment.getProperty("spring.ai.openai.embedding.api-key");
+        if (key != null && !key.isEmpty()) {
+            return true;
+        }
+
+        key = environment.getProperty("spring.ai.openai.api-key");
+        return key != null && !key.isEmpty();
     }
 
     public List<String> getMcpServiceNames() {
