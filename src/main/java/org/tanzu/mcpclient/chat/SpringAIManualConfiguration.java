@@ -33,9 +33,6 @@ import java.util.Objects;
  * Manual Spring AI configuration that supports mixed configurations:
  * - GenaiLocator for some models (new Tanzu Platform 10.2+ format)
  * - Property-based configuration for other models (traditional format)
- *
- * Each model type (chat, embedding) is handled independently, allowing for flexible
- * combinations of GenaiLocator and property-based models.
  */
 @Configuration
 public class SpringAIManualConfiguration {
@@ -81,27 +78,18 @@ public class SpringAIManualConfiguration {
                 .build();
     }
 
-    /**
-     * Creates RetryTemplate bean if not already available
-     */
     @Bean
     @ConditionalOnMissingBean
     public RetryTemplate retryTemplate() {
         return RetryUtils.DEFAULT_RETRY_TEMPLATE;
     }
 
-    /**
-     * Creates ObservationRegistry bean if not already available
-     */
     @Bean
     @ConditionalOnMissingBean
     public ObservationRegistry observationRegistry() {
         return ObservationRegistry.NOOP;
     }
 
-    /**
-     * Creates ToolCallingManager bean if not already available
-     */
     @Bean
     @ConditionalOnMissingBean
     public ToolCallingManager toolCallingManager() {

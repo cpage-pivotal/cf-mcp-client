@@ -15,9 +15,6 @@ import java.util.stream.Collectors;
 
 /**
  * Service for detecting and getting information about GenAI services.
- * Updated to support mixed configurations where some models come from GenaiLocator
- * and others from traditional property-based configuration.
- *
  * This service handles each model type (chat, embedding) independently to support
  * flexible deployment scenarios.
  */
@@ -53,7 +50,6 @@ public class GenAIService {
 
     /**
      * Checks if an embedding model is available from any source.
-     * Checks both GenaiLocator and properties independently.
      */
     public boolean isEmbeddingModelAvailable() {
         // Check GenaiLocator first
@@ -68,7 +64,6 @@ public class GenAIService {
 
     /**
      * Checks if a chat model is available from any source.
-     * Checks both GenaiLocator and properties independently.
      */
     public boolean isChatModelAvailable() {
         // Check GenaiLocator first
@@ -81,17 +76,13 @@ public class GenAIService {
         return model != null && !model.isEmpty();
     }
 
-    /**
-     * Gets the embedding model name.
-     * Independent resolution: tries GenaiLocator first, then properties, then empty.
-     */
     public String getEmbeddingModelName() {
         // Priority 1: GenaiLocator (if available and has embedding models)
         if (genaiLocator != null) {
             try {
                 List<String> embeddingModels = genaiLocator.getModelNamesByCapability("EMBEDDING");
                 if (embeddingModels != null && !embeddingModels.isEmpty()) {
-                    String firstModel = embeddingModels.get(0);
+                    String firstModel = embeddingModels.getFirst();
                     logger.debug("Using first available embedding model from GenaiLocator: {}", firstModel);
                     return firstModel;
                 }
@@ -111,17 +102,13 @@ public class GenAIService {
         return "";
     }
 
-    /**
-     * Gets the chat model name.
-     * Independent resolution: tries GenaiLocator first, then properties, then empty.
-     */
     public String getChatModelName() {
         // Priority 1: GenaiLocator (if available and has chat models)
         if (genaiLocator != null) {
             try {
                 List<String> chatModels = genaiLocator.getModelNamesByCapability("CHAT");
                 if (chatModels != null && !chatModels.isEmpty()) {
-                    String firstModel = chatModels.get(0);
+                    String firstModel = chatModels.getFirst();
                     logger.debug("Using first available chat model from GenaiLocator: {}", firstModel);
                     return firstModel;
                 }
@@ -288,79 +275,5 @@ public class GenAIService {
     public boolean hasMcpServiceUrl(CfService service) {
         CfCredentials credentials = service.getCredentials();
         return credentials != null && credentials.getString(MCP_SERVICE_URL) != null;
-    }
-
-    /**
-     * Logs the current configuration state for debugging.
-     * Updated to show mixed configuration scenarios.
-     */
-    public void logConfigurationState() {
-        logger.info("=== GenAI Configuration State (Mixed Configuration Support) ===");
-        logger.info("GenaiLocator Available: {}", genaiLocator != null);
-
-        // Chat model analysis
-        logger.info("Chat Model Configuration:");
-        logger.info("  - Available from GenaiLocator: {}", isChatModelAvailableFromLocator());
-        logger.info("  - Available from Properties: {}", isChatModelExplicitlyConfigured());
-        logger.info("  - Final Chat Model: '{}' (source: {})", getChatModelName(), determineChatModelSource());
-
-        // Embedding model analysis
-        logger.info("Embedding Model Configuration:");
-        logger.info("  - Available from GenaiLocator: {}", isEmbeddingModelAvailableFromLocator());
-        logger.info("  - Available from Properties: {}", isEmbeddingModelExplicitlyConfigured());
-        logger.info("  - Final Embedding Model: '{}' (source: {})", getEmbeddingModelName(), determineEmbeddingModelSource());
-
-        // Property-based configuration details
-        logger.info("Property-based Configuration:");
-        logger.info("  - API Key Available: {}", hasApiKey());
-        logger.info("  - Chat Model Property: '{}'", environment.getProperty(CHAT_MODEL, ""));
-        logger.info("  - Embedding Model Property: '{}'", environment.getProperty(EMBEDDING_MODEL, ""));
-
-        // GenaiLocator details
-        if (genaiLocator != null) {
-            try {
-                List<String> chatModels = genaiLocator.getModelNamesByCapability("CHAT");
-                List<String> embeddingModels = genaiLocator.getModelNamesByCapability("EMBEDDING");
-                logger.info("GenaiLocator Models:");
-                logger.info("  - Chat models: {}", chatModels != null ? chatModels : "[]");
-                logger.info("  - Embedding models: {}", embeddingModels != null ? embeddingModels : "[]");
-            } catch (Exception e) {
-                logger.debug("Could not retrieve model lists from GenaiLocator: {}", e.getMessage());
-            }
-        }
-
-        // MCP configuration
-        logger.info("MCP Configuration:");
-        logger.info("  - URLs from CF Services: {}", getMcpServiceUrls());
-        logger.info("  - URLs from GenaiLocator: {}", getMcpServiceUrlsFromLocator());
-        logger.info("  - All MCP URLs: {}", getAllMcpServiceUrls());
-
-        logger.info("=== End Configuration State ===");
-    }
-
-    /**
-     * Determines the source of the chat model for logging purposes.
-     */
-    private String determineChatModelSource() {
-        if (isChatModelAvailableFromLocator()) {
-            return "GenaiLocator";
-        } else if (isChatModelExplicitlyConfigured()) {
-            return "Properties";
-        } else {
-            return "None";
-        }
-    }
-
-    /**
-     * Determines the source of the embedding model for logging purposes.
-     */
-    private String determineEmbeddingModelSource() {
-        if (isEmbeddingModelAvailableFromLocator()) {
-            return "GenaiLocator";
-        } else if (isEmbeddingModelExplicitlyConfigured()) {
-            return "Properties";
-        } else {
-            return "None";
-        }
     }
 }
