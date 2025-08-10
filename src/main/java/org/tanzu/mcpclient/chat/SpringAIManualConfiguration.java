@@ -30,11 +30,12 @@ import org.tanzu.mcpclient.util.GenAIService;
 import java.util.Objects;
 
 /**
- * Manual Spring AI configuration that supports both traditional property-based configuration
- * and the new GenaiLocator-based configuration for Tanzu Platform 10.2+.
+ * Manual Spring AI configuration that supports mixed configurations:
+ * - GenaiLocator for some models (new Tanzu Platform 10.2+ format)
+ * - Property-based configuration for other models (traditional format)
  *
- * When GenaiLocator is available, it takes precedence and provides properly configured models.
- * Falls back to property-based configuration when GenaiLocator is not available.
+ * Each model type (chat, embedding) is handled independently, allowing for flexible
+ * combinations of GenaiLocator and property-based models.
  */
 @Configuration
 public class SpringAIManualConfiguration {
@@ -49,39 +50,28 @@ public class SpringAIManualConfiguration {
         this.genaiLocator = genaiLocator;
 
         if (genaiLocator != null) {
-            logger.info("GenaiLocator available - will use locator-provided models");
+            logger.info("GenaiLocator available - will use for models when available, with property-based fallback");
         } else {
-            logger.info("GenaiLocator not available - using property-based model configuration");
+            logger.info("GenaiLocator not available - using property-based model configuration only");
         }
     }
 
     /**
-     * Creates OpenAI API client only when using property-based configuration.
-     * When GenaiLocator is available, models are created by the locator itself.
+     * Creates OpenAI API client for property-based models.
+     * This is used when models need to be created from traditional property configuration.
      */
     @Bean
     @ConditionalOnMissingBean
     public OpenAiApi openAiApi() {
-        // If GenaiLocator is available, we don't need a centralized OpenAiApi
-        // because the locator creates its own APIs for each model
-        if (genaiLocator != null) {
-            logger.debug("GenaiLocator available - creating minimal OpenAiApi bean for compatibility");
-            // Create a minimal API client for compatibility, but it won't be used
-            return OpenAiApi.builder()
-                    .apiKey("not-used-with-genai-locator")
-                    .baseUrl("https://api.openai.com") // Default URL
-                    .build();
-        }
-
         String apiKey = getApiKey();
         String baseUrl = getBaseUrl();
 
-        logger.debug("Creating OpenAiApi with baseUrl={}, hasApiKey={}",
+        logger.debug("Creating OpenAiApi for property-based models with baseUrl={}, hasApiKey={}",
                 baseUrl, apiKey != null && !apiKey.isEmpty());
 
         // Only create functional API client if we have proper credentials
-        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("placeholder")) {
-            logger.warn("No valid API key found for OpenAI models - models will be non-functional");
+        if (apiKey == null || apiKey.isEmpty()) {
+            logger.warn("No valid API key found for property-based OpenAI models - models will be non-functional");
             apiKey = "no-api-key-configured"; // Avoid the "placeholder" that triggers specific OpenAI error
         }
 
@@ -131,35 +121,68 @@ public class SpringAIManualConfiguration {
     }
 
     /**
-     * Creates ChatModel bean with proper priority handling.
-     * Uses GenaiLocator if available, otherwise falls back to property-based configuration.
+     * Creates ChatModel bean with independent model resolution.
+     * Tries GenaiLocator first, then falls back to property-based configuration.
      */
     @Bean
     @ConditionalOnMissingBean
     public ChatModel chatModel(OpenAiApi openAiApi, RetryTemplate retryTemplate,
                                ObservationRegistry observationRegistry, ToolCallingManager toolCallingManager) {
 
-        // Priority 1: Use GenaiLocator if available and has chat models
+        // Priority 1: Try GenaiLocator if available
         if (genaiLocator != null) {
             try {
                 ChatModel locatorModel = genaiLocator.getFirstAvailableChatModel();
-                logger.info("Using ChatModel from GenaiLocator");
+                logger.info("Using ChatModel from GenaiLocator: {}", locatorModel.getClass().getSimpleName());
                 return locatorModel;
             } catch (Exception e) {
-                logger.warn("Failed to get ChatModel from GenaiLocator, falling back to property-based configuration: {}",
+                logger.debug("No chat model available from GenaiLocator, falling back to property-based configuration: {}",
                         e.getMessage());
             }
         }
 
         // Priority 2: Use property-based configuration
+        return createPropertyBasedChatModel(openAiApi, retryTemplate, observationRegistry, toolCallingManager);
+    }
+
+    /**
+     * Creates EmbeddingModel bean with independent model resolution.
+     * Tries GenaiLocator first, then falls back to property-based configuration.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public EmbeddingModel embeddingModel(OpenAiApi openAiApi, RetryTemplate retryTemplate) {
+
+        // Priority 1: Try GenaiLocator if available
+        if (genaiLocator != null) {
+            try {
+                EmbeddingModel locatorModel = genaiLocator.getFirstAvailableEmbeddingModel();
+                logger.info("Using EmbeddingModel from GenaiLocator: {}", locatorModel.getClass().getSimpleName());
+                return locatorModel;
+            } catch (Exception e) {
+                logger.debug("No embedding model available from GenaiLocator, falling back to property-based configuration: {}",
+                        e.getMessage());
+            }
+        }
+
+        // Priority 2: Use property-based configuration
+        return createPropertyBasedEmbeddingModel(openAiApi, retryTemplate);
+    }
+
+    /**
+     * Creates a property-based ChatModel using traditional Spring AI configuration.
+     */
+    private ChatModel createPropertyBasedChatModel(OpenAiApi openAiApi, RetryTemplate retryTemplate,
+                                                   ObservationRegistry observationRegistry, ToolCallingManager toolCallingManager) {
         String model = getChatModel();
 
         if (model == null || model.isEmpty()) {
-            logger.warn("No chat model configured - creating non-functional ChatModel bean");
+            logger.warn("No chat model configured in properties - creating non-functional ChatModel bean");
             model = "no-model-configured";
+        } else {
+            logger.info("Creating property-based ChatModel with model='{}', apiKey exists={}",
+                    model, hasValidApiKey());
         }
-
-        logger.debug("Creating property-based ChatModel with model='{}'", model);
 
         OpenAiChatOptions options = OpenAiChatOptions.builder()
                 .model(model)
@@ -170,34 +193,18 @@ public class SpringAIManualConfiguration {
     }
 
     /**
-     * Creates EmbeddingModel bean with proper priority handling.
-     * Uses GenaiLocator if available, otherwise falls back to property-based configuration.
+     * Creates a property-based EmbeddingModel using traditional Spring AI configuration.
      */
-    @Bean
-    @ConditionalOnMissingBean
-    public EmbeddingModel embeddingModel(OpenAiApi openAiApi, RetryTemplate retryTemplate) {
-
-        // Priority 1: Use GenaiLocator if available and has embedding models
-        if (genaiLocator != null) {
-            try {
-                EmbeddingModel locatorModel = genaiLocator.getFirstAvailableEmbeddingModel();
-                logger.info("Using EmbeddingModel from GenaiLocator");
-                return locatorModel;
-            } catch (Exception e) {
-                logger.warn("Failed to get EmbeddingModel from GenaiLocator, falling back to property-based configuration: {}",
-                        e.getMessage());
-            }
-        }
-
-        // Priority 2: Use property-based configuration
+    private EmbeddingModel createPropertyBasedEmbeddingModel(OpenAiApi openAiApi, RetryTemplate retryTemplate) {
         String model = getEmbeddingModel();
 
         if (model == null || model.isEmpty()) {
-            logger.warn("No embedding model configured - creating non-functional EmbeddingModel bean");
+            logger.warn("No embedding model configured in properties - creating non-functional EmbeddingModel bean");
             model = "no-model-configured";
+        } else {
+            logger.info("Creating property-based EmbeddingModel with model='{}', apiKey exists={}",
+                    model, hasValidApiKey());
         }
-
-        logger.debug("Creating property-based EmbeddingModel with model='{}'", model);
 
         OpenAiEmbeddingOptions options = OpenAiEmbeddingOptions.builder()
                 .model(model)
@@ -212,40 +219,73 @@ public class SpringAIManualConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public ChatClient.Builder chatClientBuilder(ChatModel chatModel) {
-        logger.debug("Creating ChatClient.Builder");
+        logger.debug("Creating ChatClient.Builder with ChatModel: {}", chatModel.getClass().getSimpleName());
         return ChatClient.builder(chatModel);
     }
 
-    // Helper methods that mirror GenAIService logic
+    // Helper methods that mirror GenAIService logic for property-based configuration
     private String getApiKey() {
+        // Check in order of precedence for different model types
         String key = environment.getProperty("spring.ai.openai.chat.api-key");
-        if (key == null || key.isEmpty()) {
-            key = environment.getProperty("spring.ai.openai.embedding.api-key");
+        if (key != null && !key.isEmpty()) {
+            logger.debug("Found chat-specific API key");
+            return key;
         }
-        if (key == null || key.isEmpty()) {
-            key = environment.getProperty("spring.ai.openai.api-key");
+
+        key = environment.getProperty("spring.ai.openai.embedding.api-key");
+        if (key != null && !key.isEmpty()) {
+            logger.debug("Found embedding-specific API key");
+            return key;
         }
-        return key;
+
+        key = environment.getProperty("spring.ai.openai.api-key");
+        if (key != null && !key.isEmpty()) {
+            logger.debug("Found general OpenAI API key");
+            return key;
+        }
+
+        logger.debug("No API key found in properties");
+        return null;
     }
 
     private String getBaseUrl() {
+        // Check in order of precedence for different model types
         String url = environment.getProperty("spring.ai.openai.chat.base-url");
-        if (url == null || url.isEmpty()) {
-            url = environment.getProperty("spring.ai.openai.embedding.base-url");
+        if (url != null && !url.isEmpty()) {
+            logger.debug("Found chat-specific base URL: {}", url);
+            return url;
         }
-        if (url == null || url.isEmpty()) {
-            url = environment.getProperty("spring.ai.openai.base-url", "https://api.openai.com");
+
+        url = environment.getProperty("spring.ai.openai.embedding.base-url");
+        if (url != null && !url.isEmpty()) {
+            logger.debug("Found embedding-specific base URL: {}", url);
+            return url;
         }
-        return url;
+
+        url = environment.getProperty("spring.ai.openai.base-url");
+        if (url != null && !url.isEmpty()) {
+            logger.debug("Found general OpenAI base URL: {}", url);
+            return url;
+        }
+
+        logger.debug("No base URL found in properties, using default");
+        return "https://api.openai.com";
     }
 
     private String getChatModel() {
-        return Objects.requireNonNullElse(
-                environment.getProperty(GenAIService.CHAT_MODEL), "");
+        String model = environment.getProperty(GenAIService.CHAT_MODEL);
+        logger.debug("Chat model from properties: '{}'", model);
+        return Objects.requireNonNullElse(model, "");
     }
 
     private String getEmbeddingModel() {
-        return Objects.requireNonNullElse(
-                environment.getProperty(GenAIService.EMBEDDING_MODEL), "");
+        String model = environment.getProperty(GenAIService.EMBEDDING_MODEL);
+        logger.debug("Embedding model from properties: '{}'", model);
+        return Objects.requireNonNullElse(model, "");
+    }
+
+    private boolean hasValidApiKey() {
+        String apiKey = getApiKey();
+        return apiKey != null && !apiKey.isEmpty() && !apiKey.equals("no-api-key-configured");
     }
 }
