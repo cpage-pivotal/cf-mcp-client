@@ -33,6 +33,7 @@ import java.util.Objects;
  * - Application starts successfully without models
  * - Beans are created but may be non-functional
  * - Validation occurs at service level, not configuration level
+ * - NO DEFAULT MODELS are applied - empty configuration means no models
  */
 @Configuration
 public class SpringAIManualConfiguration {
@@ -115,10 +116,10 @@ public class SpringAIManualConfiguration {
                                ObservationRegistry observationRegistry, ToolCallingManager toolCallingManager) {
         String model = getChatModel();
 
-        logger.debug("Creating ChatModel with model={}", model);
+        logger.debug("Creating ChatModel with model='{}'", model);
 
         OpenAiChatOptions options = OpenAiChatOptions.builder()
-                .model(model.isEmpty() ? "gpt-4o-mini" : model)
+                .model(model) // Use configured model directly, may be empty
                 .temperature(0.8)
                 .build();
 
@@ -135,10 +136,10 @@ public class SpringAIManualConfiguration {
     public EmbeddingModel embeddingModel(OpenAiApi openAiApi, RetryTemplate retryTemplate) {
         String model = getEmbeddingModel();
 
-        logger.debug("Creating EmbeddingModel with model={}", model);
+        logger.debug("Creating EmbeddingModel with model='{}'", model);
 
         OpenAiEmbeddingOptions options = OpenAiEmbeddingOptions.builder()
-                .model(model.isEmpty() ? "text-embedding-3-small" : model)
+                .model(model) // Use configured model directly, may be empty
                 .build();
 
         // Use the correct constructor signature for Spring AI 1.0.1
@@ -157,7 +158,6 @@ public class SpringAIManualConfiguration {
 
     // Helper methods that mirror GenAIService logic
     private String getApiKey() {
-        // Check in order: specific chat key, specific embedding key, general key
         String key = environment.getProperty("spring.ai.openai.chat.api-key");
         if (key == null || key.isEmpty()) {
             key = environment.getProperty("spring.ai.openai.embedding.api-key");
@@ -169,7 +169,6 @@ public class SpringAIManualConfiguration {
     }
 
     private String getBaseUrl() {
-        // Check in order: specific chat URL, specific embedding URL, general URL
         String url = environment.getProperty("spring.ai.openai.chat.base-url");
         if (url == null || url.isEmpty()) {
             url = environment.getProperty("spring.ai.openai.embedding.base-url");
