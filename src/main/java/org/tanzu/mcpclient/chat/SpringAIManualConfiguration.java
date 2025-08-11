@@ -10,13 +10,8 @@ import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.model.tool.ToolCallingManager;
-import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.ai.openai.OpenAiEmbeddingModel;
-import org.springframework.ai.openai.OpenAiEmbeddingOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.ai.retry.RetryUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -25,14 +20,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.lang.Nullable;
 import org.springframework.retry.support.RetryTemplate;
+import org.tanzu.mcpclient.util.CompositeModelProvider;
 import org.tanzu.mcpclient.util.GenAIService;
 import org.tanzu.mcpclient.util.ModelConfig;
-import org.tanzu.mcpclient.util.ModelSource;
 
 /**
- * Manual Spring AI configuration that supports mixed configurations:
- * - GenaiLocator for some models (new Tanzu Platform 10.2+ format)
- * - Property-based configuration for other models (traditional format)
+ * Simplified Spring AI configuration using the Model Provider Abstraction pattern.
+ * Uses CompositeModelProvider to orchestrate multiple model sources with priority-based selection.
+ * This replaces the previous mixed configuration approach with a cleaner provider pattern.
  */
 @Configuration
 public class SpringAIManualConfiguration {
@@ -42,17 +37,19 @@ public class SpringAIManualConfiguration {
     private final Environment environment;
     private final GenaiLocator genaiLocator; // Optional - may be null
     private final GenAIService genAIService;
+    private final CompositeModelProvider compositeModelProvider;
 
-    public SpringAIManualConfiguration(Environment environment, @Nullable GenaiLocator genaiLocator, GenAIService genAIService) {
+    public SpringAIManualConfiguration(Environment environment, 
+                                     @Nullable GenaiLocator genaiLocator, 
+                                     GenAIService genAIService,
+                                     CompositeModelProvider compositeModelProvider) {
         this.environment = environment;
         this.genaiLocator = genaiLocator;
         this.genAIService = genAIService;
+        this.compositeModelProvider = compositeModelProvider;
 
-        if (genaiLocator != null) {
-            logger.info("GenaiLocator available - will use for models when available, with property-based fallback");
-        } else {
-            logger.info("GenaiLocator not available - using property-based model configuration only");
-        }
+        logger.info("SpringAIManualConfiguration initialized with CompositeModelProvider");
+        logger.info("Available model providers: {}", compositeModelProvider.getProviderInfo());
     }
 
     /**
@@ -123,102 +120,35 @@ public class SpringAIManualConfiguration {
     }
 
     /**
-     * Creates ChatModel bean using consolidated GenAIService configuration.
+     * Creates ChatModel bean using CompositeModelProvider for provider abstraction.
      */
     @Bean
     @ConditionalOnMissingBean
-    public ChatModel chatModel(OpenAiApi openAiApi, RetryTemplate retryTemplate,
-                               ObservationRegistry observationRegistry, ToolCallingManager toolCallingManager) {
-
-        ModelConfig config = genAIService.getChatModelConfig();
-
-        // Priority 1: Use GenaiLocator model if available
-        if (config.isFromGenaiLocator() && genaiLocator != null) {
-            try {
-                ChatModel locatorModel = genaiLocator.getFirstAvailableChatModel();
-                logger.info("Using ChatModel from GenaiLocator: {}", locatorModel.getClass().getSimpleName());
-                return locatorModel;
-            } catch (Exception e) {
-                logger.debug("No chat model available from GenaiLocator, falling back to property-based configuration: {}",
-                        e.getMessage());
-                // Fall through to property-based creation with default config
-                config = ModelConfig.createDefault(ModelSource.PROPERTIES);
-            }
+    public ChatModel chatModel() {
+        try {
+            ChatModel chatModel = compositeModelProvider.getChatModel();
+            logger.info("ChatModel successfully provided by CompositeModelProvider");
+            return chatModel;
+        } catch (IllegalStateException e) {
+            logger.error("Failed to obtain ChatModel from any provider: {}", e.getMessage());
+            throw e;
         }
-
-        // Priority 2: Use property-based configuration
-        return createPropertyBasedChatModel(config, openAiApi, retryTemplate, observationRegistry, toolCallingManager);
     }
 
     /**
-     * Creates EmbeddingModel bean using consolidated GenAIService configuration.
+     * Creates EmbeddingModel bean using CompositeModelProvider for provider abstraction.
      */
     @Bean
     @ConditionalOnMissingBean
-    public EmbeddingModel embeddingModel(OpenAiApi openAiApi, RetryTemplate retryTemplate) {
-
-        ModelConfig config = genAIService.getEmbeddingModelConfig();
-
-        // Priority 1: Use GenaiLocator model if available
-        if (config.isFromGenaiLocator() && genaiLocator != null) {
-            try {
-                EmbeddingModel locatorModel = genaiLocator.getFirstAvailableEmbeddingModel();
-                logger.info("Using EmbeddingModel from GenaiLocator: {}", locatorModel.getClass().getSimpleName());
-                return locatorModel;
-            } catch (Exception e) {
-                logger.debug("No embedding model available from GenaiLocator, falling back to property-based configuration: {}",
-                        e.getMessage());
-                // Fall through to property-based creation with default config
-                config = ModelConfig.createDefault(ModelSource.PROPERTIES);
-            }
+    public EmbeddingModel embeddingModel() {
+        try {
+            EmbeddingModel embeddingModel = compositeModelProvider.getEmbeddingModel();
+            logger.info("EmbeddingModel successfully provided by CompositeModelProvider");
+            return embeddingModel;
+        } catch (IllegalStateException e) {
+            logger.error("Failed to obtain EmbeddingModel from any provider: {}", e.getMessage());
+            throw e;
         }
-
-        // Priority 2: Use property-based configuration
-        return createPropertyBasedEmbeddingModel(config, openAiApi, retryTemplate);
-    }
-
-    /**
-     * Creates a property-based ChatModel using traditional Spring AI configuration.
-     */
-    private ChatModel createPropertyBasedChatModel(ModelConfig config, OpenAiApi openAiApi, RetryTemplate retryTemplate,
-                                                   ObservationRegistry observationRegistry, ToolCallingManager toolCallingManager) {
-        String model = config.modelName();
-
-        if (model == null || model.isEmpty()) {
-            logger.warn("No chat model configured in properties - creating non-functional ChatModel bean");
-            model = "no-model-configured";
-        } else {
-            logger.info("Creating property-based ChatModel with model='{}', apiKey exists={}",
-                    model, config.isValid());
-        }
-
-        OpenAiChatOptions options = OpenAiChatOptions.builder()
-                .model(model)
-                .temperature(0.8)
-                .build();
-
-        return new OpenAiChatModel(openAiApi, options, toolCallingManager, retryTemplate, observationRegistry);
-    }
-
-    /**
-     * Creates a property-based EmbeddingModel using traditional Spring AI configuration.
-     */
-    private EmbeddingModel createPropertyBasedEmbeddingModel(ModelConfig config, OpenAiApi openAiApi, RetryTemplate retryTemplate) {
-        String model = config.modelName();
-
-        if (model == null || model.isEmpty()) {
-            logger.warn("No embedding model configured in properties - creating non-functional EmbeddingModel bean");
-            model = "no-model-configured";
-        } else {
-            logger.info("Creating property-based EmbeddingModel with model='{}', apiKey exists={}",
-                    model, config.isValid());
-        }
-
-        OpenAiEmbeddingOptions options = OpenAiEmbeddingOptions.builder()
-                .model(model)
-                .build();
-
-        return new OpenAiEmbeddingModel(openAiApi, MetadataMode.EMBED, options, retryTemplate);
     }
 
     /**
