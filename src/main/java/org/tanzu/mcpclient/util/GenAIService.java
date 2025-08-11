@@ -179,18 +179,112 @@ public class GenAIService {
      * Uses the same priority logic as SpringAIManualConfiguration.
      */
     public boolean hasApiKey() {
+        String key = getApiKey();
+        return key != null && !key.isEmpty();
+    }
+
+    /**
+     * Gets the complete chat model configuration including API key, base URL, and source.
+     * This consolidates all chat model resolution logic in one place.
+     */
+    public ModelConfig getChatModelConfig() {
+        // Priority 1: GenaiLocator (if available and has chat models)
+        if (isChatModelAvailableFromLocator()) {
+            String modelName = getChatModelName(); // This already handles GenaiLocator priority
+            return new ModelConfig(
+                modelName,
+                "managed-by-genai-locator", // GenaiLocator handles auth
+                "managed-by-genai-locator", // GenaiLocator handles base URL
+                ModelSource.GENAI_LOCATOR
+            );
+        }
+
+        // Priority 2: Property-based configuration
+        String modelName = environment.getProperty(CHAT_MODEL);
+        String apiKey = getApiKey();
+        String baseUrl = getBaseUrl();
+
+        if (modelName == null || modelName.isEmpty()) {
+            logger.debug("No chat model configured from any source, returning default config");
+            return ModelConfig.createDefault(ModelSource.PROPERTIES);
+        }
+
+        return new ModelConfig(modelName, apiKey, baseUrl, ModelSource.PROPERTIES);
+    }
+
+    /**
+     * Gets the complete embedding model configuration including API key, base URL, and source.
+     * This consolidates all embedding model resolution logic in one place.
+     */
+    public ModelConfig getEmbeddingModelConfig() {
+        // Priority 1: GenaiLocator (if available and has embedding models)
+        if (isEmbeddingModelAvailableFromLocator()) {
+            String modelName = getEmbeddingModelName(); // This already handles GenaiLocator priority
+            return new ModelConfig(
+                modelName,
+                "managed-by-genai-locator", // GenaiLocator handles auth
+                "managed-by-genai-locator", // GenaiLocator handles base URL
+                ModelSource.GENAI_LOCATOR
+            );
+        }
+
+        // Priority 2: Property-based configuration
+        String modelName = environment.getProperty(EMBEDDING_MODEL);
+        String apiKey = getApiKey();
+        String baseUrl = getBaseUrl();
+
+        if (modelName == null || modelName.isEmpty()) {
+            logger.debug("No embedding model configured from any source, returning default config");
+            return ModelConfig.createDefault(ModelSource.PROPERTIES);
+        }
+
+        return new ModelConfig(modelName, apiKey, baseUrl, ModelSource.PROPERTIES);
+    }
+
+    /**
+     * Gets API key from properties with same priority logic as SpringAIManualConfiguration.
+     */
+    private String getApiKey() {
+        // Check in order of precedence for different model types
         String key = environment.getProperty("spring.ai.openai.chat.api-key");
         if (key != null && !key.isEmpty()) {
-            return true;
+            return key;
         }
 
         key = environment.getProperty("spring.ai.openai.embedding.api-key");
         if (key != null && !key.isEmpty()) {
-            return true;
+            return key;
         }
 
         key = environment.getProperty("spring.ai.openai.api-key");
-        return key != null && !key.isEmpty();
+        if (key != null && !key.isEmpty()) {
+            return key;
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets base URL from properties with same priority logic as SpringAIManualConfiguration.
+     */
+    private String getBaseUrl() {
+        // Check in order of precedence for different model types
+        String url = environment.getProperty("spring.ai.openai.chat.base-url");
+        if (url != null && !url.isEmpty()) {
+            return url;
+        }
+
+        url = environment.getProperty("spring.ai.openai.embedding.base-url");
+        if (url != null && !url.isEmpty()) {
+            return url;
+        }
+
+        url = environment.getProperty("spring.ai.openai.base-url");
+        if (url != null && !url.isEmpty()) {
+            return url;
+        }
+
+        return "https://api.openai.com";
     }
 
 }
