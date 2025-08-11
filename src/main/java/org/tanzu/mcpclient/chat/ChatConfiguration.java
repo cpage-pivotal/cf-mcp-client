@@ -11,6 +11,7 @@ import org.springframework.context.event.EventListener;
 import org.tanzu.mcpclient.metrics.Agent;
 import org.tanzu.mcpclient.util.GenAIService;
 import org.tanzu.mcpclient.util.McpClientFactory;
+import org.tanzu.mcpclient.util.McpDiscoveryService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +34,11 @@ public class ChatConfiguration {
     // Map to store server names by URL for use by other services
     private final Map<String, String> serverNamesByUrl = new ConcurrentHashMap<>();
 
-    public ChatConfiguration(GenAIService genAIService, ApplicationEventPublisher eventPublisher, McpClientFactory mcpClientFactory) {
+    public ChatConfiguration(GenAIService genAIService, McpDiscoveryService mcpDiscoveryService,
+                             ApplicationEventPublisher eventPublisher, McpClientFactory mcpClientFactory) {
         this.chatModel = genAIService.getChatModelName();
-        this.agentServices = genAIService.getMcpServiceNames();
-        // Updated to use combined MCP service URLs from both GenaiLocator and CF services
-        this.allMcpServiceURLs = genAIService.getAllMcpServiceUrls();
+        this.agentServices = mcpDiscoveryService.getMcpServiceNames();
+        this.allMcpServiceURLs = mcpDiscoveryService.getAllMcpServiceUrls();
         this.eventPublisher = eventPublisher;
         this.mcpClientFactory = mcpClientFactory;
         this.agentsWithHealth = new ArrayList<>();
