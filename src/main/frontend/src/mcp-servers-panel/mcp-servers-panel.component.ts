@@ -11,7 +11,7 @@ import { SidenavService } from '../services/sidenav.service';
 import { ToolsModalComponent } from '../tools-modal/tools-modal.component';
 
 @Component({
-  selector: 'app-agents-panel',
+  selector: 'app-mcp-servers-panel',
   standalone: true,
   imports: [
     CommonModule,
@@ -22,10 +22,10 @@ import { ToolsModalComponent } from '../tools-modal/tools-modal.component';
     MatListModule,
     MatDialogModule
   ],
-  templateUrl: './agents-panel.component.html',
-  styleUrl: './agents-panel.component.css'
+  templateUrl: './mcp-servers-panel.component.html',
+  styleUrl: './mcp-servers-panel.component.css'
 })
-export class AgentsPanelComponent implements AfterViewInit {
+export class McpServersPanelComponent implements AfterViewInit {
   @Input() metrics!: PlatformMetrics;
 
   @ViewChild('sidenav') sidenav!: MatSidenav;
@@ -36,36 +36,36 @@ export class AgentsPanelComponent implements AfterViewInit {
   ) {}
 
   ngAfterViewInit(): void {
-    this.sidenavService.registerSidenav('agents', this.sidenav);
+    this.sidenavService.registerSidenav('mcp-servers', this.sidenav);
   }
 
   toggleSidenav() {
-    this.sidenavService.toggle('agents');
+    this.sidenavService.toggle('mcp-servers');
   }
 
-  get sortedAgents(): Agent[] {
+  get sortedMcpServers(): Agent[] {
     if (!this.metrics || !this.metrics.agents) {
       return [];
     }
 
-    const healthyAgents = this.metrics.agents
+    const healthyServers = this.metrics.agents
       .filter(agent => agent.healthy)
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    const unhealthyAgents = this.metrics.agents
+    const unhealthyServers = this.metrics.agents
       .filter(agent => !agent.healthy)
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    return [...healthyAgents, ...unhealthyAgents];
+    return [...healthyServers, ...unhealthyServers];
   }
 
-  showAgentTools(agent: Agent): void {
-    if (!agent.healthy) {
+  showMcpServerTools(mcpServer: Agent): void {
+    if (!mcpServer.healthy) {
       return;
     }
 
     this.dialog.open(ToolsModalComponent, {
-      data: { agent },
+      data: { agent: mcpServer },
       width: '90vw', // Responsive width
       maxWidth: '600px', // Maximum width constraint
       maxHeight: '80vh',

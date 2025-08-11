@@ -1,4 +1,4 @@
-.agents-container {
+.mcp-servers-container {
   position: relative;
 }
 
@@ -97,11 +97,11 @@ mat-sidenav {
   font-size: 14px;
 }
 
-.agents-list {
+.mcp-servers-list {
   margin-bottom: 16px;
 }
 
-.agents-list h3 {
+.mcp-servers-list h3 {
   margin-top: 0;
   margin-bottom: 16px;
   font-size: 16px;
@@ -121,12 +121,12 @@ mat-sidenav-content {
 }
 
 /* Fix for button alignment in list items */
-.agents-list mat-list-item {
+.mcp-servers-list mat-list-item {
   position: relative;
 }
 
 /* Override matListItemIcon positioning for buttons */
-.agents-list mat-list-item button[matListItemIcon] {
+.mcp-servers-list mat-list-item button[matListItemIcon] {
   position: static !important;
   margin-right: 16px !important;
   transform: none !important;

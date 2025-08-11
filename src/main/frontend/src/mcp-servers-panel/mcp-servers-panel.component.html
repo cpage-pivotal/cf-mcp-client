@@ -1,5 +1,5 @@
-<div class="agents-container">
-  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="Agents" matTooltipPosition="left">
+<div class="mcp-servers-container">
+  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="MCP Servers" matTooltipPosition="left">
     <mat-icon>api</mat-icon>
   </button>
 </div>
@@ -7,7 +7,7 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true">
     <div class="sidenav-header">
-      <h2>Agents</h2>
+      <h2>MCP Servers</h2>
       <button mat-icon-button (click)="sidenav.close()">
         <mat-icon>close</mat-icon>
       </button>
@@ -23,20 +23,20 @@
       </div>
     </div>
 
-    <div class="agents-list" *ngIf="metrics.agents.length > 0">
-      <h3>Available Agents</h3>
+    <div class="mcp-servers-list" *ngIf="metrics.agents.length > 0">
+      <h3>Available MCP Servers</h3>
       <mat-list>
-        <mat-list-item *ngFor="let agent of sortedAgents">
+        <mat-list-item *ngFor="let mcpServer of sortedMcpServers">
           <button mat-icon-button matListItemIcon
-                  [ngClass]="{'status-red': !agent.healthy, 'status-green': agent.healthy}"
-                  [disabled]="!agent.healthy"
-                  (click)="showAgentTools(agent)"
-                  [matTooltip]="agent.healthy ? 'Click to view tools' : 'Agent is unhealthy'">
-            <mat-icon>{{ agent.healthy ? 'info' : 'close' }}</mat-icon>
+                  [ngClass]="{'status-red': !mcpServer.healthy, 'status-green': mcpServer.healthy}"
+                  [disabled]="!mcpServer.healthy"
+                  (click)="showMcpServerTools(mcpServer)"
+                  [matTooltip]="mcpServer.healthy ? 'Click to view tools' : 'MCP Server is unhealthy'">
+            <mat-icon>{{ mcpServer.healthy ? 'info' : 'close' }}</mat-icon>
           </button>
-          <div matListItemTitle>{{ agent.serverName || agent.name }}</div>
+          <div matListItemTitle>{{ mcpServer.serverName || mcpServer.name }}</div>
           <div matListItemLine>
-            {{ agent.healthy ? (agent.tools.length + ' tools available') : 'Unhealthy' }}
+            {{ mcpServer.healthy ? (mcpServer.tools.length + ' tools available') : 'Unhealthy' }}
           </div>
         </mat-list-item>
       </mat-list>

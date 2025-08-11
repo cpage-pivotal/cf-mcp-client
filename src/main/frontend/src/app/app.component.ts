@@ -3,7 +3,7 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
 import { DocumentPanelComponent } from '../document-panel/document-panel.component';
-import { AgentsPanelComponent } from '../agents-panel/agents-panel.component';
+import { McpServersPanelComponent } from '../mcp-servers-panel/mcp-servers-panel.component';
 import { ChatboxComponent } from '../chatbox/chatbox.component';
 import { HttpClient } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
@@ -13,7 +13,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, AgentsPanelComponent, ChatboxComponent],
+  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, ChatboxComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

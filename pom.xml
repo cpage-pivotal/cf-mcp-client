@@ -71,12 +71,12 @@
 			<groupId>org.springframework.session</groupId>
 			<artifactId>spring-session-jdbc</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>io.pivotal.cfenv</groupId>
 			<artifactId>java-cfenv-boot</artifactId>
 			<version>3.5.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>io.pivotal.cfenv</groupId>
 			<artifactId>java-cfenv-boot-tanzu-genai</artifactId>
