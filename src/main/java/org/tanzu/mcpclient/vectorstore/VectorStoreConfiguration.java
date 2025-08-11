@@ -11,7 +11,7 @@ import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.tanzu.mcpclient.util.GenAIService;
+import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import org.springframework.lang.NonNull;
 
 import java.util.List;
@@ -24,10 +24,10 @@ public class VectorStoreConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(VectorStoreConfiguration.class);
 
-    private final GenAIService genAIServiceUtil;
+    private final ModelDiscoveryService modelDiscoveryService;
 
-    public VectorStoreConfiguration(GenAIService genAIService) {
-        this.genAIServiceUtil = genAIService;
+    public VectorStoreConfiguration(ModelDiscoveryService modelDiscoveryService) {
+        this.modelDiscoveryService = modelDiscoveryService;
     }
 
     @Bean
@@ -35,7 +35,7 @@ public class VectorStoreConfiguration {
     public VectorStore vectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel embeddingModel) {
         int dimensions = PgVectorStore.OPENAI_EMBEDDING_DIMENSION_SIZE;
 
-        if (genAIServiceUtil.isEmbeddingModelAvailable()) {
+        if (modelDiscoveryService.isEmbeddingModelAvailable()) {
             try {
                 // Try to get dimensions from the embedding model
                 dimensions = embeddingModel.dimensions();
@@ -46,7 +46,7 @@ public class VectorStoreConfiguration {
                 dimensions = PgVectorStore.OPENAI_EMBEDDING_DIMENSION_SIZE;
 
                 // Log additional context for GenaiLocator case
-                if (genAIServiceUtil.isEmbeddingModelAvailableFromLocator()) {
+                if (modelDiscoveryService.isEmbeddingModelAvailableFromLocator()) {
                     logger.info("Embedding model is available from GenaiLocator");
                 }
             }

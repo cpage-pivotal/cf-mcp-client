@@ -1,10 +1,10 @@
-package org.tanzu.mcpclient.util;
+package org.tanzu.mcpclient.model;
 
 /**
  * Configuration information for AI models including source tracking.
  * This encapsulates all the information needed to create and configure AI models.
  */
-public record ModelConfig(
+public record GenaiModel(
         String modelName,
         String apiKey,
         String baseUrl,
@@ -35,8 +35,8 @@ public record ModelConfig(
     /**
      * Creates a ModelConfig with default "no-model-configured" values for invalid configurations.
      */
-    public static ModelConfig createDefault(ModelSource source) {
-        return new ModelConfig(
+    public static GenaiModel createDefault(ModelSource source) {
+        return new GenaiModel(
             "no-model-configured",
             "no-api-key-configured",
             "https://api.openai.com",

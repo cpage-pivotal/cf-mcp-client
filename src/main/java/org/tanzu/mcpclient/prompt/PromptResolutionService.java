@@ -5,7 +5,7 @@ import io.modelcontextprotocol.spec.McpSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.tanzu.mcpclient.util.McpClientFactory;
+import org.tanzu.mcpclient.mcp.McpClientFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;

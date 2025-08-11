@@ -1,4 +1,4 @@
-package org.tanzu.mcpclient.util;
+package org.tanzu.mcpclient.mcp;
 
 import io.pivotal.cfenv.boot.genai.GenaiLocator;
 import io.pivotal.cfenv.core.CfCredentials;

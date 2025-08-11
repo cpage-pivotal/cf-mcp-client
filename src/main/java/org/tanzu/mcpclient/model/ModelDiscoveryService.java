@@ -1,4 +1,4 @@
-package org.tanzu.mcpclient.util;
+package org.tanzu.mcpclient.model;
 
 import io.pivotal.cfenv.boot.genai.GenaiLocator;
 import org.slf4j.Logger;
@@ -15,8 +15,8 @@ import java.util.List;
  * flexible deployment scenarios.
  */
 @Service
-public class GenAIService {
-    private static final Logger logger = LoggerFactory.getLogger(GenAIService.class);
+public class ModelDiscoveryService {
+    private static final Logger logger = LoggerFactory.getLogger(ModelDiscoveryService.class);
 
     // Constants
     public static final String CHAT_MODEL = "spring.ai.openai.chat.options.model";
@@ -30,7 +30,7 @@ public class GenAIService {
      * GenaiLocator is only available when GenaiLocatorAutoConfiguration is active
      * (i.e., when genai.locator.config-url property is set by CfGenaiProcessor).
      */
-    public GenAIService(Environment environment, @Nullable GenaiLocator genaiLocator) {
+    public ModelDiscoveryService(Environment environment, @Nullable GenaiLocator genaiLocator) {
         this.environment = environment;
         this.genaiLocator = genaiLocator;
 
@@ -176,7 +176,7 @@ public class GenAIService {
 
     /**
      * Checks if any OpenAI API key is configured for property-based models.
-     * Uses the same priority logic as SpringAIManualConfiguration.
+     * Uses the same priority logic as SpringAIConfiguration.
      */
     public boolean hasApiKey() {
         String key = getApiKey();
@@ -187,11 +187,11 @@ public class GenAIService {
      * Gets the complete chat model configuration including API key, base URL, and source.
      * This consolidates all chat model resolution logic in one place.
      */
-    public ModelConfig getChatModelConfig() {
+    public GenaiModel getChatModelConfig() {
         // Priority 1: GenaiLocator (if available and has chat models)
         if (isChatModelAvailableFromLocator()) {
             String modelName = getChatModelName(); // This already handles GenaiLocator priority
-            return new ModelConfig(
+            return new GenaiModel(
                 modelName,
                 "managed-by-genai-locator", // GenaiLocator handles auth
                 "managed-by-genai-locator", // GenaiLocator handles base URL
@@ -206,21 +206,21 @@ public class GenAIService {
 
         if (modelName == null || modelName.isEmpty()) {
             logger.debug("No chat model configured from any source, returning default config");
-            return ModelConfig.createDefault(ModelSource.PROPERTIES);
+            return GenaiModel.createDefault(ModelSource.PROPERTIES);
         }
 
-        return new ModelConfig(modelName, apiKey, baseUrl, ModelSource.PROPERTIES);
+        return new GenaiModel(modelName, apiKey, baseUrl, ModelSource.PROPERTIES);
     }
 
     /**
      * Gets the complete embedding model configuration including API key, base URL, and source.
      * This consolidates all embedding model resolution logic in one place.
      */
-    public ModelConfig getEmbeddingModelConfig() {
+    public GenaiModel getEmbeddingModelConfig() {
         // Priority 1: GenaiLocator (if available and has embedding models)
         if (isEmbeddingModelAvailableFromLocator()) {
             String modelName = getEmbeddingModelName(); // This already handles GenaiLocator priority
-            return new ModelConfig(
+            return new GenaiModel(
                 modelName,
                 "managed-by-genai-locator", // GenaiLocator handles auth
                 "managed-by-genai-locator", // GenaiLocator handles base URL
@@ -235,14 +235,14 @@ public class GenAIService {
 
         if (modelName == null || modelName.isEmpty()) {
             logger.debug("No embedding model configured from any source, returning default config");
-            return ModelConfig.createDefault(ModelSource.PROPERTIES);
+            return GenaiModel.createDefault(ModelSource.PROPERTIES);
         }
 
-        return new ModelConfig(modelName, apiKey, baseUrl, ModelSource.PROPERTIES);
+        return new GenaiModel(modelName, apiKey, baseUrl, ModelSource.PROPERTIES);
     }
 
     /**
-     * Gets API key from properties with same priority logic as SpringAIManualConfiguration.
+     * Gets API key from properties with same priority logic as SpringAIConfiguration.
      */
     private String getApiKey() {
         // Check in order of precedence for different model types
@@ -265,7 +265,7 @@ public class GenAIService {
     }
 
     /**
-     * Gets base URL from properties with same priority logic as SpringAIManualConfiguration.
+     * Gets base URL from properties with same priority logic as SpringAIConfiguration.
      */
     private String getBaseUrl() {
         // Check in order of precedence for different model types

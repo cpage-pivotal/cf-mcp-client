@@ -1,4 +1,4 @@
-package org.tanzu.mcpclient.util;
+package org.tanzu.mcpclient.model;
 
 import io.micrometer.observation.ObservationRegistry;
 import org.slf4j.Logger;
@@ -27,18 +27,18 @@ public class PropertyBasedModelProvider implements ModelProvider {
     private static final Logger logger = LoggerFactory.getLogger(PropertyBasedModelProvider.class);
     private static final int PRIORITY = 10; // Lower priority than GenaiLocator
     
-    private final GenAIService genAIService;
+    private final ModelDiscoveryService modelDiscoveryService;
     private final OpenAiApi openAiApi;
     private final RetryTemplate retryTemplate;
     private final ObservationRegistry observationRegistry;
     private final ToolCallingManager toolCallingManager;
     
-    public PropertyBasedModelProvider(GenAIService genAIService, 
+    public PropertyBasedModelProvider(ModelDiscoveryService modelDiscoveryService, 
                                     OpenAiApi openAiApi, 
                                     RetryTemplate retryTemplate,
                                     ObservationRegistry observationRegistry, 
                                     ToolCallingManager toolCallingManager) {
-        this.genAIService = genAIService;
+        this.modelDiscoveryService = modelDiscoveryService;
         this.openAiApi = openAiApi;
         this.retryTemplate = retryTemplate;
         this.observationRegistry = observationRegistry;
@@ -47,7 +47,7 @@ public class PropertyBasedModelProvider implements ModelProvider {
     
     @Override
     public Optional<ChatModel> getChatModel() {
-        ModelConfig config = genAIService.getChatModelConfig();
+        GenaiModel config = modelDiscoveryService.getChatModelConfig();
         
         // Only provide model if it's from properties (not GenaiLocator)
         if (config.isFromGenaiLocator()) {
@@ -67,7 +67,7 @@ public class PropertyBasedModelProvider implements ModelProvider {
     
     @Override
     public Optional<EmbeddingModel> getEmbeddingModel() {
-        ModelConfig config = genAIService.getEmbeddingModelConfig();
+        GenaiModel config = modelDiscoveryService.getEmbeddingModelConfig();
         
         // Only provide model if it's from properties (not GenaiLocator)
         if (config.isFromGenaiLocator()) {
@@ -98,7 +98,7 @@ public class PropertyBasedModelProvider implements ModelProvider {
     /**
      * Creates a property-based ChatModel using traditional Spring AI configuration.
      */
-    private ChatModel createPropertyBasedChatModel(ModelConfig config) {
+    private ChatModel createPropertyBasedChatModel(GenaiModel config) {
         String model = config.modelName();
         
         if (model == null || model.isEmpty()) {
@@ -120,7 +120,7 @@ public class PropertyBasedModelProvider implements ModelProvider {
     /**
      * Creates a property-based EmbeddingModel using traditional Spring AI configuration.
      */
-    private EmbeddingModel createPropertyBasedEmbeddingModel(ModelConfig config) {
+    private EmbeddingModel createPropertyBasedEmbeddingModel(GenaiModel config) {
         String model = config.modelName();
         
         if (model == null || model.isEmpty()) {

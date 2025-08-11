@@ -1,4 +1,4 @@
-package org.tanzu.mcpclient.util;
+package org.tanzu.mcpclient.model;
 
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;

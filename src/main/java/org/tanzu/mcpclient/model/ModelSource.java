@@ -1,4 +1,4 @@
-package org.tanzu.mcpclient.util;
+package org.tanzu.mcpclient.model;
 
 /**
  * Enum representing the source of model configuration.

@@ -1,4 +1,4 @@
-package org.tanzu.mcpclient.util;
+package org.tanzu.mcpclient.model;
 
 import io.pivotal.cfenv.boot.genai.GenaiLocator;
 import org.slf4j.Logger;
