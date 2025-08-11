@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.util.unit.DataSize;
-import org.tanzu.mcpclient.util.GenAIService;
+import org.tanzu.mcpclient.model.ModelDiscoveryService;
 
 @Configuration
 public class DocumentConfiguration {
@@ -22,9 +22,9 @@ public class DocumentConfiguration {
     private final String vectorDatabase;
     private final ApplicationEventPublisher eventPublisher;
 
-    public DocumentConfiguration(VectorStore vectorStore, GenAIService genAIServiceUtil,
+    public DocumentConfiguration(VectorStore vectorStore, ModelDiscoveryService modelDiscoveryService,
                                  ApplicationEventPublisher eventPublisher) {
-        this.embeddingModel = genAIServiceUtil.getEmbeddingModelName();
+        this.embeddingModel = modelDiscoveryService.getEmbeddingModelName();
         this.vectorDatabase = vectorStore.getName();
         this.eventPublisher = eventPublisher;
     }

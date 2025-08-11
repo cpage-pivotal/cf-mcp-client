@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.tanzu.mcpclient.metrics.Agent;
-import org.tanzu.mcpclient.util.GenAIService;
-import org.tanzu.mcpclient.util.McpClientFactory;
-import org.tanzu.mcpclient.util.McpDiscoveryService;
+import org.tanzu.mcpclient.model.ModelDiscoveryService;
+import org.tanzu.mcpclient.mcp.McpClientFactory;
+import org.tanzu.mcpclient.mcp.McpDiscoveryService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +34,9 @@ public class ChatConfiguration {
     // Map to store server names by URL for use by other services
     private final Map<String, String> serverNamesByUrl = new ConcurrentHashMap<>();
 
-    public ChatConfiguration(GenAIService genAIService, McpDiscoveryService mcpDiscoveryService,
+    public ChatConfiguration(ModelDiscoveryService modelDiscoveryService, McpDiscoveryService mcpDiscoveryService,
                              ApplicationEventPublisher eventPublisher, McpClientFactory mcpClientFactory) {
-        this.chatModel = genAIService.getChatModelName();
+        this.chatModel = modelDiscoveryService.getChatModelName();
         this.agentServices = mcpDiscoveryService.getMcpServiceNames();
         this.allMcpServiceURLs = mcpDiscoveryService.getAllMcpServiceUrls();
         this.eventPublisher = eventPublisher;

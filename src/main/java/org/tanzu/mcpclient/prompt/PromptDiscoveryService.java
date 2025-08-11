@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.tanzu.mcpclient.chat.ChatConfigurationEvent;
-import org.tanzu.mcpclient.util.McpClientFactory;
+import org.tanzu.mcpclient.mcp.McpClientFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

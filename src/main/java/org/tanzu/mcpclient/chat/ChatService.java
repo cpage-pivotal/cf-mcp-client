@@ -15,8 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.tanzu.mcpclient.document.DocumentService;
-import org.tanzu.mcpclient.util.GenAIService;
-import org.tanzu.mcpclient.util.McpClientFactory;
+import org.tanzu.mcpclient.model.ModelDiscoveryService;
+import org.tanzu.mcpclient.mcp.McpClientFactory;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
@@ -33,24 +33,24 @@ public class ChatService {
     private final VectorStore vectorStore;
     private final List<String> mcpServiceURLs;
     private final McpClientFactory mcpClientFactory;
-    private final GenAIService genAIService; // Add this field
+    private final ModelDiscoveryService modelDiscoveryService; // Add this field
 
     @Value("classpath:/prompts/system-prompt.st")
     private Resource systemChatPrompt;
 
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
-    // Update constructor to inject GenAIService
+    // Update constructor to inject ModelDiscoveryService
     public ChatService(ChatClient.Builder chatClientBuilder, BaseChatMemoryAdvisor memoryAdvisor,
                        List<String> mcpServiceURLs, VectorStore vectorStore, McpClientFactory mcpClientFactory,
-                       GenAIService genAIService) {
+                       ModelDiscoveryService modelDiscoveryService) {
         chatClientBuilder = chatClientBuilder.defaultAdvisors(memoryAdvisor, new SimpleLoggerAdvisor());
         this.chatClient = chatClientBuilder.build();
 
         this.mcpServiceURLs = mcpServiceURLs;
         this.vectorStore = vectorStore;
         this.mcpClientFactory = mcpClientFactory;
-        this.genAIService = genAIService; // Store the service
+        this.modelDiscoveryService = modelDiscoveryService; // Store the service
     }
 
     /**
@@ -58,7 +58,7 @@ public class ChatService {
      */
     public Flux<String> chatStream(String chat, String conversationId, List<String> documentIds) {
         // Validate chat model availability - this is where graceful degradation happens
-        String chatModel = genAIService.getChatModelName();
+        String chatModel = modelDiscoveryService.getChatModelName();
         if (chatModel == null || chatModel.isEmpty()) {
             logger.warn("Chat request attempted but no chat model configured");
             return Flux.error(new IllegalStateException("No chat model configured"));

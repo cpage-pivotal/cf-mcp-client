@@ -11,7 +11,7 @@ import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.tanzu.mcpclient.util.GenAIService;
+import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import org.tanzu.mcpclient.vectorstore.VectorStoreConfiguration;
 
 @Configuration
@@ -19,16 +19,16 @@ public class MemoryConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(MemoryConfiguration.class);
 
-    private final GenAIService genAIServiceUtil;
+    private final ModelDiscoveryService modelDiscoveryService;
 
-    public MemoryConfiguration(GenAIService genAIService) {
-        this.genAIServiceUtil = genAIService;
+    public MemoryConfiguration(ModelDiscoveryService modelDiscoveryService) {
+        this.modelDiscoveryService = modelDiscoveryService;
     }
 
     @Bean
     public BaseChatMemoryAdvisor chatMemoryAdvisor(ChatMemoryRepository chatMemoryRepository, VectorStore vectorStore) {
         BaseChatMemoryAdvisor memoryAdvisor;
-        if (vectorStore instanceof VectorStoreConfiguration.EmptyVectorStore || !genAIServiceUtil.isEmbeddingModelAvailable()) {
+        if (vectorStore instanceof VectorStoreConfiguration.EmptyVectorStore || !modelDiscoveryService.isEmbeddingModelAvailable()) {
             ChatMemory chatMemory = MessageWindowChatMemory.builder()
                     .chatMemoryRepository(chatMemoryRepository)
                     .maxMessages(20)

@@ -1,4 +1,4 @@
-package org.tanzu.mcpclient.util;
+package org.tanzu.mcpclient.mcp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.client.McpClient;
