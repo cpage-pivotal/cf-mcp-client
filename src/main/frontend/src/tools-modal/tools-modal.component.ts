@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
-import { Agent } from '../app/app.component';
+import { McpServer } from '../app/app.component';
 
 @Component({
   selector: 'app-tools-modal',
@@ -24,7 +24,7 @@ import { Agent } from '../app/app.component';
 export class ToolsModalComponent {
   constructor(
     public dialogRef: MatDialogRef<ToolsModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { agent: Agent }
+    @Inject(MAT_DIALOG_DATA) public data: { mcpServer: McpServer }
   ) {}
 
   onClose(): void {

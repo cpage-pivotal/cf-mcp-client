@@ -1,25 +1,25 @@
 package org.tanzu.mcpclient.chat;
 
 import org.springframework.context.ApplicationEvent;
-import org.tanzu.mcpclient.metrics.Agent;
+import org.tanzu.mcpclient.metrics.McpServer;
 
 import java.util.List;
 
 public class ChatConfigurationEvent extends ApplicationEvent {
     private final String chatModel;
-    private final List<Agent> agentsWithHealth;
+    private final List<McpServer> mcpServersWithHealth;
 
-    public ChatConfigurationEvent(Object source, String chatModel, List<Agent> agentsWithHealth) {
+    public ChatConfigurationEvent(Object source, String chatModel, List<McpServer> mcpServersWithHealth) {
         super(source);
         this.chatModel = chatModel;
-        this.agentsWithHealth = agentsWithHealth;
+        this.mcpServersWithHealth = mcpServersWithHealth;
     }
 
     public String getChatModel() {
         return chatModel;
     }
 
-    public List<Agent> getAgentsWithHealth() {
-        return agentsWithHealth;
+    public List<McpServer> getMcpServersWithHealth() {
+        return mcpServersWithHealth;
     }
 }

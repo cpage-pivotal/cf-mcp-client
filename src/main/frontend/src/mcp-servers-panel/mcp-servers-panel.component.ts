@@ -6,12 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatListModule } from '@angular/material/list';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { PlatformMetrics, Agent } from '../app/app.component';
+import { PlatformMetrics, McpServer } from '../app/app.component';
 import { SidenavService } from '../services/sidenav.service';
 import { ToolsModalComponent } from '../tools-modal/tools-modal.component';
 
 @Component({
-  selector: 'app-agents-panel',
+  selector: 'app-mcp-servers-panel',
   standalone: true,
   imports: [
     CommonModule,
@@ -22,10 +22,10 @@ import { ToolsModalComponent } from '../tools-modal/tools-modal.component';
     MatListModule,
     MatDialogModule
   ],
-  templateUrl: './agents-panel.component.html',
-  styleUrl: './agents-panel.component.css'
+  templateUrl: './mcp-servers-panel.component.html',
+  styleUrl: './mcp-servers-panel.component.css'
 })
-export class AgentsPanelComponent implements AfterViewInit {
+export class McpServersPanelComponent implements AfterViewInit {
   @Input() metrics!: PlatformMetrics;
 
   @ViewChild('sidenav') sidenav!: MatSidenav;
@@ -36,36 +36,36 @@ export class AgentsPanelComponent implements AfterViewInit {
   ) {}
 
   ngAfterViewInit(): void {
-    this.sidenavService.registerSidenav('agents', this.sidenav);
+    this.sidenavService.registerSidenav('mcp-servers', this.sidenav);
   }
 
   toggleSidenav() {
-    this.sidenavService.toggle('agents');
+    this.sidenavService.toggle('mcp-servers');
   }
 
-  get sortedAgents(): Agent[] {
-    if (!this.metrics || !this.metrics.agents) {
+  get sortedMcpServers(): McpServer[] {
+    if (!this.metrics || !this.metrics.mcpServers) {
       return [];
     }
 
-    const healthyAgents = this.metrics.agents
-      .filter(agent => agent.healthy)
+    const healthyServers = this.metrics.mcpServers
+      .filter(server => server.healthy)
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    const unhealthyAgents = this.metrics.agents
-      .filter(agent => !agent.healthy)
+    const unhealthyServers = this.metrics.mcpServers
+      .filter(server => !server.healthy)
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    return [...healthyAgents, ...unhealthyAgents];
+    return [...healthyServers, ...unhealthyServers];
   }
 
-  showAgentTools(agent: Agent): void {
-    if (!agent.healthy) {
+  showMcpServerTools(mcpServer: McpServer): void {
+    if (!mcpServer.healthy) {
       return;
     }
 
     this.dialog.open(ToolsModalComponent, {
-      data: { agent },
+      data: { mcpServer: mcpServer },
       width: '90vw', // Responsive width
       maxWidth: '600px', // Maximum width constraint
       maxHeight: '80vh',
@@ -73,12 +73,12 @@ export class AgentsPanelComponent implements AfterViewInit {
     });
   }
   getOverallStatusClass(): string {
-    if (this.metrics.agents.length === 0) {
+    if (this.metrics.mcpServers.length === 0) {
       return 'status-red';
     }
 
-    const hasUnhealthy = this.metrics.agents.some(agent => !agent.healthy);
-    const hasHealthy = this.metrics.agents.some(agent => agent.healthy);
+    const hasUnhealthy = this.metrics.mcpServers.some(server => !server.healthy);
+    const hasHealthy = this.metrics.mcpServers.some(server => server.healthy);
 
     if (hasUnhealthy && hasHealthy) {
       return 'status-orange'; // Mixed health status
@@ -90,12 +90,12 @@ export class AgentsPanelComponent implements AfterViewInit {
   }
 
   getOverallStatusIcon(): string {
-    if (this.metrics.agents.length === 0) {
+    if (this.metrics.mcpServers.length === 0) {
       return 'error';
     }
 
-    const hasUnhealthy = this.metrics.agents.some(agent => !agent.healthy);
-    const hasHealthy = this.metrics.agents.some(agent => agent.healthy);
+    const hasUnhealthy = this.metrics.mcpServers.some(server => !server.healthy);
+    const hasHealthy = this.metrics.mcpServers.some(server => server.healthy);
 
     if (hasUnhealthy && hasHealthy) {
       return 'warning'; // Mixed health status
@@ -107,12 +107,12 @@ export class AgentsPanelComponent implements AfterViewInit {
   }
 
   getOverallStatusText(): string {
-    if (this.metrics.agents.length === 0) {
+    if (this.metrics.mcpServers.length === 0) {
       return 'Not Available';
     }
 
-    const healthyCount = this.metrics.agents.filter(agent => agent.healthy).length;
-    const totalCount = this.metrics.agents.length;
+    const healthyCount = this.metrics.mcpServers.filter(server => server.healthy).length;
+    const totalCount = this.metrics.mcpServers.length;
 
     if (healthyCount === totalCount) {
       return 'All Healthy';

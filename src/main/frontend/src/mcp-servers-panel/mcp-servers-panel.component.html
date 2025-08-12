@@ -1,0 +1,54 @@
+<div class="mcp-servers-container">
+  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="MCP Servers" matTooltipPosition="left">
+    <mat-icon>api</mat-icon>
+  </button>
+</div>
+
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true">
+    <div class="sidenav-header">
+      <h2>MCP Servers</h2>
+      <button mat-icon-button (click)="sidenav.close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="status-container">
+      <div class="status-row">
+        <span class="status-label">Status:</span>
+        <span class="status-indicator" [ngClass]="getOverallStatusClass()">
+          <mat-icon>{{ getOverallStatusIcon() }}</mat-icon>
+          <span class="status-text">{{ getOverallStatusText() }}</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="mcp-servers-list" *ngIf="metrics.mcpServers.length > 0">
+      <h3>Available MCP Servers</h3>
+      <mat-list>
+        <mat-list-item *ngFor="let mcpServer of sortedMcpServers">
+          <button mat-icon-button matListItemIcon
+                  [ngClass]="{'status-red': !mcpServer.healthy, 'status-green': mcpServer.healthy}"
+                  [disabled]="!mcpServer.healthy"
+                  (click)="showMcpServerTools(mcpServer)"
+                  [matTooltip]="mcpServer.healthy ? 'Click to view tools' : 'MCP Server is unhealthy'"
+                  matTooltipPosition="left">
+            <mat-icon>{{ mcpServer.healthy ? 'info' : 'close' }}</mat-icon>
+          </button>
+          <div matListItemTitle>{{ mcpServer.serverName || mcpServer.name }}</div>
+          <div matListItemLine>
+            {{ mcpServer.healthy ? (mcpServer.tools.length + ' tools available') : 'Unhealthy' }}
+          </div>
+        </mat-list-item>
+      </mat-list>
+    </div>
+
+    <div class="empty-state" *ngIf="metrics.mcpServers.length === 0">
+      None
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <!-- This is intentionally empty -->
+  </mat-sidenav-content>
+</mat-sidenav-container>

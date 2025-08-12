@@ -74,7 +74,7 @@ export class ChatboxComponent implements OnDestroy {
     chatModel: '',
     embeddingModel: '',
     vectorStoreName: '',
-    agents: [],
+    mcpServers: [],
     prompts: {
       totalPrompts: 0,
       serversWithPrompts: 0,
