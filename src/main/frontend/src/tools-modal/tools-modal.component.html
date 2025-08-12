@@ -1,19 +1,19 @@
 <div class="tools-modal">
   <div class="modal-header">
-    <h2 mat-dialog-title>{{ data.agent.serverName || data.agent.name }} - Available Tools</h2>
+    <h2 mat-dialog-title>{{ data.mcpServer.serverName || data.mcpServer.name }} - Available Tools</h2>
     <button mat-icon-button (click)="onClose()" class="close-button">
       <mat-icon>close</mat-icon>
     </button>
   </div>
 
   <mat-dialog-content class="modal-content">
-    <div *ngIf="data.agent.tools.length === 0" class="no-tools">
+    <div *ngIf="data.mcpServer.tools.length === 0" class="no-tools">
       <mat-icon class="no-tools-icon">info</mat-icon>
-      <p>This agent doesn't expose any tools.</p>
+      <p>This MCP server doesn't expose any tools.</p>
     </div>
 
-    <div *ngIf="data.agent.tools.length > 0" class="tools-list">
-      <mat-card *ngFor="let tool of data.agent.tools" class="tool-card">
+    <div *ngIf="data.mcpServer.tools.length > 0" class="tools-list">
+      <mat-card *ngFor="let tool of data.mcpServer.tools" class="tool-card">
         <mat-card-header>
           <mat-card-title class="tool-name">{{ tool.name }}</mat-card-title>
         </mat-card-header>

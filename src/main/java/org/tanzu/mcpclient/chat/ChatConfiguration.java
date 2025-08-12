@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.tanzu.mcpclient.metrics.Agent;
+import org.tanzu.mcpclient.metrics.McpServer;
 import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import org.tanzu.mcpclient.mcp.McpClientFactory;
 import org.tanzu.mcpclient.mcp.McpDiscoveryService;
@@ -26,7 +26,7 @@ public class ChatConfiguration {
     private final String chatModel;
     private final List<String> agentServices;
     private final List<String> allMcpServiceURLs;
-    private final List<Agent> agentsWithHealth;
+    private final List<McpServer> mcpServersWithHealth;
     private final List<String> healthyMcpServiceURLs;
     private final ApplicationEventPublisher eventPublisher;
     private final McpClientFactory mcpClientFactory;
@@ -41,7 +41,7 @@ public class ChatConfiguration {
         this.allMcpServiceURLs = mcpDiscoveryService.getAllMcpServiceUrls();
         this.eventPublisher = eventPublisher;
         this.mcpClientFactory = mcpClientFactory;
-        this.agentsWithHealth = new ArrayList<>();
+        this.mcpServersWithHealth = new ArrayList<>();
         this.healthyMcpServiceURLs = new ArrayList<>();
 
         if (!allMcpServiceURLs.isEmpty()) {
@@ -53,9 +53,9 @@ public class ChatConfiguration {
     public void publishConfigurationEvent() {
         testMcpServerHealth();
 
-        logger.debug("Publishing ChatConfigurationEvent: chatModel={}, agentsWithHealth={}",
-                chatModel, agentsWithHealth);
-        eventPublisher.publishEvent(new ChatConfigurationEvent(this, chatModel, agentsWithHealth));
+        logger.debug("Publishing ChatConfigurationEvent: chatModel={}, mcpServersWithHealth={}",
+                chatModel, mcpServersWithHealth);
+        eventPublisher.publishEvent(new ChatConfigurationEvent(this, chatModel, mcpServersWithHealth));
     }
 
     @Bean
@@ -73,7 +73,7 @@ public class ChatConfiguration {
      * Updated to handle MCP service URLs from both GenaiLocator and CF services.
      */
     private void testMcpServerHealth() {
-        agentsWithHealth.clear();
+        mcpServersWithHealth.clear();
         healthyMcpServiceURLs.clear();
         serverNamesByUrl.clear();
 
@@ -90,17 +90,17 @@ public class ChatConfiguration {
             String serviceName = serviceNames.get(i);
             String serviceUrl = allMcpServiceURLs.get(i);
 
-            Agent agent = testMcpServerHealthAndGetTools(serviceName, serviceUrl);
-            agentsWithHealth.add(agent);
+            McpServer mcpServer = testMcpServerHealthAndGetTools(serviceName, serviceUrl);
+            mcpServersWithHealth.add(mcpServer);
 
             // Only add healthy servers to the list used by ChatService
-            if (agent.healthy()) {
+            if (mcpServer.healthy()) {
                 healthyMcpServiceURLs.add(serviceUrl);
             }
         }
 
         int healthyCount = healthyMcpServiceURLs.size();
-        int totalCount = agentsWithHealth.size();
+        int totalCount = mcpServersWithHealth.size();
 
         logger.info("MCP Server health check completed. Healthy: {}, Unhealthy: {}",
                 healthyCount, totalCount - healthyCount);
@@ -159,10 +159,10 @@ public class ChatConfiguration {
     /**
      * Test the health of a single MCP server by attempting to initialize it and get its tools.
      */
-    private Agent testMcpServerHealthAndGetTools(String serviceName, String serviceUrl) {
+    private McpServer testMcpServerHealthAndGetTools(String serviceName, String serviceUrl) {
         logger.debug("Testing health of MCP server: {} at {}", serviceName, serviceUrl);
 
-        List<Agent.Tool> tools = new ArrayList<>();
+        List<McpServer.Tool> tools = new ArrayList<>();
         String serverName = serviceName; // Default to service name
 
         try {
@@ -189,11 +189,11 @@ public class ChatConfiguration {
                 var listToolsResult = client.listTools();
                 if (listToolsResult != null && listToolsResult.tools() != null) {
                     tools = listToolsResult.tools().stream()
-                            .map(tool -> new Agent.Tool(tool.name(), tool.description()))
+                            .map(tool -> new McpServer.Tool(tool.name(), tool.description()))
                             .toList();
                     logger.debug("Found {} tools for MCP server {}: {}",
                             tools.size(), serviceName,
-                            tools.stream().map(Agent.Tool::name).toList());
+                            tools.stream().map(McpServer.Tool::name).toList());
                 }
             } catch (Exception e) {
                 logger.warn("Failed to get tools for MCP server {} (server is healthy but tools unavailable): {}",
@@ -203,11 +203,11 @@ public class ChatConfiguration {
             // Clean up the test client
             client.closeGracefully();
 
-            return new Agent(serviceName, serverName, true, tools);
+            return new McpServer(serviceName, serverName, true, tools);
 
         } catch (Exception e) {
             logger.warn("MCP server {} at {} is unhealthy: {}", serviceName, serviceUrl, e.getMessage());
-            return new Agent(serviceName, serverName, false, List.of());
+            return new McpServer(serviceName, serverName, false, List.of());
         }
     }
 }

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Service that collects and provides platform metrics including models, agents, and prompts.
+ * Service that collects and provides platform metrics including models, MCP servers, and prompts.
  * This service listens to various configuration events and maintains current state
  * for monitoring and status display purposes.
  */
@@ -23,7 +23,7 @@ public class MetricsService {
     private static final Logger logger = LoggerFactory.getLogger(MetricsService.class);
 
     private String chatModel = "";
-    private List<Agent> agentsWithHealth = List.of();
+    private List<McpServer> mcpServersWithHealth = List.of();
     private String embeddingModel = "";
     private String vectorStoreName = "";
 
@@ -38,8 +38,8 @@ public class MetricsService {
     @EventListener
     public void handleChatConfigurationEvent(ChatConfigurationEvent event) {
         this.chatModel = event.getChatModel() != null ? event.getChatModel() : "";
-        this.agentsWithHealth = event.getAgentsWithHealth() != null ? event.getAgentsWithHealth() : List.of();
-        logger.debug("Updated chat metrics: model={}, agents={}", chatModel, agentsWithHealth.size());
+        this.mcpServersWithHealth = event.getMcpServersWithHealth() != null ? event.getMcpServersWithHealth() : List.of();
+        logger.debug("Updated chat metrics: model={}, mcpServers={}", chatModel, mcpServersWithHealth.size());
     }
 
     @EventListener
@@ -74,7 +74,7 @@ public class MetricsService {
                 this.chatModel,
                 this.embeddingModel,
                 this.vectorStoreName,
-                this.agentsWithHealth.toArray(new Agent[0]),
+                this.mcpServersWithHealth.toArray(new McpServer[0]),
                 promptMetrics
         );
     }
@@ -84,7 +84,7 @@ public class MetricsService {
             String chatModel,
             String embeddingModel,
             String vectorStoreName,
-            Agent[] agents,
+            McpServer[] mcpServers,
             PromptMetrics prompts
     ) {}
 

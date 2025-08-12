@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <div class="mcp-servers-list" *ngIf="metrics.agents.length > 0">
+    <div class="mcp-servers-list" *ngIf="metrics.mcpServers.length > 0">
       <h3>Available MCP Servers</h3>
       <mat-list>
         <mat-list-item *ngFor="let mcpServer of sortedMcpServers">
@@ -31,7 +31,8 @@
                   [ngClass]="{'status-red': !mcpServer.healthy, 'status-green': mcpServer.healthy}"
                   [disabled]="!mcpServer.healthy"
                   (click)="showMcpServerTools(mcpServer)"
-                  [matTooltip]="mcpServer.healthy ? 'Click to view tools' : 'MCP Server is unhealthy'">
+                  [matTooltip]="mcpServer.healthy ? 'Click to view tools' : 'MCP Server is unhealthy'"
+                  matTooltipPosition="left">
             <mat-icon>{{ mcpServer.healthy ? 'info' : 'close' }}</mat-icon>
           </button>
           <div matListItemTitle>{{ mcpServer.serverName || mcpServer.name }}</div>
@@ -42,7 +43,7 @@
       </mat-list>
     </div>
 
-    <div class="empty-state" *ngIf="metrics.agents.length === 0">
+    <div class="empty-state" *ngIf="metrics.mcpServers.length === 0">
       None
     </div>
   </mat-sidenav>

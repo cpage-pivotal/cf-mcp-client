@@ -27,7 +27,7 @@ export class AppComponent {
     chatModel: '',
     embeddingModel: '',
     vectorStoreName: '',
-    agents: [],
+    mcpServers: [],
     prompts: {
       totalPrompts: 0,
       serversWithPrompts: 0,
@@ -108,7 +108,7 @@ export interface Tool {
   description: string;
 }
 
-export interface Agent {
+export interface McpServer {
   name: string;
   serverName: string;
   healthy: boolean;
@@ -143,6 +143,6 @@ export interface PlatformMetrics {
   chatModel: string;
   embeddingModel: string;
   vectorStoreName: string;
-  agents: Agent[];
+  mcpServers: McpServer[];
   prompts: EnhancedPromptMetrics;
 }
