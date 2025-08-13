@@ -1,5 +1,6 @@
 import { Component, DestroyRef, Inject, inject, signal, effect } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
+import { MatButton } from '@angular/material/button';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
 import { DocumentPanelComponent } from '../document-panel/document-panel.component';
@@ -13,7 +14,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, ChatboxComponent],
+  imports: [MatToolbar, MatButton, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, ChatboxComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -36,9 +37,23 @@ export class AppComponent {
     }
   });
 
+  // Motivational messages functionality
+  private readonly _showingMotivation = signal<boolean>(false);
+  private readonly _motivationalMessage = signal<string>('');
+  
+  private readonly motivationalMessages = [
+    "You're crushing it today! 💪",
+    "Great things happen to those who code! ⭐",
+    "Your next breakthrough is just a commit away! 🚀",
+    "Debugging is just detective work with better snacks! 🔍",
+    "Every expert was once a beginner. Keep going! 🌟"
+  ];
+
   // Public readonly signals
   readonly currentDocumentIds = this._currentDocumentIds.asReadonly();
   readonly metrics = this._metrics.asReadonly();
+  readonly showingMotivation = this._showingMotivation.asReadonly();
+  readonly motivationalMessage = this._motivationalMessage.asReadonly();
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly httpClient = inject(HttpClient);
@@ -59,6 +74,21 @@ export class AppComponent {
   // Method to handle document selection from DocumentPanelComponent
   onDocumentIdsChanged(documentIds: string[]): void {
     this._currentDocumentIds.set([...documentIds]);
+  }
+
+  // Method to show random motivational message
+  showMotivation(): void {
+    const randomIndex = Math.floor(Math.random() * this.motivationalMessages.length);
+    const message = this.motivationalMessages[randomIndex];
+    
+    this._motivationalMessage.set(message);
+    this._showingMotivation.set(true);
+    
+    // Hide message after 3 seconds
+    setTimeout(() => {
+      this._showingMotivation.set(false);
+      this._motivationalMessage.set('');
+    }, 3000);
   }
 
   // Initialize metrics polling with improved error handling

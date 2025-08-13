@@ -2,6 +2,9 @@
   <mat-toolbar>
     <span>Tanzu Platform Chat</span>
     <span style="flex:1 1 auto"></span>
+    <button mat-raised-button color="primary" (click)="showMotivation()" [disabled]="showingMotivation()">
+      {{showingMotivation() ? motivationalMessage() : 'Motivate Me!'}}
+    </button>
   </mat-toolbar>
 
   <app-chat-panel
