@@ -28,18 +28,21 @@ public class PropertyBasedModelProvider implements ModelProvider {
     private static final int PRIORITY = 10; // Lower priority than GenaiLocator
     
     private final ModelDiscoveryService modelDiscoveryService;
-    private final OpenAiApi openAiApi;
+    private final OpenAiApi chatOpenAiApi;
+    private final OpenAiApi embeddingOpenAiApi;
     private final RetryTemplate retryTemplate;
     private final ObservationRegistry observationRegistry;
     private final ToolCallingManager toolCallingManager;
     
     public PropertyBasedModelProvider(ModelDiscoveryService modelDiscoveryService, 
-                                    OpenAiApi openAiApi, 
+                                    OpenAiApi chatOpenAiApi,
+                                    OpenAiApi embeddingOpenAiApi,
                                     RetryTemplate retryTemplate,
                                     ObservationRegistry observationRegistry, 
                                     ToolCallingManager toolCallingManager) {
         this.modelDiscoveryService = modelDiscoveryService;
-        this.openAiApi = openAiApi;
+        this.chatOpenAiApi = chatOpenAiApi;
+        this.embeddingOpenAiApi = embeddingOpenAiApi;
         this.retryTemplate = retryTemplate;
         this.observationRegistry = observationRegistry;
         this.toolCallingManager = toolCallingManager;
@@ -114,7 +117,7 @@ public class PropertyBasedModelProvider implements ModelProvider {
                 .temperature(0.8)
                 .build();
         
-        return new OpenAiChatModel(openAiApi, options, toolCallingManager, retryTemplate, observationRegistry);
+        return new OpenAiChatModel(chatOpenAiApi, options, toolCallingManager, retryTemplate, observationRegistry);
     }
     
     /**
@@ -135,6 +138,6 @@ public class PropertyBasedModelProvider implements ModelProvider {
                 .model(model)
                 .build();
         
-        return new OpenAiEmbeddingModel(openAiApi, MetadataMode.EMBED, options, retryTemplate);
+        return new OpenAiEmbeddingModel(embeddingOpenAiApi, MetadataMode.EMBED, options, retryTemplate);
     }
 }
