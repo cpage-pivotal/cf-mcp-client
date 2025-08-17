@@ -46,8 +46,8 @@ public class VectorStoreConfiguration {
                 dimensions = PgVectorStore.OPENAI_EMBEDDING_DIMENSION_SIZE;
 
                 // Log additional context for GenaiLocator case
-                if (modelDiscoveryService.isEmbeddingModelAvailableFromLocator()) {
-                    logger.info("Embedding model is available from GenaiLocator");
+                if (modelDiscoveryService.isEmbeddingModelAvailableFromLocators()) {
+                    logger.info("Embedding model is available from aggregated GenaiLocators");
                 }
             }
         } else {

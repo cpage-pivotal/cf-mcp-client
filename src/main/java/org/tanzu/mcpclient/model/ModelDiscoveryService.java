@@ -1,10 +1,8 @@
 package org.tanzu.mcpclient.model;
 
-import io.pivotal.cfenv.boot.genai.GenaiLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,7 +10,8 @@ import java.util.List;
 /**
  * Service for detecting and getting information about GenAI services.
  * This service handles each model type (chat, embedding) independently to support
- * flexible deployment scenarios.
+ * flexible deployment scenarios. Now supports multiple GenaiLocator instances
+ * through MultiGenaiLocatorAggregator.
  */
 @Service
 public class ModelDiscoveryService {
@@ -23,21 +22,21 @@ public class ModelDiscoveryService {
     public static final String EMBEDDING_MODEL = "spring.ai.openai.embedding.options.model";
 
     private final Environment environment;
-    private final GenaiLocator genaiLocator; // Optional - may be null
+    private final MultiGenaiLocatorAggregator aggregator;
 
     /**
-     * Constructor with optional GenaiLocator injection.
-     * GenaiLocator is only available when GenaiLocatorAutoConfiguration is active
-     * (i.e., when genai.locator.config-url property is set by CfGenaiProcessor).
+     * Constructor with MultiGenaiLocatorAggregator injection.
+     * The aggregator provides access to all available GenaiLocator instances.
      */
-    public ModelDiscoveryService(Environment environment, @Nullable GenaiLocator genaiLocator) {
+    public ModelDiscoveryService(Environment environment, MultiGenaiLocatorAggregator aggregator) {
         this.environment = environment;
-        this.genaiLocator = genaiLocator;
+        this.aggregator = aggregator;
 
-        if (genaiLocator != null) {
-            logger.debug("GenaiLocator bean detected - will check for dynamic model discovery");
+        if (aggregator.hasAnyLocators()) {
+            logger.debug("MultiGenaiLocatorAggregator detected with {} locators - will check for dynamic model discovery", 
+                    aggregator.getLocatorCount());
         } else {
-            logger.debug("No GenaiLocator bean available - using property-based configuration only");
+            logger.debug("No GenaiLocator instances available - using property-based configuration only");
         }
     }
 
@@ -45,8 +44,8 @@ public class ModelDiscoveryService {
      * Checks if an embedding model is available from any source.
      */
     public boolean isEmbeddingModelAvailable() {
-        // Check GenaiLocator first
-        if (isEmbeddingModelAvailableFromLocator()) {
+        // Check aggregated GenaiLocators first
+        if (isEmbeddingModelAvailableFromLocators()) {
             return true;
         }
 
@@ -59,8 +58,8 @@ public class ModelDiscoveryService {
      * Checks if a chat model is available from any source.
      */
     public boolean isChatModelAvailable() {
-        // Check GenaiLocator first
-        if (isChatModelAvailableFromLocator()) {
+        // Check aggregated GenaiLocators first
+        if (isChatModelAvailableFromLocators()) {
             return true;
         }
 
@@ -70,17 +69,17 @@ public class ModelDiscoveryService {
     }
 
     public String getEmbeddingModelName() {
-        // Priority 1: GenaiLocator (if available and has embedding models)
-        if (genaiLocator != null) {
+        // Priority 1: Aggregated GenaiLocators (if available and have embedding models)
+        if (aggregator.hasAnyLocators()) {
             try {
-                List<String> embeddingModels = genaiLocator.getModelNamesByCapability("EMBEDDING");
+                List<String> embeddingModels = aggregator.aggregateModelNamesByCapability("EMBEDDING");
                 if (embeddingModels != null && !embeddingModels.isEmpty()) {
                     String firstModel = embeddingModels.getFirst();
-                    logger.debug("Using first available embedding model from GenaiLocator: {}", firstModel);
+                    logger.debug("Using first available embedding model from aggregated GenaiLocators: {}", firstModel);
                     return firstModel;
                 }
             } catch (Exception e) {
-                logger.debug("No embedding model available from GenaiLocator: {}", e.getMessage());
+                logger.debug("No embedding model available from aggregated GenaiLocators: {}", e.getMessage());
             }
         }
 
@@ -96,17 +95,17 @@ public class ModelDiscoveryService {
     }
 
     public String getChatModelName() {
-        // Priority 1: GenaiLocator (if available and has chat models)
-        if (genaiLocator != null) {
+        // Priority 1: Aggregated GenaiLocators (if available and have chat models)
+        if (aggregator.hasAnyLocators()) {
             try {
-                List<String> chatModels = genaiLocator.getModelNamesByCapability("CHAT");
+                List<String> chatModels = aggregator.aggregateModelNamesByCapability("CHAT");
                 if (chatModels != null && !chatModels.isEmpty()) {
                     String firstModel = chatModels.getFirst();
-                    logger.debug("Using first available chat model from GenaiLocator: {}", firstModel);
+                    logger.debug("Using first available chat model from aggregated GenaiLocators: {}", firstModel);
                     return firstModel;
                 }
             } catch (Exception e) {
-                logger.debug("No chat model available from GenaiLocator: {}", e.getMessage());
+                logger.debug("No chat model available from aggregated GenaiLocators: {}", e.getMessage());
             }
         }
 
@@ -140,37 +139,71 @@ public class ModelDiscoveryService {
     }
 
     /**
-     * Checks if chat models are available from GenaiLocator.
-     * Returns false if GenaiLocator is not available or if an error occurs.
+     * Checks if chat models are available from aggregated GenaiLocators.
+     * Returns false if no GenaiLocators are available or if an error occurs.
      */
-    public boolean isChatModelAvailableFromLocator() {
-        if (genaiLocator == null) {
+    public boolean isChatModelAvailableFromLocators() {
+        if (!aggregator.hasAnyLocators()) {
             return false;
         }
         try {
-            List<String> chatModels = genaiLocator.getModelNamesByCapability("CHAT");
+            List<String> chatModels = aggregator.aggregateModelNamesByCapability("CHAT");
             return chatModels != null && !chatModels.isEmpty();
         } catch (Exception e) {
-            logger.debug("Error checking chat model availability from GenaiLocator: {}", e.getMessage());
+            logger.debug("Error checking chat model availability from aggregated GenaiLocators: {}", e.getMessage());
             return false;
         }
     }
 
     /**
-     * Checks if embedding models are available from GenaiLocator.
-     * Returns false if GenaiLocator is not available or if an error occurs.
+     * Checks if embedding models are available from aggregated GenaiLocators.
+     * Returns false if no GenaiLocators are available or if an error occurs.
      */
-    public boolean isEmbeddingModelAvailableFromLocator() {
-        if (genaiLocator == null) {
+    public boolean isEmbeddingModelAvailableFromLocators() {
+        if (!aggregator.hasAnyLocators()) {
             return false;
         }
         try {
-            List<String> embeddingModels = genaiLocator.getModelNamesByCapability("EMBEDDING");
+            List<String> embeddingModels = aggregator.aggregateModelNamesByCapability("EMBEDDING");
             return embeddingModels != null && !embeddingModels.isEmpty();
         } catch (Exception e) {
-            logger.debug("Error checking embedding model availability from GenaiLocator: {}", e.getMessage());
+            logger.debug("Error checking embedding model availability from aggregated GenaiLocators: {}", e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Gets all available chat model names from aggregated GenaiLocators.
+     * @return List of chat model names from all locators
+     */
+    public List<String> getAllChatModelNames() {
+        try {
+            return aggregator.aggregateModelNamesByCapability("CHAT");
+        } catch (Exception e) {
+            logger.warn("Error getting all chat model names from aggregated GenaiLocators: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * Gets all available embedding model names from aggregated GenaiLocators.
+     * @return List of embedding model names from all locators
+     */
+    public List<String> getAllEmbeddingModelNames() {
+        try {
+            return aggregator.aggregateModelNamesByCapability("EMBEDDING");
+        } catch (Exception e) {
+            logger.warn("Error getting all embedding model names from aggregated GenaiLocators: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * Gets the number of available GenaiLocator instances.
+     * @return number of GenaiLocator instances
+     */
+    public int getLocatorCount() {
+        return aggregator.getLocatorCount();
     }
 
 
@@ -188,9 +221,9 @@ public class ModelDiscoveryService {
      * This consolidates all chat model resolution logic in one place.
      */
     public GenaiModel getChatModelConfig() {
-        // Priority 1: GenaiLocator (if available and has chat models)
-        if (isChatModelAvailableFromLocator()) {
-            String modelName = getChatModelName(); // This already handles GenaiLocator priority
+        // Priority 1: Aggregated GenaiLocators (if available and have chat models)
+        if (isChatModelAvailableFromLocators()) {
+            String modelName = getChatModelName(); // This already handles aggregated GenaiLocator priority
             return new GenaiModel(
                 modelName,
                 "managed-by-genai-locator", // GenaiLocator handles auth
@@ -217,9 +250,9 @@ public class ModelDiscoveryService {
      * This consolidates all embedding model resolution logic in one place.
      */
     public GenaiModel getEmbeddingModelConfig() {
-        // Priority 1: GenaiLocator (if available and has embedding models)
-        if (isEmbeddingModelAvailableFromLocator()) {
-            String modelName = getEmbeddingModelName(); // This already handles GenaiLocator priority
+        // Priority 1: Aggregated GenaiLocators (if available and have embedding models)
+        if (isEmbeddingModelAvailableFromLocators()) {
+            String modelName = getEmbeddingModelName(); // This already handles aggregated GenaiLocator priority
             return new GenaiModel(
                 modelName,
                 "managed-by-genai-locator", // GenaiLocator handles auth
