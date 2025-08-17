@@ -35,33 +35,52 @@ public class ModelInfrastructureConfiguration {
     }
 
     /**
-     * Creates OpenAI API client for property-based models.
-     * This is used when models need to be created from traditional property configuration.
+     * Creates OpenAI API client specifically for chat models.
+     * This is used when chat models need to be created from traditional property configuration.
      */
     @Bean
     @ConditionalOnMissingBean
-    public OpenAiApi openAiApi() {
-        // Use a representative model config (chat) for API client setup since both models share the same API
+    public OpenAiApi chatOpenAiApi() {
         GenaiModel config = modelDiscoveryService.getChatModelConfig();
+        logger.debug("Creating chatOpenAiApi for chat model with baseUrl={}", config.baseUrl());
+        return createOpenAiApi(config, "chat");
+    }
 
+    /**
+     * Creates OpenAI API client specifically for embedding models.
+     * This is used when embedding models need to be created from traditional property configuration.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public OpenAiApi embeddingOpenAiApi() {
+        GenaiModel config = modelDiscoveryService.getEmbeddingModelConfig();
+        logger.debug("Creating embeddingOpenAiApi for embedding model with baseUrl={}", config.baseUrl());
+        return createOpenAiApi(config, "embedding");
+    }
+
+    /**
+     * Common OpenAI API client creation logic.
+     * Handles both GenaiLocator and property-based model configurations.
+     */
+    private OpenAiApi createOpenAiApi(GenaiModel config, String modelType) {
         String apiKey = config.apiKey();
         String baseUrl = config.baseUrl();
 
         // For GenaiLocator models, we don't create the OpenAiApi since models are managed externally
         if (config.isFromGenaiLocator()) {
-            logger.debug("GenaiLocator models detected - creating minimal OpenAiApi (not used by GenaiLocator models)");
+            logger.debug("GenaiLocator {} model detected - creating minimal OpenAiApi (not used by GenaiLocator models)", modelType);
             return OpenAiApi.builder()
                     .apiKey("managed-by-genai-locator")
                     .baseUrl("managed-by-genai-locator")
                     .build();
         }
 
-        logger.debug("Creating OpenAiApi for property-based models with baseUrl={}, hasApiKey={}",
-                baseUrl, apiKey != null && !apiKey.isEmpty());
+        logger.debug("Creating OpenAiApi for property-based {} model with baseUrl={}, hasApiKey={}",
+                modelType, baseUrl, apiKey != null && !apiKey.isEmpty());
 
         // Only create functional API client if we have proper credentials
         if (apiKey == null || apiKey.isEmpty()) {
-            logger.warn("No valid API key found for property-based OpenAI models - models will be non-functional");
+            logger.warn("No valid API key found for property-based {} model - model will be non-functional", modelType);
             apiKey = "no-api-key-configured"; // Avoid the "placeholder" that triggers specific OpenAI error
         }
 
