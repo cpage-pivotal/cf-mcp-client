@@ -2,7 +2,14 @@
   <mat-toolbar>
     <span>Tanzu Platform Chat</span>
     <span style="flex:1 1 auto"></span>
+    <button mat-icon-button (click)="showMotivationalMessage()" [attr.aria-label]="'Get motivated!'">
+      <mat-icon>emoji_emotions</mat-icon>
+    </button>
   </mat-toolbar>
+
+  <div *ngIf="motivationalMessage()" class="motivational-message">
+    {{ motivationalMessage() }}
+  </div>
 
   <app-chat-panel
     [metrics]="metrics()">

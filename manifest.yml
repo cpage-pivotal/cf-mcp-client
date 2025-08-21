@@ -5,6 +5,6 @@ applications:
       - java_buildpack_offline
     memory: 1G
     instances: 1
-    path: target/cf-mcp-client-1.5.1.jar
+    path: target/cf-mcp-client-1.5.2.jar
     env:
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'

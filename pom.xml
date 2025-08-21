@@ -10,13 +10,13 @@
 	</parent>
 	<groupId>org.tanzu</groupId>
 	<artifactId>cf-mcp-client</artifactId>
-	<version>1.5.1</version>
+	<version>1.5.2</version>
 	<name>cf-mcp-client</name>
 	<description>Chat Client that can bind to GenAI LLMs, MCP Servers, external memory</description>
 
 	<properties>
 		<java.version>21</java.version>
-		<spring-ai.version>1.0.1</spring-ai.version>
+		<spring-ai.version>1.1.0-M1-PLATFORM-2</spring-ai.version>
 	</properties>
 
 	<dependencyManagement>

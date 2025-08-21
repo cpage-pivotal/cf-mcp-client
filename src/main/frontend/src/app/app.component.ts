@@ -1,5 +1,8 @@
 import { Component, DestroyRef, Inject, inject, signal, effect } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
 import { DocumentPanelComponent } from '../document-panel/document-panel.component';
@@ -13,7 +16,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, ChatboxComponent],
+  imports: [MatToolbar, MatIconButton, MatIcon, CommonModule, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, ChatboxComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -22,6 +25,7 @@ export class AppComponent {
 
   // Use signals for reactive state management
   private readonly _currentDocumentIds = signal<string[]>([]);
+  private readonly _motivationalMessage = signal<string>('');
   private readonly _metrics = signal<PlatformMetrics>({
     conversationId: '',
     chatModel: '',
@@ -38,7 +42,17 @@ export class AppComponent {
 
   // Public readonly signals
   readonly currentDocumentIds = this._currentDocumentIds.asReadonly();
+  readonly motivationalMessage = this._motivationalMessage.asReadonly();
   readonly metrics = this._metrics.asReadonly();
+
+  // Predefined motivational messages
+  private readonly motivationalMessages = [
+    "🚀 You're absolutely crushing it today! Keep that momentum going!",
+    "💪 Every challenge you face is just making you stronger and more awesome!",
+    "⭐ Your potential is limitless - you've got this!",
+    "🔥 Amazing things happen when you believe in yourself - and we believe in you!",
+    "🌟 You're not just building software, you're building the future!"
+  ];
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly httpClient = inject(HttpClient);
@@ -59,6 +73,18 @@ export class AppComponent {
   // Method to handle document selection from DocumentPanelComponent
   onDocumentIdsChanged(documentIds: string[]): void {
     this._currentDocumentIds.set([...documentIds]);
+  }
+
+  // Method to show random motivational message
+  showMotivationalMessage(): void {
+    const randomIndex = Math.floor(Math.random() * this.motivationalMessages.length);
+    const message = this.motivationalMessages[randomIndex];
+    this._motivationalMessage.set(message);
+    
+    // Clear the message after 3 seconds
+    setTimeout(() => {
+      this._motivationalMessage.set('');
+    }, 3000);
   }
 
   // Initialize metrics polling with improved error handling
