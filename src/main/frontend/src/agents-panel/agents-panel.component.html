@@ -35,10 +35,71 @@
     </div>
 
     <div class="agent-interaction-container">
-      <div class="interaction-placeholder">
-        <mat-icon class="placeholder-icon">chat</mat-icon>
-        <p>Agent interaction interface will be implemented in Phase 2</p>
-        <p class="placeholder-detail">This will include message input, response display, and conversation history</p>
+      <!-- Message History -->
+      <div class="message-history" *ngIf="messages.length > 0">
+        <div class="message-header">
+          <h3>Conversation with {{ selectedAgent | titlecase }}</h3>
+          <button mat-icon-button (click)="clearMessages()" matTooltip="Clear conversation">
+            <mat-icon>clear_all</mat-icon>
+          </button>
+        </div>
+        
+        <div class="messages-container">
+          <div *ngFor="let message of messages" 
+               class="message" 
+               [ngClass]="{
+                 'user-message': message.sender === 'user',
+                 'agent-message': message.sender === 'agent',
+                 'error-message': message.isError
+               }">
+            <div class="message-avatar">
+              <mat-icon *ngIf="message.sender === 'user'">person</mat-icon>
+              <mat-icon *ngIf="message.sender === 'agent'" class="agent-avatar-icon">smart_toy</mat-icon>
+            </div>
+            <div class="message-content">
+              <div class="message-header-small">
+                <span class="sender-name">{{ message.sender === 'user' ? 'You' : (message.agentType | titlecase) }}</span>
+                <span class="message-time">{{ message.timestamp | date:'HH:mm:ss' }}</span>
+              </div>
+              <div class="message-text">{{ message.content }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="messages.length === 0">
+        <mat-icon class="empty-icon">smart_toy</mat-icon>
+        <h3>Start a conversation with {{ selectedAgent | titlecase }}</h3>
+        <p>Send a message to begin interacting with the {{ selectedAgent }} agent</p>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-container">
+        <mat-form-field appearance="outline" class="message-input">
+          <mat-label>Type your message...</mat-label>
+          <textarea 
+            matInput 
+            [(ngModel)]="currentPrompt" 
+            (keydown)="onKeyPress($event)"
+            [disabled]="isLoading"
+            placeholder="Ask the {{ selectedAgent }} agent for help..."
+            rows="3">
+          </textarea>
+        </mat-form-field>
+        
+        <div class="input-actions">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="sendMessage()"
+            [disabled]="!currentPrompt.trim() || isLoading"
+            class="send-button">
+            <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+            <mat-icon *ngIf="!isLoading">send</mat-icon>
+            {{ isLoading ? 'Sending...' : 'Send' }}
+          </button>
+        </div>
       </div>
     </div>
   </mat-sidenav>

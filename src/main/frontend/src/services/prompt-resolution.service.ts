@@ -1,7 +1,7 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { DOCUMENT } from '@angular/common';
 import { Observable } from 'rxjs';
+import { ApiService } from './api.service';
 
 export interface PromptResolutionRequest {
   promptId: string;
@@ -26,35 +26,16 @@ export class PromptResolutionService {
 
   constructor(
     private httpClient: HttpClient,
-    @Inject(DOCUMENT) private document: Document
+    private apiService: ApiService
   ) {}
 
   /**
    * Resolve a prompt with the provided arguments
    */
   resolvePrompt(request: PromptResolutionRequest): Observable<ResolvedPrompt> {
-    const { protocol, host } = this.getApiBaseUrl();
+    const url = this.apiService.getApiUrl('/prompts/resolve');
 
-    return this.httpClient.post<ResolvedPrompt>(
-      `${protocol}//${host}/prompts/resolve`,
-      request
-    );
+    return this.httpClient.post<ResolvedPrompt>(url, request);
   }
 
-  /**
-   * Get the API base URL based on current environment
-   */
-  private getApiBaseUrl(): { protocol: string; host: string } {
-    let host: string;
-    let protocol: string;
-
-    if (this.document.location.hostname === 'localhost') {
-      host = 'localhost:8080';
-    } else {
-      host = this.document.location.host;
-    }
-    protocol = this.document.location.protocol;
-
-    return { protocol, host };
-  }
 }

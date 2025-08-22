@@ -8,6 +8,7 @@ import { AgentsPanelComponent } from '../agents-panel/agents-panel.component';
 import { ChatboxComponent } from '../chatbox/chatbox.component';
 import { HttpClient } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
+import { ApiService } from '../services/api.service';
 import { interval } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -44,6 +45,7 @@ export class AppComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly httpClient = inject(HttpClient);
   private readonly document = inject(DOCUMENT);
+  private readonly apiService = inject(ApiService);
 
   constructor() {
     this.initMetricsPolling();
@@ -90,17 +92,10 @@ export class AppComponent {
   }
 
   private getApiBaseUrl(): { protocol: string; host: string } {
-    let host: string;
-    let protocol: string;
-
-    if (this.document.location.hostname === 'localhost') {
-      host = 'localhost:8080';
-    } else {
-      host = this.document.location.host;
-    }
-    protocol = this.document.location.protocol;
-
-    return { protocol, host };
+    return { 
+      protocol: this.apiService.getProtocol(), 
+      host: this.apiService.getHost() 
+    };
   }
 }
 

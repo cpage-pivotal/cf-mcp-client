@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  Inject,
   Injector,
   Input,
   NgZone,
@@ -14,7 +13,6 @@ import {
   computed,
   effect
 } from '@angular/core';
-import {DOCUMENT} from '@angular/common';
 import {HttpParams} from '@angular/common/http';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
@@ -30,6 +28,7 @@ import {
   PromptSelectionResult
 } from '../prompt-selection-dialog/prompt-selection-dialog.component';
 import {PromptResolutionService} from '../services/prompt-resolution.service';
+import {ApiService} from '../services/api.service';
 import {MatTooltip} from '@angular/material/tooltip';
 import {ThinkTagParser} from './think-tag-parser';
 
@@ -189,8 +188,6 @@ export class ChatboxComponent implements OnDestroy {
   });
 
 
-  private host = '';
-  private protocol = '';
   private thinkTagParser = new ThinkTagParser();
   private updateBatchTimeout?: number;
   private pendingUpdate: {
@@ -203,18 +200,11 @@ export class ChatboxComponent implements OnDestroy {
 
   constructor(
     private injector: Injector,
-    @Inject(DOCUMENT) private document: Document,
     private ngZone: NgZone,
     private dialog: MatDialog,
-    private promptResolutionService: PromptResolutionService
+    private promptResolutionService: PromptResolutionService,
+    private apiService: ApiService
   ) {
-    // Set up host and protocol
-    if (this.document.location.hostname === 'localhost') {
-      this.host = 'localhost:8080';
-    } else {
-      this.host = this.document.location.host;
-    }
-    this.protocol = this.document.location.protocol;
 
     // Effects for side effects
     this.setupEffects();
@@ -623,7 +613,7 @@ export class ChatboxComponent implements OnDestroy {
 
   private streamChatResponse(params: HttpParams): Promise<void> {
     return new Promise((resolve, reject) => {
-      const url = `${this.protocol}//${this.host}/chat?${params.toString()}`;
+      const url = this.apiService.getApiUrl(`/chat?${params.toString()}`);
 
       const eventSource = new EventSource(url, {
         withCredentials: true
