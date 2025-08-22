@@ -16,14 +16,14 @@ export interface AgentRequest {
 
 /**
  * Agent response interface matching the backend AgentResponse structure.
+ * Simplified to only use isComplete flag.
  */
 export interface AgentResponse {
   correlationId: string;
   agentType: string;
   content: string;
   timestamp: number;
-  isPartial?: boolean;
-  isComplete?: boolean;
+  isComplete: boolean;  // true = final response, false = more responses coming
   metadata?: any;
 }
 
@@ -35,6 +35,8 @@ export interface AgentMessageEvent {
   agentType: string;
   timestamp: number;
   isComplete: boolean;
+  correlationId?: string;
+  responseIndex?: number;
 }
 
 /**
@@ -42,7 +44,7 @@ export interface AgentMessageEvent {
  */
 export interface AgentStatus {
   connectionStatus: 'connected' | 'disconnected' | 'error';
-  pendingRequests: number;
+  activeHandlers: number;
 }
 
 /**
@@ -59,7 +61,8 @@ export class AgentService {
   /**
    * Sends a message to an agent and returns an Observable for streaming responses.
    * Uses Server-Sent Events (SSE) for real-time communication.
-   * 
+   * Each response is delivered immediately as a separate event.
+   *
    * @param agentType The type of agent (e.g., 'reviewer')
    * @param prompt The message/prompt to send to the agent
    * @returns Observable that emits agent response events
@@ -89,7 +92,7 @@ export class AgentService {
         }
       });
 
-      // Handle error events  
+      // Handle error events
       eventSource.addEventListener('error', (event: MessageEvent) => {
         try {
           // Check if event.data exists and is not empty
@@ -142,7 +145,7 @@ export class AgentService {
 
   /**
    * Gets the current status of the agent messaging system.
-   * 
+   *
    * @returns Promise resolving to agent status information
    */
   async getAgentStatus(): Promise<AgentStatus> {
@@ -153,25 +156,25 @@ export class AgentService {
         console.warn(`Agent status endpoint returned ${response.status}: ${response.statusText}`);
         return {
           connectionStatus: 'disconnected',
-          pendingRequests: 0
+          activeHandlers: 0
         };
       }
-      
+
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         console.warn('Agent status endpoint returned non-JSON response:', contentType);
         return {
           connectionStatus: 'error',
-          pendingRequests: 0
+          activeHandlers: 0
         };
       }
-      
+
       return await response.json();
     } catch (error) {
       console.warn('Failed to get agent status (agent system may not be available):', error);
       return {
         connectionStatus: 'disconnected',
-        pendingRequests: 0
+        activeHandlers: 0
       };
     }
   }
@@ -179,7 +182,7 @@ export class AgentService {
   /**
    * Checks if a specific agent type is available.
    * Currently supports 'reviewer' agent as specified in AGENTS.md.
-   * 
+   *
    * @param agentType The agent type to check
    * @returns True if the agent type is supported
    */
@@ -190,7 +193,7 @@ export class AgentService {
 
   /**
    * Gets the list of available agent types.
-   * 
+   *
    * @returns Array of supported agent types
    */
   getAvailableAgents(): string[] {

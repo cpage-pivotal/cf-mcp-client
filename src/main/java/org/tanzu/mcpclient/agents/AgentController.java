@@ -127,9 +127,9 @@ public class AgentController {
         payload.put("correlationId", response.correlationId());
         payload.put("responseIndex", responseIndex);
 
-        // Pass through completion flags from the agent
-        payload.put("isPartial", response.isPartial() != null ? response.isPartial() : false);
-        payload.put("isComplete", response.isComplete() != null ? response.isComplete() : true);
+        // Pass through completion flag from the agent
+        boolean isComplete = response.isComplete() != null ? response.isComplete() : true;
+        payload.put("isComplete", isComplete);
 
         // Add metadata if available
         if (response.metadata() != null) {

@@ -188,8 +188,8 @@ public class AgentMessageService {
     @RabbitListener(queues = RabbitMQConfig.AGENT_REPLY_QUEUE)
     public void handleAgentResponse(AgentResponse response) {
         String correlationId = response.correlationId();
-        logger.info("Received agent response with correlationId: {}, isComplete: {}, isPartial: {}",
-                correlationId, response.isComplete(), response.isPartial());
+        logger.info("Received agent response with correlationId: {}, isComplete: {}",
+                correlationId, response.isComplete());
 
         ResponseHandler handler = activeHandlers.get(correlationId);
 

@@ -7,13 +7,13 @@ import java.time.Instant;
 /**
  * Response message received from AI agents via message queue.
  * Based on the AgentResponse interface specification in AGENTS.md.
+ * Simplified to only use isComplete flag (isPartial was redundant).
  */
 public record AgentResponse(
         @JsonProperty("correlationId") String correlationId,
         @JsonProperty("agentType") String agentType,
         @JsonProperty("content") String content,
         @JsonProperty("timestamp") long timestamp,
-        @JsonProperty("isPartial") Boolean isPartial,
         @JsonProperty("isComplete") Boolean isComplete,
         @JsonProperty("metadata") Object metadata
 ) {
@@ -23,7 +23,6 @@ public record AgentResponse(
                 agentType,
                 content,
                 Instant.now().toEpochMilli(),
-                false,
                 true,
                 null
         );
@@ -35,8 +34,7 @@ public record AgentResponse(
                 agentType,
                 content,
                 Instant.now().toEpochMilli(),
-                true,
-                false,
+                false, // partial = not complete
                 null
         );
     }
@@ -47,7 +45,6 @@ public record AgentResponse(
                 agentType,
                 content,
                 Instant.now().toEpochMilli(),
-                false,
                 true,
                 null
         );
@@ -59,7 +56,6 @@ public record AgentResponse(
                 agentType,
                 content,
                 Instant.now().toEpochMilli(),
-                false,
                 true,
                 metadata
         );
