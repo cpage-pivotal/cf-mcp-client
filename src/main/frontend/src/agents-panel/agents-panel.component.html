@@ -1,0 +1,49 @@
+<div class="agents-container">
+  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="Agents" matTooltipPosition="left">
+    <mat-icon>smart_toy</mat-icon>
+  </button>
+</div>
+
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true">
+    <div class="sidenav-header">
+      <h2>Agents</h2>
+      <button mat-icon-button (click)="sidenav.close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="agent-selection-container">
+      <div class="agent-card selected" [class.selected]="selectedAgent === 'reviewer'">
+        <div class="agent-info">
+          <div class="agent-avatar">
+            <mat-icon class="agent-icon">rate_review</mat-icon>
+          </div>
+          <div class="agent-details">
+            <h3 class="agent-name">Reviewer</h3>
+            <p class="agent-description">Code review and analysis agent</p>
+          </div>
+        </div>
+        <div class="agent-status">
+          <span class="status-indicator" 
+                [ngClass]="{'status-green': isConnected, 'status-red': !isConnected}">
+            <mat-icon>{{ isConnected ? 'check_circle' : 'error' }}</mat-icon>
+            <span class="status-text">{{ isConnected ? 'Connected' : 'Disconnected' }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="agent-interaction-container">
+      <div class="interaction-placeholder">
+        <mat-icon class="placeholder-icon">chat</mat-icon>
+        <p>Agent interaction interface will be implemented in Phase 2</p>
+        <p class="placeholder-detail">This will include message input, response display, and conversation history</p>
+      </div>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <!-- This is intentionally empty -->
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,172 @@
+.agents-container {
+  position: relative;
+}
+
+.toggle-button {
+  position: fixed;
+  top: 264px;
+  right: 16px;
+  z-index: 1000;
+  background-color: var(--mat-sys-primary-container);
+}
+
+.sidenav-container {
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 999;
+  background-color: transparent;
+}
+
+mat-sidenav {
+  pointer-events: auto;
+  width: 350px;
+  padding: 16px;
+  box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+::ng-deep .mat-drawer-backdrop.mat-drawer-shown {
+  pointer-events: auto;
+}
+
+.sidenav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.sidenav-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+mat-sidenav-content {
+  background: transparent;
+}
+
+/* Agent Selection Styles */
+.agent-selection-container {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.agent-card {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background-color: #f5f5f5;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.agent-card:hover {
+  background-color: #e3f2fd;
+  border-color: #0066CC;
+}
+
+.agent-card.selected {
+  background-color: #e6f2ff;
+  border-color: #0066CC;
+}
+
+.agent-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.agent-avatar {
+  margin-right: 12px;
+}
+
+.agent-icon {
+  font-size: 24px;
+  height: 24px;
+  width: 24px;
+  color: #0066CC;
+}
+
+.agent-details h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #0066CC;
+}
+
+.agent-details p {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+}
+
+.agent-status {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.status-indicator mat-icon {
+  margin-right: 4px;
+  font-size: 16px;
+  height: 16px;
+  width: 16px;
+}
+
+.status-green {
+  color: #4CAF50;
+}
+
+.status-red {
+  color: #F44336;
+}
+
+.status-text {
+  font-size: 12px;
+}
+
+/* Agent Interaction Styles */
+.agent-interaction-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.interaction-placeholder {
+  text-align: center;
+  padding: 32px 16px;
+  color: #666;
+}
+
+.placeholder-icon {
+  font-size: 48px;
+  height: 48px;
+  width: 48px;
+  margin-bottom: 16px;
+  color: #ccc;
+}
+
+.interaction-placeholder p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.placeholder-detail {
+  font-size: 12px !important;
+  color: #999 !important;
+}
