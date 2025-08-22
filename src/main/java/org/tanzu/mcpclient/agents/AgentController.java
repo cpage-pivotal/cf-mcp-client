@@ -12,13 +12,14 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * REST controller for agent interactions.
  * Provides endpoints for sending requests to agents and receiving responses via SSE.
+ * Updated to stream individual responses immediately as they arrive.
  */
 @RestController
 @RequestMapping("/api/agents")
@@ -35,13 +36,13 @@ public class AgentController {
     }
 
     /**
-     * Sends a request to an agent and streams the response via SSE.
-     * Follows the same pattern as the existing chat endpoint.
+     * Sends a request to an agent and streams each response via SSE as it arrives.
+     * Each agent action (e.g., craftStory, reviewStory) sends a separate SSE event immediately.
      *
      * @param agentType The type of agent to send the request to
      * @param prompt The prompt to send to the agent
      * @param request HTTP request for session management
-     * @return SSE emitter for streaming the agent response
+     * @return SSE emitter for streaming the agent responses
      */
     @GetMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter agentChat(@RequestParam("agentType") String agentType,
@@ -60,26 +61,32 @@ public class AgentController {
                     return;
                 }
 
-                // Send request to agent via message queue
-                CompletableFuture<AgentResponse> responseFuture =
-                        agentMessageService.sendAgentRequest(agentType, prompt, userId);
+                // Track response sequence for client-side handling
+                AtomicInteger responseCounter = new AtomicInteger(0);
 
-                // Handle the response
-                responseFuture
-                        .thenAccept(response -> {
+                // Send request to agent with streaming handlers
+                agentMessageService.sendAgentRequest(agentType, prompt, userId,
+                        // onResponse: stream each response immediately
+                        response -> {
                             try {
-                                // Send the agent response via SSE - handle null values safely
-                                Map<String, Object> payload = new HashMap<>();
-                                payload.put("content", response.content() != null ? response.content() : "");
-                                payload.put("agentType", response.agentType() != null ? response.agentType() : "reviewer");
-                                payload.put("timestamp", response.timestamp() != 0 ? response.timestamp() : System.currentTimeMillis());
-                                payload.put("isComplete", response.isComplete() != null ? response.isComplete() : true);
-
-                                String jsonData = objectMapper.writeValueAsString(payload);
-
-                                emitter.send(SseEmitter.event()
-                                        .data(jsonData)
-                                        .name("agent-message"));
+                                int responseIndex = responseCounter.incrementAndGet();
+                                sendAgentResponseEvent(emitter, response, responseIndex);
+                                logger.debug("Streamed response {} for correlationId: {}",
+                                        responseIndex, response.correlationId());
+                            } catch (IOException e) {
+                                logger.error("Failed to stream response", e);
+                                handleAgentError(emitter, e, userId);
+                            }
+                        },
+                        // onError: handle any errors
+                        error -> {
+                            logger.error("Agent request failed for userId: {}", userId, error);
+                            handleAgentError(emitter, error, userId);
+                        },
+                        // onComplete: close the SSE connection
+                        () -> {
+                            try {
+                                logger.info("Agent conversation completed for userId: {}", userId);
 
                                 // Send completion event
                                 emitter.send(SseEmitter.event()
@@ -87,15 +94,12 @@ public class AgentController {
                                         .data(""));
 
                                 emitter.complete();
-
                             } catch (IOException e) {
-                                handleAgentError(emitter, e, userId);
+                                logger.error("Failed to send completion event", e);
+                                emitter.completeWithError(e);
                             }
-                        })
-                        .exceptionally(throwable -> {
-                            handleAgentError(emitter, throwable, userId);
-                            return null;
-                        });
+                        }
+                );
 
             } catch (Exception e) {
                 handleAgentError(emitter, e, userId);
@@ -106,16 +110,53 @@ public class AgentController {
     }
 
     /**
+     * Sends a single agent response as an SSE event immediately.
+     *
+     * @param emitter The SSE emitter
+     * @param response The agent response to send
+     * @param responseIndex The 1-based index of this response in the sequence
+     */
+    private void sendAgentResponseEvent(SseEmitter emitter, AgentResponse response, int responseIndex)
+            throws IOException {
+
+        // Create payload with response data
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("content", response.content() != null ? response.content() : "");
+        payload.put("agentType", response.agentType() != null ? response.agentType() : "reviewer");
+        payload.put("timestamp", response.timestamp() != 0 ? response.timestamp() : System.currentTimeMillis());
+        payload.put("correlationId", response.correlationId());
+        payload.put("responseIndex", responseIndex);
+
+        // Pass through completion flags from the agent
+        payload.put("isPartial", response.isPartial() != null ? response.isPartial() : false);
+        payload.put("isComplete", response.isComplete() != null ? response.isComplete() : true);
+
+        // Add metadata if available
+        if (response.metadata() != null) {
+            payload.put("metadata", response.metadata());
+        }
+
+        String jsonData = objectMapper.writeValueAsString(payload);
+
+        emitter.send(SseEmitter.event()
+                .data(jsonData)
+                .name("agent-message"));
+
+        logger.debug("Sent SSE event for response {} with correlationId: {}",
+                responseIndex, response.correlationId());
+    }
+
+    /**
      * Gets the current status of agent messaging system.
      *
-     * @return Status information including connection status and pending requests
+     * @return Status information including connection status and active handlers
      */
     @GetMapping("/status")
     public Map<String, Object> getAgentStatus() {
         if (agentMessageService == null) {
             return Map.of(
                     "connectionStatus", "disconnected",
-                    "pendingRequests", 0,
+                    "activeHandlers", 0,
                     "message", "RabbitMQ not configured"
             );
         }
