@@ -21,13 +21,10 @@ public class RabbitMQConfig {
     // Queue names as specified in AGENTS.md
     public static final String AGENT_REQUEST_QUEUE = "agent.reviewer.request";
     public static final String AGENT_REPLY_QUEUE = "agent.reviewer.reply";
-    
-    // Exchange for agent messaging
-    public static final String AGENT_EXCHANGE = "agent.exchange";
-    
-    // Routing keys
-    public static final String REVIEWER_REQUEST_ROUTING_KEY = "reviewer.request";
-    public static final String REVIEWER_REPLY_ROUTING_KEY = "reviewer.reply";
+
+    public static final String AGENT_EXCHANGE = "agent.reviewer.exchange";
+    public static final String REVIEWER_REQUEST_ROUTING_KEY = "agent.reviewer.request";
+    public static final String REVIEWER_REPLY_ROUTING_KEY = "agent.reviewer.reply";
 
     @Bean
     public DirectExchange agentExchange() {
