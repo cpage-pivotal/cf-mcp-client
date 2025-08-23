@@ -87,6 +87,22 @@
   box-shadow: var(--mat-sys-elevation-level2);
 }
 
+/* User message styling */
+.chat-message.user mat-card {
+  background-color: var(--mat-sys-primary-container);
+}
+
+/* Bot message styling */
+.chat-message.bot mat-card {
+  background-color: var(--mat-sys-surface);
+}
+
+/* Agent message styling */
+.chat-message.agent mat-card {
+  background-color: #E6F2FF;
+  border-left: 3px solid #0066CC;
+}
+
 .chatbox-footer {
   margin-bottom: 15px;
 }

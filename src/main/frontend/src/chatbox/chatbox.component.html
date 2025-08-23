@@ -2,28 +2,31 @@
   <div #chatboxMessages class="chatbox-messages">
     <!-- Chat messages will be dynamically inserted here -->
     @for (messageData of messagesWithReasoningFlags(); track messageData.index) {
-      <div class="chat-message {{messageData.persona}}"
-           [class.agent-message]="messageData.persona === 'agent'">
-        <mat-card appearance="outlined"
-                  [style.background-color]="messageData.persona == 'user' ? 'var(--mat-sys-primary-container)' : 
-                                          messageData.persona == 'agent' ? '#E6F2FF' : 'var(--mat-sys-surface)'"
-                  [style.border-left]="messageData.persona === 'agent' ? '3px solid #0066CC' : ''">
-          <mat-card-content>
-            @if (messageData.persona == 'user') {
+      <div [ngClass]="getMessageClasses(messageData)">
+        @if (messageData.persona === 'user') {
+          <!-- User message template -->
+          <mat-card>
+            <mat-card-content>
               <div class="user-message-content">{{ messageData.text }}</div>
-            } @else {
-              <div class="bot-message-container">
-                @if (messageData.persona === 'agent') {
-                  <!-- Agent message header -->
-                  <div class="agent-message-header">
-                    <div class="agent-avatar">
-                      <mat-icon [style.color]="messageData.agentInfo?.color || '#0066CC'">
-                        {{ messageData.agentInfo?.icon || 'smart_toy' }}
-                      </mat-icon>
-                    </div>
-                    <span class="agent-name-badge">{{ messageData.agentType || 'Agent' }}</span>
-                  </div>
-                }
+            </mat-card-content>
+          </mat-card>
+        }
+        
+        @if (messageData.persona === 'bot') {
+          <!-- Bot message with typing indicator support -->
+          <mat-card>
+            <mat-card-content>
+              @if (messageData.typing) {
+                <div class="typing-indicator">
+                  <div class="typing__dot"></div>
+                  <div class="typing__dot"></div>
+                  <div class="typing__dot"></div>
+                </div>
+              } @else {
+                <div class="bot-message-content">
+                  <markdown [data]="messageData.text"></markdown>
+                </div>
+                <!-- Bot-specific toggles and sections -->
                 <div class="message-toggles">
                   @if (messageData.hasReasoning) {
                     <button mat-icon-button 
@@ -54,60 +57,78 @@
                     </button>
                   }
                 </div>
-                @if (messageData.typing) {
-                  <div class="typing__dot"></div><div class="typing__dot"></div><div class="typing__dot"></div>
-                } @else {
-                  <div class="main-content">
-                    <markdown [data]="messageData.text"></markdown>
+                @if (messageData.showReasoning && messageData.reasoning) {
+                  <div class="reasoning-section" 
+                       role="region" 
+                       [id]="messageData.reasoningContentId"
+                       [attr.aria-label]="'AI reasoning for this response'"
+                       [attr.aria-expanded]="messageData.showReasoning"
+                       [attr.aria-labelledby]="messageData.reasoningToggleId">
+                    <div class="reasoning-header">
+                      <mat-icon class="reasoning-icon" [attr.aria-hidden]="true">psychology</mat-icon>
+                      <span class="reasoning-label">Reasoning</span>
+                    </div>
+                    <div class="reasoning-content" role="article">
+                      <markdown [data]="messageData.reasoning"></markdown>
+                    </div>
                   </div>
-                  @if (messageData.showReasoning && messageData.reasoning) {
-                    <div class="reasoning-section" 
-                         role="region" 
-                         [id]="messageData.reasoningContentId"
-                         [attr.aria-label]="'AI reasoning for this response'"
-                         [attr.aria-expanded]="messageData.showReasoning"
-                         [attr.aria-labelledby]="messageData.reasoningToggleId">
-                      <div class="reasoning-header">
-                        <mat-icon class="reasoning-icon" [attr.aria-hidden]="true">psychology</mat-icon>
-                        <span class="reasoning-label">Reasoning</span>
-                      </div>
-                      <div class="reasoning-content" role="article">
-                        <markdown [data]="messageData.reasoning"></markdown>
-                      </div>
-                    </div>
-                  }
-                  @if (messageData.showError && messageData.error) {
-                    <div class="error-section" 
-                         role="region" 
-                         [id]="messageData.errorContentId"
-                         [attr.aria-label]="'Error details for this response'"
-                         [attr.aria-expanded]="messageData.showError"
-                         [attr.aria-labelledby]="messageData.errorToggleId">
-                      <div class="error-header">
-                        <mat-icon class="error-icon" [attr.aria-hidden]="true">bug_report</mat-icon>
-                        <span class="error-label">Error Details</span>
-                      </div>
-                      <div class="error-content" role="article">
-                        <div class="error-field">
-                          <strong>Type:</strong> {{ messageData.error.errorType }}
-                        </div>
-                        <div class="error-field">
-                          <strong>Time:</strong> {{ messageData.error.timestamp }}
-                        </div>
-                        @if (messageData.error.stackTrace) {
-                          <div class="error-field">
-                            <strong>Stack Trace:</strong>
-                            <pre class="error-stacktrace">{{ messageData.error.stackTrace }}</pre>
-                          </div>
-                        }
-                      </div>
-                    </div>
-                  }
                 }
+                @if (messageData.showError && messageData.error) {
+                  <div class="error-section" 
+                       role="region" 
+                       [id]="messageData.errorContentId"
+                       [attr.aria-label]="'Error details for this response'"
+                       [attr.aria-expanded]="messageData.showError"
+                       [attr.aria-labelledby]="messageData.errorToggleId">
+                    <div class="error-header">
+                      <mat-icon class="error-icon" [attr.aria-hidden]="true">bug_report</mat-icon>
+                      <span class="error-label">Error Details</span>
+                    </div>
+                    <div class="error-content" role="article">
+                      <div class="error-field">
+                        <strong>Type:</strong> {{ messageData.error.errorType }}
+                      </div>
+                      <div class="error-field">
+                        <strong>Time:</strong> {{ messageData.error.timestamp }}
+                      </div>
+                      @if (messageData.error.stackTrace) {
+                        <div class="error-field">
+                          <strong>Stack Trace:</strong>
+                          <pre class="error-stacktrace">{{ messageData.error.stackTrace }}</pre>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+        
+        @if (messageData.persona === 'agent') {
+          <!-- Agent message - no typing indicator -->
+          <mat-card class="agent-message-card">
+            <mat-card-content>
+              <div class="agent-message-header">
+                <div class="agent-avatar">
+                  <mat-icon>smart_toy</mat-icon>
+                </div>
+                <span class="agent-name-badge">
+                  {{ getAgentName(messageData.agentType) }}
+                  @if (messageData.responseIndex !== undefined) {
+                    <span class="response-index">#{{ messageData.responseIndex + 1 }}</span>
+                  }
+                </span>
+                <span class="message-timestamp">
+                  {{ messageData.timestamp | date:'short' }}
+                </span>
               </div>
-            }
-          </mat-card-content>
-        </mat-card>
+              <div class="agent-message-content">
+                <markdown [data]="messageData.text"></markdown>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
       </div>
     }
   </div>

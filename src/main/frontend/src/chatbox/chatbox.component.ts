@@ -14,6 +14,7 @@ import {
   effect
 } from '@angular/core';
 import {HttpParams} from '@angular/common/http';
+import {NgClass, DatePipe} from '@angular/common';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
 import {MatFormField} from '@angular/material/form-field';
@@ -74,7 +75,7 @@ interface ChatboxMessage {
 @Component({
   selector: 'app-chatbox',
   standalone: true,
-  imports: [MatButton, FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatIconButton, MatTooltip],
+  imports: [MatButton, FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatIconButton, MatTooltip, NgClass, DatePipe],
   templateUrl: './chatbox.component.html',
   styleUrl: './chatbox.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -955,5 +956,39 @@ export class ChatboxComponent implements OnDestroy {
         }
       });
     });
+  }
+
+  // Helper methods for template
+  getMessageClasses(message: ChatboxMessage): string {
+    const classes = [`chat-message`, message.persona];
+    
+    if (message.persona === 'agent') {
+      classes.push('agent-message');
+    }
+    
+    if (message.typing) {
+      classes.push('typing');
+    }
+    
+    if (message.error) {
+      classes.push('has-error');
+    }
+    
+    return classes.join(' ');
+  }
+
+  getAgentName(agentType?: string): string {
+    if (!agentType) {
+      return 'Agent';
+    }
+    
+    // Check if we have agent info from selection service
+    const selectedAgent = this.agentSelectionService.selectedAgent();
+    if (selectedAgent && selectedAgent.name === agentType) {
+      return selectedAgent.name;
+    }
+    
+    // Fall back to the agentType string
+    return agentType;
   }
 }

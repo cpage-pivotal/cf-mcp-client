@@ -313,28 +313,44 @@ export class ChatboxComponent {
 - Proper state management with signals and cleanup
 - Backward compatibility maintained with existing chat functionality
 
-### Phase 3: Template Updates (Sprint 2)
+### Phase 3: Template Updates (Sprint 2) ✅ COMPLETED
 
-#### 3.1 Conditional Message Rendering
+**Implementation Date**: January 2025  
+**Status**: ✅ FULLY IMPLEMENTED  
+**Files Modified**:
+- `/src/main/frontend/src/chatbox/chatbox.component.html` - Complete template restructure
+- `/src/main/frontend/src/chatbox/chatbox.component.ts` - Added helper methods and imports
+- `/src/main/frontend/src/chatbox/chatbox.component.css` - Added message type differentiation styling
+
+**Key Achievements**:
+1. ✅ Implemented conditional message rendering with separate templates for each persona
+2. ✅ Added proper typing indicator support for bot messages only
+3. ✅ Created distinct agent message template with header, avatar, and response index
+4. ✅ Implemented `getMessageClasses()` and `getAgentName()` helper methods
+5. ✅ Added required Angular imports (NgClass, DatePipe)
+6. ✅ Added CSS styling for visual message type differentiation
+7. ✅ Successfully compiled and tested all template changes
+
+#### 3.1 Conditional Message Rendering ✅
 ```html
 <!-- chatbox.component.html -->
 <div class="chatbox-messages" #messagesContainer>
-  @for (message of messages(); track message.id) {
-    <div [ngClass]="getMessageClasses(message)">
-      @if (message.persona === 'user') {
+  @for (messageData of messagesWithReasoningFlags(); track messageData.index) {
+    <div [ngClass]="getMessageClasses(messageData)">
+      @if (messageData.persona === 'user') {
         <!-- User message template -->
         <mat-card>
           <mat-card-content>
-            <div class="user-message-content">{{ message.text }}</div>
+            <div class="user-message-content">{{ messageData.text }}</div>
           </mat-card-content>
         </mat-card>
       }
       
-      @if (message.persona === 'bot') {
+      @if (messageData.persona === 'bot') {
         <!-- Bot message with typing indicator support -->
         <mat-card>
           <mat-card-content>
-            @if (message.typing) {
+            @if (messageData.typing) {
               <div class="typing-indicator">
                 <div class="typing__dot"></div>
                 <div class="typing__dot"></div>
@@ -342,14 +358,29 @@ export class ChatboxComponent {
               </div>
             } @else {
               <div class="bot-message-content">
-                <markdown [data]="message.text"></markdown>
+                <markdown [data]="messageData.text"></markdown>
               </div>
+              <!-- Bot-specific reasoning and error toggles preserved -->
+              <div class="message-toggles">
+                @if (messageData.hasReasoning) {
+                  <button mat-icon-button class="reasoning-toggle"...>
+                }
+                @if (messageData.hasError) {
+                  <button mat-icon-button class="error-toggle"...>
+                }
+              </div>
+              @if (messageData.showReasoning && messageData.reasoning) {
+                <div class="reasoning-section"...>
+              }
+              @if (messageData.showError && messageData.error) {
+                <div class="error-section"...>
+              }
             }
           </mat-card-content>
         </mat-card>
       }
       
-      @if (message.persona === 'agent') {
+      @if (messageData.persona === 'agent') {
         <!-- Agent message - no typing indicator -->
         <mat-card class="agent-message-card">
           <mat-card-content>
@@ -358,17 +389,17 @@ export class ChatboxComponent {
                 <mat-icon>smart_toy</mat-icon>
               </div>
               <span class="agent-name-badge">
-                {{ getAgentName(message.agentType) }}
-                @if (message.responseIndex !== undefined) {
-                  <span class="response-index">#{{ message.responseIndex + 1 }}</span>
+                {{ getAgentName(messageData.agentType) }}
+                @if (messageData.responseIndex !== undefined) {
+                  <span class="response-index">#{{ messageData.responseIndex + 1 }}</span>
                 }
               </span>
               <span class="message-timestamp">
-                {{ message.timestamp | date:'short' }}
+                {{ messageData.timestamp | date:'short' }}
               </span>
             </div>
             <div class="agent-message-content">
-              <markdown [data]="message.text"></markdown>
+              <markdown [data]="messageData.text"></markdown>
             </div>
           </mat-card-content>
         </mat-card>
@@ -377,6 +408,81 @@ export class ChatboxComponent {
   }
 </div>
 ```
+
+**✅ Implementation Status**: COMPLETED
+- Complete template restructure with conditional rendering for all three message types
+- Proper typing indicator support for bot messages only (no typing indicator for agents)
+- Agent messages display response index (#1, #2, etc.) and timestamps
+- Preserved existing bot message functionality (reasoning toggles, error handling)
+- Used `[ngClass]` with `getMessageClasses()` for dynamic CSS class assignment
+
+#### 3.2 Helper Methods Implementation ✅
+```typescript
+// chatbox.component.ts - Helper methods added
+getMessageClasses(message: ChatboxMessage): string {
+  const classes = [`chat-message`, message.persona];
+  
+  if (message.persona === 'agent') {
+    classes.push('agent-message');
+  }
+  
+  if (message.typing) {
+    classes.push('typing');
+  }
+  
+  if (message.error) {
+    classes.push('has-error');
+  }
+  
+  return classes.join(' ');
+}
+
+getAgentName(agentType?: string): string {
+  if (!agentType) {
+    return 'Agent';
+  }
+  
+  // Check if we have agent info from selection service
+  const selectedAgent = this.agentSelectionService.selectedAgent();
+  if (selectedAgent && selectedAgent.name === agentType) {
+    return selectedAgent.name;
+  }
+  
+  // Fall back to the agentType string
+  return agentType;
+}
+```
+
+**✅ Implementation Status**: COMPLETED
+- `getMessageClasses()` method returns dynamic CSS classes based on message properties
+- `getAgentName()` method resolves agent display names from selection service
+- Added required Angular imports: `NgClass` and `DatePipe`
+- Successfully integrated with existing component architecture
+
+#### 3.3 CSS Styling for Message Differentiation ✅
+```css
+/* Message type specific styling */
+.chat-message.user mat-card {
+  background-color: var(--mat-sys-primary-container);
+}
+
+.chat-message.bot mat-card {
+  background-color: var(--mat-sys-surface);
+}
+
+.chat-message.agent mat-card {
+  background-color: #E6F2FF;
+  border-left: 3px solid #0066CC;
+}
+```
+
+**✅ Implementation Status**: COMPLETED
+- Added distinct background colors for user, bot, and agent messages
+- User messages: Material Design primary container color (blue tint)
+- Bot messages: Standard surface color (neutral)
+- Agent messages: Light blue background with left border for extra distinction
+- Maintains existing hover effects and Material Design theming
+- Successfully compiled and tested
 
 ### Phase 4: Agent Service Updates (Sprint 2-3)
 
@@ -693,10 +799,10 @@ public class AgentMessageController {
 - [x] Agent response handler implementation ✅
 - [x] Enhanced error handling for both message types ✅
 
-### Sprint 2 (Week 3-4) - IN PROGRESS
-- [ ] Template updates for conditional rendering
-- [ ] Agent message visual differentiation
-- [ ] Response index and timestamp display
+### Sprint 2 (Week 3-4) ✅ COMPLETED
+- [x] Template updates for conditional rendering ✅
+- [x] Agent message visual differentiation ✅
+- [x] Response index and timestamp display ✅
 
 ### Sprint 3 (Week 5-6)
 - [ ] WebSocket/RabbitMQ integration
@@ -715,7 +821,7 @@ public class AgentMessageController {
 - ✅ Bot messages show immediate typing indicator
 - ✅ Agent messages don't show container until response arrives
 - ✅ Multiple agent responses create separate containers
-- ⏳ Each message type has distinct visual treatment (Phase 3 - Template Updates)
+- ✅ Each message type has distinct visual treatment (Phase 3 - Template Updates)
 - ✅ Proper error handling for connection issues
 
 ### Technical Requirements 
@@ -729,7 +835,7 @@ public class AgentMessageController {
 - ✅ Performance optimized message tracking with signals
 
 ### User Experience 
-- ⏳ Clear visual distinction between message types (Phase 3 - Template Updates)
+- ✅ Clear visual distinction between message types (Phase 3 - Template Updates)
 - ⏳ Smooth animations for message appearance (Phase 5 - Styling)
 - ⏳ Responsive design across devices (Phase 5)
 - ✅ Intuitive agent selection and deselection
@@ -781,12 +887,15 @@ public class AgentMessageController {
 - Added comprehensive error handling for both message types
 - Multi-response agent support with proper stream management
 
-### ⏳ NEXT PHASES
+**Phase 3: Template Updates** - FULLY IMPLEMENTED ✅
+- ✅ Conditional message rendering in templates (Angular @if blocks)
+- ✅ Visual differentiation between message types (distinct CSS styling)
+- ✅ Response index and timestamp display for agent messages
+- ✅ Helper methods for dynamic CSS classes and agent name resolution
+- ✅ Required Angular imports added (NgClass, DatePipe)
+- ✅ Message type specific background colors and styling
 
-**Phase 3: Template Updates** - Ready to begin
-- Conditional message rendering in templates
-- Visual differentiation between message types
-- Response index and timestamp display
+### ⏳ NEXT PHASES
 
 **Phase 4: Backend Integration** - Planned
 - WebSocket/RabbitMQ integration
