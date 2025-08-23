@@ -3,60 +3,31 @@ import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
 /**
- * Agent request interface matching the backend AgentRequest structure.
- */
-export interface AgentRequest {
-  correlationId: string;
-  agentType: string;
-  prompt: string;
-  timestamp: number;
-  userId?: string;
-  context?: any;
-}
-
-/**
- * Agent response interface matching the backend AgentResponse structure.
- * Simplified to only use isComplete flag.
- */
-export interface AgentResponse {
-  correlationId: string;
-  agentType: string;
-  content: string;
-  timestamp: number;
-  isComplete: boolean;  // true = final response, false = more responses coming
-  metadata?: any;
-}
-
-/**
- * SSE event data structure for agent messages.
+ * Agent communication service interface.
+ * Updated to focus solely on message communication since status is now handled
+ * through the centralized metrics system.
  */
 export interface AgentMessageEvent {
   content: string;
   agentType: string;
   timestamp: number;
-  isComplete: boolean;
   correlationId?: string;
   responseIndex?: number;
+  isComplete?: boolean;
+  metadata?: any;
 }
 
 /**
- * Agent connection status interface.
- */
-export interface AgentStatus {
-  connectionStatus: 'connected' | 'disconnected' | 'error';
-  activeHandlers: number;
-}
-
-/**
- * Service for communicating with AI agents via the backend message queue.
+ * Service for agent communication.
  * Implements SSE streaming for real-time responses as specified in AGENTS.md.
+ * Agent status information is now retrieved through the centralized MetricsController.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class AgentService {
 
-  constructor(private apiService: ApiService) { }
+  constructor(private readonly apiService: ApiService) { }
 
   /**
    * Sends a message to an agent and returns an Observable for streaming responses.
@@ -65,7 +36,7 @@ export class AgentService {
    *
    * @param agentType The type of agent (e.g., 'reviewer')
    * @param prompt The message/prompt to send to the agent
-   * @returns Observable that emits agent response events
+   * @returns Observable that emits agent response events or error events
    */
   sendMessage(agentType: string, prompt: string): Observable<AgentMessageEvent | { error: boolean; message: string; timestamp: number }> {
     return new Observable(observer => {
@@ -143,59 +114,11 @@ export class AgentService {
     });
   }
 
-  /**
-   * Gets the current status of the agent messaging system.
-   *
-   * @returns Promise resolving to agent status information
-   */
-  async getAgentStatus(): Promise<AgentStatus> {
-    try {
-      const url = this.apiService.getApiUrl('/api/agents/status');
-      const response = await fetch(url);
-      if (!response.ok) {
-        console.warn(`Agent status endpoint returned ${response.status}: ${response.statusText}`);
-        return {
-          connectionStatus: 'disconnected',
-          activeHandlers: 0
-        };
-      }
-
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        console.warn('Agent status endpoint returned non-JSON response:', contentType);
-        return {
-          connectionStatus: 'error',
-          activeHandlers: 0
-        };
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.warn('Failed to get agent status (agent system may not be available):', error);
-      return {
-        connectionStatus: 'disconnected',
-        activeHandlers: 0
-      };
-    }
-  }
-
-  /**
-   * Checks if a specific agent type is available.
-   * Currently supports 'reviewer' agent as specified in AGENTS.md.
-   *
-   * @param agentType The agent type to check
-   * @returns True if the agent type is supported
-   */
   isAgentSupported(agentType: string): boolean {
     const supportedAgents = ['reviewer'];
     return supportedAgents.includes(agentType.toLowerCase());
   }
 
-  /**
-   * Gets the list of available agent types.
-   *
-   * @returns Array of supported agent types
-   */
   getAvailableAgents(): string[] {
     return ['reviewer'];
   }

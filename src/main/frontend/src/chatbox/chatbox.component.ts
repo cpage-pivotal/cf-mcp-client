@@ -74,6 +74,13 @@ export class ChatboxComponent implements OnDestroy {
     embeddingModel: '',
     vectorStoreName: '',
     mcpServers: [],
+    agentStatus: {                    // ← ADD THIS SECTION
+      connectionStatus: 'disconnected',
+      activeHandlers: 0,
+      implementation: 'none',
+      available: false,
+      message: 'Not initialized'
+    },
     prompts: {
       totalPrompts: 0,
       serversWithPrompts: 0,
@@ -142,8 +149,8 @@ export class ChatboxComponent implements OnDestroy {
     return this._messages().map((message, index) => ({
       ...message,
       index,
-      hasReasoning: message.persona === 'bot' && 
-                   !!message.reasoning && 
+      hasReasoning: message.persona === 'bot' &&
+                   !!message.reasoning &&
                    message.reasoning.trim().length > 0,
       hasError: message.persona === 'bot' && !!message.error,
       reasoningToggleId: `reasoning-toggle-${index}`,
@@ -176,13 +183,13 @@ export class ChatboxComponent implements OnDestroy {
   });
 
   readonly totalReasoningMessages = computed(() => {
-    return this._messages().filter(msg => 
+    return this._messages().filter(msg =>
       msg.persona === 'bot' && msg.reasoning && msg.reasoning.trim().length > 0
     ).length;
   });
 
   readonly visibleReasoningCount = computed(() => {
-    return this._messages().filter(msg => 
+    return this._messages().filter(msg =>
       msg.persona === 'bot' && msg.showReasoning === true
     ).length;
   });
@@ -209,12 +216,12 @@ export class ChatboxComponent implements OnDestroy {
     // Effects for side effects
     this.setupEffects();
   }
-  
+
   ngOnDestroy(): void {
     if (this.updateBatchTimeout) {
       clearTimeout(this.updateBatchTimeout);
     }
-    
+
     // Flush any pending update before destroying
     if (this.pendingUpdate) {
       this.immediateUpdateMessage(
@@ -230,7 +237,7 @@ export class ChatboxComponent implements OnDestroy {
     effect(() => {
       const messageCount = this._messages().length;
       const lastBotIndex = this.lastBotMessageIndex();
-      
+
       if (messageCount > 0) {
         // Only scroll if we have a new message or the last bot message finished typing
         const lastBot = lastBotIndex >= 0 ? this._messages()[lastBotIndex] : null;
@@ -245,7 +252,7 @@ export class ChatboxComponent implements OnDestroy {
     effect(() => {
       const streaming = this._isStreaming();
       const connecting = this._isConnecting();
-      
+
       // Only log when state actually changes to true
       if (streaming || connecting) {
         console.log('Chat state changed:', { streaming, connecting });
@@ -256,7 +263,7 @@ export class ChatboxComponent implements OnDestroy {
     effect(() => {
       const hasAvailablePrompts = this.hasAvailablePrompts();
       const chatModel = this._metricsInput().chatModel;
-      
+
       console.log('Chat capabilities:', {
         hasModel: !!chatModel,
         hasPrompts: hasAvailablePrompts,
@@ -269,7 +276,7 @@ export class ChatboxComponent implements OnDestroy {
       const canSend = this.canSendMessage();
       const hasModel = this._metricsInput().chatModel !== '';
       const hasMessage = this._chatMessage().trim().length > 0;
-      
+
       if (hasMessage && !hasModel && !canSend) {
         console.warn('Cannot send: Chat model not available');
       }
@@ -283,17 +290,17 @@ export class ChatboxComponent implements OnDestroy {
   toggleReasoning(messageIndex: number): void {
     this._messages.update(msgs => {
       if (messageIndex < 0 || messageIndex >= msgs.length) return msgs;
-      
+
       const message = msgs[messageIndex];
       if (message.persona !== 'bot' || !message.reasoning || message.reasoning.trim() === '') {
         return msgs;
       }
-      
+
       const updatedMessage = {
         ...message,
         showReasoning: !message.showReasoning
       };
-      
+
       return [
         ...msgs.slice(0, messageIndex),
         updatedMessage,
@@ -305,17 +312,17 @@ export class ChatboxComponent implements OnDestroy {
   toggleError(messageIndex: number): void {
     this._messages.update(msgs => {
       if (messageIndex < 0 || messageIndex >= msgs.length) return msgs;
-      
+
       const message = msgs[messageIndex];
       if (message.persona !== 'bot' || !message.error) {
         return msgs;
       }
-      
+
       const updatedMessage = {
         ...message,
         showError: !message.showError
       };
-      
+
       return [
         ...msgs.slice(0, messageIndex),
         updatedMessage,
@@ -334,7 +341,7 @@ export class ChatboxComponent implements OnDestroy {
     this.addBotMessagePlaceholder();
     this._chatMessage.set('');
     this._isConnecting.set(true);
-    
+
     // Reset the parser for the new message
     this.thinkTagParser.reset();
 
@@ -390,9 +397,9 @@ export class ChatboxComponent implements OnDestroy {
   }
 
   private addBotMessagePlaceholder(): ChatboxMessage {
-    const botMessage: ChatboxMessage = { 
-      text: '', 
-      persona: 'bot', 
+    const botMessage: ChatboxMessage = {
+      text: '',
+      persona: 'bot',
       typing: true,
       reasoning: '',
       showReasoning: false
@@ -403,21 +410,21 @@ export class ChatboxComponent implements OnDestroy {
 
   private updateBotMessage(content: string, typing: boolean = false): void {
     if (!content && !typing) return;
-    
+
     // Fast path: if no think tags detected and none encountered before, skip parsing
     const hasThinkTags = content ? ThinkTagParser.containsThinkTags(content) : false;
     const hasEncounteredTags = this.thinkTagParser.hasEncounteredThinkTags();
-    
+
     if (!hasThinkTags && !hasEncounteredTags && content) {
       // Pure text content, no parsing needed - use debounced updates for smoother rendering
       this.updateMessageContent(content, '', typing);
       return;
     }
-    
+
     try {
       // Parse the chunk to separate main content from reasoning
       const parseResult = this.thinkTagParser.processChunk(content || '');
-      
+
       // Only update if there's actually new content to avoid unnecessary re-renders
       if (parseResult.mainContent || parseResult.reasoningContent || typing !== undefined) {
         this.updateMessageContent(parseResult.mainContent, parseResult.reasoningContent, typing);
@@ -473,24 +480,24 @@ export class ChatboxComponent implements OnDestroy {
       const lastIndex = msgs.length - 1;
       if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
         const currentMessage = msgs[lastIndex];
-        
+
         // Check if we actually need to update to avoid unnecessary re-renders
-        const needsUpdate = 
-          mainContent || 
-          reasoningContent || 
+        const needsUpdate =
+          mainContent ||
+          reasoningContent ||
           currentMessage.typing !== typing;
-          
+
         if (!needsUpdate) {
           return msgs;
         }
-        
+
         const updatedMessage = {
           ...currentMessage,
           text: currentMessage.text + mainContent,
           reasoning: (currentMessage.reasoning || '') + reasoningContent,
           typing
         };
-        
+
         return [
           ...msgs.slice(0, lastIndex),
           updatedMessage
@@ -545,9 +552,9 @@ export class ChatboxComponent implements OnDestroy {
         if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
           return [
             ...msgs.slice(0, lastIndex),
-            { 
-              ...msgs[lastIndex], 
-              text: errorDetails.message, 
+            {
+              ...msgs[lastIndex],
+              text: errorDetails.message,
               typing: false,
               error: errorDetails,
               showError: false

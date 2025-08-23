@@ -6,6 +6,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.tanzu.mcpclient.chat.ChatConfigurationEvent;
 import org.tanzu.mcpclient.document.DocumentConfigurationEvent;
+import org.tanzu.mcpclient.messaging.MessagingConfigurationEvent;
+import org.tanzu.mcpclient.messaging.MessagingConfigurationEvent.AgentStatus;
 import org.tanzu.mcpclient.prompt.McpPrompt;
 import org.tanzu.mcpclient.prompt.PromptConfigurationEvent;
 
@@ -13,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Service that collects and provides platform metrics including models, MCP servers, and prompts.
+ * Service that collects and provides platform metrics including models, MCP servers, prompts, and agent status.
  * This service listens to various configuration events and maintains current state
  * for monitoring and status display purposes.
  */
@@ -26,6 +28,7 @@ public class MetricsService {
     private List<McpServer> mcpServersWithHealth = List.of();
     private String embeddingModel = "";
     private String vectorStoreName = "";
+    private AgentStatus agentStatus = AgentStatus.unavailable("Not initialized");
 
     private int totalPrompts = 0;
     private int serversWithPrompts = 0;
@@ -47,6 +50,13 @@ public class MetricsService {
         this.embeddingModel = event.getEmbeddingModel() != null ? event.getEmbeddingModel() : "";
         this.vectorStoreName = event.getVectorStoreName() != null ? event.getVectorStoreName() : "";
         logger.debug("Updated document metrics: embedding={}, vectorStore={}", embeddingModel, vectorStoreName);
+    }
+
+    @EventListener
+    public void handleMessagingConfigurationEvent(MessagingConfigurationEvent event) {
+        this.agentStatus = event.getAgentStatus();
+        logger.debug("Updated agent metrics: status={}, implementation={}, available={}",
+                agentStatus.connectionStatus(), agentStatus.implementation(), agentStatus.available());
     }
 
     @EventListener
@@ -75,6 +85,7 @@ public class MetricsService {
                 this.embeddingModel,
                 this.vectorStoreName,
                 this.mcpServersWithHealth.toArray(new McpServer[0]),
+                this.agentStatus,
                 promptMetrics
         );
     }
@@ -85,6 +96,7 @@ public class MetricsService {
             String embeddingModel,
             String vectorStoreName,
             McpServer[] mcpServers,
+            AgentStatus agentStatus,
             PromptMetrics prompts
     ) {}
 

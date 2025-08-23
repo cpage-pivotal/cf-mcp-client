@@ -1,28 +1,38 @@
-import { Component, DestroyRef, Inject, inject, signal, effect } from '@angular/core';
+import { Component, DestroyRef, computed, signal, inject, effect } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { interval } from 'rxjs';
 import { MatToolbar } from '@angular/material/toolbar';
+
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
 import { DocumentPanelComponent } from '../document-panel/document-panel.component';
 import { McpServersPanelComponent } from '../mcp-servers-panel/mcp-servers-panel.component';
 import { AgentsPanelComponent } from '../agents-panel/agents-panel.component';
 import { ChatboxComponent } from '../chatbox/chatbox.component';
-import { HttpClient } from '@angular/common/http';
-import { DOCUMENT } from '@angular/common';
 import { ApiService } from '../services/api.service';
-import { interval } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, AgentsPanelComponent, ChatboxComponent],
+  imports: [
+    CommonModule,
+    MatToolbar,
+    ChatPanelComponent,
+    MemoryPanelComponent,
+    DocumentPanelComponent,
+    McpServersPanelComponent,
+    AgentsPanelComponent,
+    ChatboxComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'pulseui';
+  title = 'frontend';
 
-  // Use signals for reactive state management
+  // Modern Angular signals for reactive state management
   private readonly _currentDocumentIds = signal<string[]>([]);
   private readonly _metrics = signal<PlatformMetrics>({
     conversationId: '',
@@ -30,6 +40,13 @@ export class AppComponent {
     embeddingModel: '',
     vectorStoreName: '',
     mcpServers: [],
+    agentStatus: {
+      connectionStatus: 'disconnected',
+      activeHandlers: 0,
+      implementation: 'none',
+      available: false,
+      message: 'Not initialized'
+    },
     prompts: {
       totalPrompts: 0,
       serversWithPrompts: 0,
@@ -42,9 +59,13 @@ export class AppComponent {
   readonly currentDocumentIds = this._currentDocumentIds.asReadonly();
   readonly metrics = this._metrics.asReadonly();
 
+  // Computed properties for specific metric aspects
+  readonly agentConnected = computed(() => this._metrics().agentStatus.available);
+  readonly vectorStoreAvailable = computed(() => this._metrics().vectorStoreName !== '');
+  readonly embeddingModelAvailable = computed(() => this._metrics().embeddingModel !== '');
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly httpClient = inject(HttpClient);
-  private readonly document = inject(DOCUMENT);
   private readonly apiService = inject(ApiService);
 
   constructor() {
@@ -92,9 +113,9 @@ export class AppComponent {
   }
 
   private getApiBaseUrl(): { protocol: string; host: string } {
-    return { 
-      protocol: this.apiService.getProtocol(), 
-      host: this.apiService.getHost() 
+    return {
+      protocol: this.apiService.getProtocol(),
+      host: this.apiService.getHost()
     };
   }
 }
@@ -134,11 +155,20 @@ export interface EnhancedPromptMetrics {
   promptsByServer: { [serverId: string]: McpPrompt[] };
 }
 
+export interface AgentStatus {
+  connectionStatus: string;
+  activeHandlers: number;
+  implementation: string;
+  available: boolean;
+  message: string;
+}
+
 export interface PlatformMetrics {
   conversationId: string;
   chatModel: string;
   embeddingModel: string;
   vectorStoreName: string;
   mcpServers: McpServer[];
+  agentStatus: AgentStatus;    // ← ADD THIS LINE
   prompts: EnhancedPromptMetrics;
 }
