@@ -149,33 +149,6 @@ public class AgentMessageService implements AgentMessageServiceInterface {
         return handler.getCompletionFuture();
     }
 
-    @Override
-    public CompletableFuture<AgentResponse> sendAgentRequest(String agentType, String prompt, String userId) {
-        CompletableFuture<AgentResponse> firstResponseFuture = new CompletableFuture<>();
-
-        sendAgentRequest(agentType, prompt, userId,
-                response -> {
-                    // Complete with the first response for backward compatibility
-                    if (!firstResponseFuture.isDone()) {
-                        firstResponseFuture.complete(response);
-                    }
-                },
-                error -> {
-                    if (!firstResponseFuture.isDone()) {
-                        firstResponseFuture.completeExceptionally(error);
-                    }
-                },
-                () -> {
-                    // Complete with null if no responses were received
-                    if (!firstResponseFuture.isDone()) {
-                        firstResponseFuture.complete(null);
-                    }
-                }
-        );
-
-        return firstResponseFuture;
-    }
-
     /**
      * Handles incoming agent responses from the reply queue.
      * Streams each response immediately to registered handlers.
@@ -227,19 +200,4 @@ public class AgentMessageService implements AgentMessageServiceInterface {
         );
     }
 
-    @Override
-    public void clearActiveHandlers() {
-        activeHandlers.forEach((correlationId, handler) -> {
-            if (!handler.isCompleted()) {
-                handler.handleError(new RuntimeException("Service shutdown"));
-            }
-        });
-        activeHandlers.clear();
-        logger.info("Cleared all active agent response handlers");
-    }
-
-    @Override
-    public int getActiveHandlerCount() {
-        return activeHandlers.size();
-    }
 }

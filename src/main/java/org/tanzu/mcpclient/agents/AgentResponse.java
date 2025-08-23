@@ -14,19 +14,6 @@ public record AgentResponse(
         @JsonProperty("timestamp") long timestamp,
         @JsonProperty("metadata") Object metadata
 ) {
-    /**
-     * Creates a simple agent response.
-     */
-    public static AgentResponse create(String correlationId, String agentType, String content, boolean isComplete) {
-        return new AgentResponse(
-                correlationId,
-                agentType,
-                content,
-                isComplete,
-                System.currentTimeMillis(),
-                null
-        );
-    }
 
     /**
      * Creates an agent response with metadata.

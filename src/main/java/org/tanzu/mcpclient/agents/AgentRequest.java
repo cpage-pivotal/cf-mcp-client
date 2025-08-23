@@ -26,15 +26,4 @@ public record AgentRequest(
                 null
         );
     }
-
-    public static AgentRequest create(String correlationId, String agentType, String prompt, String userId, Object context) {
-        return new AgentRequest(
-                correlationId,
-                agentType,
-                prompt,
-                Instant.now().toEpochMilli(),
-                userId,
-                context
-        );
-    }
 }

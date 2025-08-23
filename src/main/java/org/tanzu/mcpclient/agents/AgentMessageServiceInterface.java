@@ -28,27 +28,9 @@ public interface AgentMessageServiceInterface {
                                              Runnable onComplete);
 
     /**
-     * Convenience method for backward compatibility.
-     * Returns a CompletableFuture with the first response only.
-     */
-    CompletableFuture<AgentResponse> sendAgentRequest(String agentType, String prompt, String userId);
-
-    /**
      * Gets the current connection status for monitoring.
      *
      * @return Status information about the messaging system
      */
     Map<String, Object> getConnectionStatus();
-
-    /**
-     * Clears any active handlers (useful for cleanup).
-     */
-    void clearActiveHandlers();
-
-    /**
-     * Gets the number of active response handlers.
-     *
-     * @return Number of active handlers
-     */
-    int getActiveHandlerCount();
 }

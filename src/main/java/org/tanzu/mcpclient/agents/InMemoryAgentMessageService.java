@@ -61,49 +61,12 @@ public class InMemoryAgentMessageService implements AgentMessageServiceInterface
     }
 
     @Override
-    public CompletableFuture<AgentResponse> sendAgentRequest(String agentType, String prompt, String userId) {
-        CompletableFuture<AgentResponse> firstResponseFuture = new CompletableFuture<>();
-
-        sendAgentRequest(agentType, prompt, userId,
-                response -> {
-                    // Complete with the first response for backward compatibility
-                    if (!firstResponseFuture.isDone()) {
-                        firstResponseFuture.complete(response);
-                    }
-                },
-                error -> {
-                    if (!firstResponseFuture.isDone()) {
-                        firstResponseFuture.completeExceptionally(error);
-                    }
-                },
-                () -> {
-                    // Complete with null if no responses were received
-                    if (!firstResponseFuture.isDone()) {
-                        firstResponseFuture.complete(null);
-                    }
-                }
-        );
-
-        return firstResponseFuture;
-    }
-
-    @Override
     public Map<String, Object> getConnectionStatus() {
         return Map.of(
                 "connectionStatus", "in-memory-fallback",
                 "activeHandlers", 0,
                 "mode", "mock"
         );
-    }
-
-    @Override
-    public void clearActiveHandlers() {
-        logger.info("In-memory service - no active handlers to clear");
-    }
-
-    @Override
-    public int getActiveHandlerCount() {
-        return 0;
     }
 
     /**

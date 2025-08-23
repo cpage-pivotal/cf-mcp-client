@@ -147,23 +147,6 @@ public class AgentController {
     }
 
     /**
-     * Gets the current status of agent messaging system.
-     *
-     * @return Status information including connection status and active handlers
-     */
-    @GetMapping("/status")
-    public Map<String, Object> getAgentStatus() {
-        if (agentMessageService == null) {
-            return Map.of(
-                    "connectionStatus", "disconnected",
-                    "activeHandlers", 0,
-                    "message", "Agent messaging service not configured"
-            );
-        }
-        return agentMessageService.getConnectionStatus();
-    }
-
-    /**
      * Handles errors in agent communication by sending error events via SSE.
      *
      * @param emitter The SSE emitter
