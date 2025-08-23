@@ -2,14 +2,28 @@
   <div #chatboxMessages class="chatbox-messages">
     <!-- Chat messages will be dynamically inserted here -->
     @for (messageData of messagesWithReasoningFlags(); track messageData.index) {
-      <div class="chat-message {{messageData.persona}}">
+      <div class="chat-message {{messageData.persona}}"
+           [class.agent-message]="messageData.persona === 'agent'">
         <mat-card appearance="outlined"
-                  [style.background-color]="messageData.persona == 'user' ? 'var(--mat-sys-primary-container)' : 'var(--mat-sys-surface)'">
+                  [style.background-color]="messageData.persona == 'user' ? 'var(--mat-sys-primary-container)' : 
+                                          messageData.persona == 'agent' ? '#E6F2FF' : 'var(--mat-sys-surface)'"
+                  [style.border-left]="messageData.persona === 'agent' ? '3px solid #0066CC' : ''">
           <mat-card-content>
             @if (messageData.persona == 'user') {
               <div class="user-message-content">{{ messageData.text }}</div>
             } @else {
               <div class="bot-message-container">
+                @if (messageData.persona === 'agent') {
+                  <!-- Agent message header -->
+                  <div class="agent-message-header">
+                    <div class="agent-avatar">
+                      <mat-icon [style.color]="messageData.agentInfo?.color || '#0066CC'">
+                        {{ messageData.agentInfo?.icon || 'smart_toy' }}
+                      </mat-icon>
+                    </div>
+                    <span class="agent-name-badge">{{ messageData.agentType || 'Agent' }}</span>
+                  </div>
+                }
                 <div class="message-toggles">
                   @if (messageData.hasReasoning) {
                     <button mat-icon-button 
@@ -97,17 +111,34 @@
       </div>
     }
   </div>
-  <div class="chatbox-footer">
+  <div class="chatbox-footer" [class]="agentModeClass()">
     <ng-form style="display: flex; align-items: center; gap: 8px;">
-      <button mat-icon-button type="button"
-              (click)="openPromptSelection()"
-              [disabled]="!hasAvailablePrompts() || isBusy()"
-              [matTooltip]="hasAvailablePrompts() ? 'Select a prompt' : 'No prompts available'">
-        <mat-icon [class.spinning]="isBusy()">psychology</mat-icon>
-      </button>
-      <mat-form-field style="flex-grow: 1">
+      @if (selectedAgent()) {
+        <!-- Agent indicator with deselect option -->
+        <div class="agent-indicator">
+          <mat-icon class="agent-icon" [style.color]="selectedAgent()?.color || '#0066CC'">{{ selectedAgent()?.icon || 'smart_toy' }}</mat-icon>
+          <span class="agent-name">{{ selectedAgent()?.name }}</span>
+          <button mat-icon-button
+                  type="button"
+                  class="deselect-agent-btn"
+                  (click)="agentSelectionService.deselectAgent()"
+                  [matTooltip]="'Deselect ' + selectedAgent()?.name"
+                  [disabled]="isBusy()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      } @else {
+        <!-- Prompt selection button -->
+        <button mat-icon-button type="button"
+                (click)="openPromptSelection()"
+                [disabled]="!hasAvailablePrompts() || isBusy()"
+                [matTooltip]="hasAvailablePrompts() ? 'Select a prompt' : 'No prompts available'">
+          <mat-icon [class.spinning]="isBusy()">psychology</mat-icon>
+        </button>
+      }
+      <mat-form-field style="flex-grow: 1" [class]="inputBorderClass()">
         <input name="chatbox-input"
-               placeholder="Type a message..."
+               [placeholder]="selectedAgent() ? 'Message ' + selectedAgent()?.name + '...' : 'Type a message...'"
                matInput
                [ngModel]="chatMessage()"
                (ngModelChange)="updateChatMessage($event)"
@@ -119,7 +150,8 @@
               type="button"
               (click)="sendChatMessage()"
               [disabled]="!canSendMessage()"
-              [matTooltip]="sendButtonTooltip()">
+              [matTooltip]="sendButtonTooltip()"
+              [class]="sendButtonClass()">
         {{ sendButtonText() }}
       </button>
     </ng-form>

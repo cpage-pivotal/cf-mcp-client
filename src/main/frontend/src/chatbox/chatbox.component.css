@@ -595,3 +595,181 @@ button:active:not(:disabled) {
 .typing__dot:nth-child(1) { animation-delay: 0s; }
 .typing__dot:nth-child(2) { animation-delay: 0.2s; }
 .typing__dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Agent Mode Styling */
+.chatbox-footer.agent-mode {
+  --agent-primary: #0066CC;
+  --agent-background: #E6F2FF;
+  --agent-border: #B3D9FF;
+}
+
+/* Agent Indicator in Footer */
+.agent-indicator {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--agent-primary, #0066CC);
+  color: white;
+  border-radius: 8px;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.agent-indicator .agent-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: white;
+}
+
+.agent-indicator .agent-name {
+  font-weight: 600;
+  letter-spacing: 0.25px;
+}
+
+.agent-indicator .deselect-agent-btn {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.8);
+  transition: color var(--motion-duration) var(--motion-easing);
+}
+
+.agent-indicator .deselect-agent-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.agent-indicator .deselect-agent-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Agent Input Styling */
+.mat-mdc-form-field.agent-input .mdc-text-field--outlined .mdc-notched-outline__leading,
+.mat-mdc-form-field.agent-input .mdc-text-field--outlined .mdc-notched-outline__notch,
+.mat-mdc-form-field.agent-input .mdc-text-field--outlined .mdc-notched-outline__trailing {
+  border-color: #0066CC;
+  border-width: 2px;
+}
+
+.mat-mdc-form-field.agent-input .mdc-text-field--focused .mdc-notched-outline__leading,
+.mat-mdc-form-field.agent-input .mdc-text-field--focused .mdc-notched-outline__notch,
+.mat-mdc-form-field.agent-input .mdc-text-field--focused .mdc-notched-outline__trailing {
+  border-color: #0066CC;
+  border-width: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 102, 204, 0.2);
+}
+
+/* Agent Send Button */
+.mat-flat-button.agent-send-button {
+  background-color: #0066CC !important;
+  color: white !important;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+  transition: all var(--motion-duration) var(--motion-easing);
+}
+
+.mat-flat-button.agent-send-button:hover:not(:disabled) {
+  background-color: #0052A3 !important;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+  transform: translateY(-1px);
+}
+
+.mat-flat-button.agent-send-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.3);
+}
+
+/* Agent Message Styling */
+.chat-message.agent-message {
+  --agent-primary: #0066CC;
+  --agent-background: #E6F2FF;
+  --agent-border: #B3D9FF;
+}
+
+.chat-message.agent mat-card {
+  background: var(--agent-background);
+  border-left: 3px solid var(--agent-primary);
+  position: relative;
+}
+
+.agent-message-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.agent-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--agent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2);
+}
+
+.agent-avatar mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: white;
+}
+
+.agent-name-badge {
+  font-size: 11px;
+  color: var(--agent-primary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(0, 102, 204, 0.1);
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 102, 204, 0.2);
+}
+
+/* Agent Message Content */
+.chat-message.agent .main-content {
+  padding-left: 0;
+}
+
+.chat-message.agent .main-content markdown {
+  color: var(--mat-sys-on-surface);
+}
+
+.chat-message.agent .main-content markdown h1,
+.chat-message.agent .main-content markdown h2,
+.chat-message.agent .main-content markdown h3 {
+  color: var(--agent-primary);
+}
+
+.chat-message.agent .main-content markdown code {
+  background: rgba(0, 102, 204, 0.1);
+  border: 1px solid rgba(0, 102, 204, 0.2);
+}
+
+.chat-message.agent .main-content markdown pre {
+  background: rgba(0, 102, 204, 0.05);
+  border-left: 4px solid var(--agent-primary);
+}
+
+/* Agent Reasoning Section */
+.chat-message.agent .reasoning-section {
+  background: rgba(0, 102, 204, 0.05);
+  border-left-color: var(--agent-primary);
+}
+
+.chat-message.agent .reasoning-header {
+  color: var(--agent-primary);
+}
+
+.chat-message.agent .reasoning-icon {
+  color: var(--agent-primary);
+}

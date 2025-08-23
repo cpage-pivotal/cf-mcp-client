@@ -31,6 +31,7 @@ import {PromptResolutionService} from '../services/prompt-resolution.service';
 import {ApiService} from '../services/api.service';
 import {MatTooltip} from '@angular/material/tooltip';
 import {ThinkTagParser} from './think-tag-parser';
+import {AgentSelectionService, AgentInfo, AgentMessage} from '../services/agent-selection.service';
 
 interface ErrorInfo {
   message: string;
@@ -42,12 +43,14 @@ interface ErrorInfo {
 
 interface ChatboxMessage {
   text: string;
-  persona: 'user' | 'bot';
+  persona: 'user' | 'bot' | 'agent';
   typing?: boolean;
   reasoning?: string;
   showReasoning?: boolean;
   error?: ErrorInfo;
   showError?: boolean;
+  agentType?: string;
+  agentInfo?: AgentInfo;
 }
 
 @Component({
@@ -141,8 +144,17 @@ export class ChatboxComponent implements OnDestroy {
     if (!this.canSendMessage()) {
       return 'Enter a message to send';
     }
-    return 'Send message';
+    const selectedAgent = this.agentSelectionService.selectedAgent();
+    return selectedAgent ? `Send to ${selectedAgent.name}` : 'Send message';
   });
+
+  // Agent-related computed properties
+  readonly selectedAgent = computed(() => this.agentSelectionService.selectedAgent());
+  readonly hasSelectedAgent = computed(() => this.agentSelectionService.hasSelectedAgent());
+  readonly isAgentMode = computed(() => this.hasSelectedAgent());
+  readonly agentModeClass = computed(() => this.isAgentMode() ? 'agent-mode' : '');
+  readonly inputBorderClass = computed(() => this.isAgentMode() ? 'agent-input' : '');
+  readonly sendButtonClass = computed(() => this.isAgentMode() ? 'agent-send-button' : '');
 
   // Computed signals for optimized rendering
   readonly messagesWithReasoningFlags = computed(() => {
@@ -210,7 +222,8 @@ export class ChatboxComponent implements OnDestroy {
     private ngZone: NgZone,
     private dialog: MatDialog,
     private promptResolutionService: PromptResolutionService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    public agentSelectionService: AgentSelectionService
   ) {
 
     // Effects for side effects
@@ -336,10 +349,23 @@ export class ChatboxComponent implements OnDestroy {
     if (!this.canSendMessage()) return;
 
     const messageText = this._chatMessage();
+    const selectedAgent = this.agentSelectionService.selectedAgent();
 
     this.addUserMessage(messageText);
-    this.addBotMessagePlaceholder();
     this._chatMessage.set('');
+
+    // Route message based on agent selection
+    if (selectedAgent) {
+      await this.sendAgentMessage(messageText, selectedAgent);
+      // Auto-deselect agent after sending
+      this.agentSelectionService.deselectAgent();
+    } else {
+      await this.sendRegularChatMessage(messageText);
+    }
+  }
+
+  private async sendRegularChatMessage(messageText: string): Promise<void> {
+    this.addBotMessagePlaceholder();
     this._isConnecting.set(true);
 
     // Reset the parser for the new message
@@ -366,6 +392,45 @@ export class ChatboxComponent implements OnDestroy {
     } catch (error) {
       console.error('Chat request error:', error);
       this.handleChatError('Sorry, I encountered an error processing your request.');
+    }
+  }
+
+  private async sendAgentMessage(messageText: string, agent: AgentInfo): Promise<void> {
+    this.addAgentMessagePlaceholder(agent);
+    this._isConnecting.set(true);
+
+    try {
+      // Send message to agent via AgentSelectionService
+      this.agentSelectionService.sendAgentMessage(messageText).subscribe({
+        next: (response) => {
+          this.ngZone.run(() => {
+            if ('error' in response) {
+              // Handle error response
+              this.handleAgentError(response.message);
+            } else {
+              // Handle agent message event
+              if (response.isComplete) {
+                this.updateAgentMessage(response.content, false, agent);
+                this._isConnecting.set(false);
+                this._isStreaming.set(false);
+              } else {
+                if (this._isConnecting()) {
+                  this._isConnecting.set(false);
+                  this._isStreaming.set(true);
+                }
+                this.updateAgentMessage(response.content, true, agent);
+              }
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Agent message error:', error);
+          this.handleAgentError('Failed to communicate with agent');
+        }
+      });
+    } catch (error) {
+      console.error('Agent request error:', error);
+      this.handleAgentError('Sorry, I encountered an error communicating with the agent.');
     }
   }
 
@@ -406,6 +471,20 @@ export class ChatboxComponent implements OnDestroy {
     };
     this._messages.update(msgs => [...msgs, botMessage]);
     return botMessage;
+  }
+
+  private addAgentMessagePlaceholder(agent: AgentInfo): ChatboxMessage {
+    const agentMessage: ChatboxMessage = {
+      text: '',
+      persona: 'agent',
+      typing: true,
+      reasoning: '',
+      showReasoning: false,
+      agentType: agent.name,
+      agentInfo: agent
+    };
+    this._messages.update(msgs => [...msgs, agentMessage]);
+    return agentMessage;
   }
 
   private updateBotMessage(content: string, typing: boolean = false): void {
@@ -559,6 +638,45 @@ export class ChatboxComponent implements OnDestroy {
               error: errorDetails,
               showError: false
             }
+          ];
+        }
+        return msgs;
+      });
+      this._isStreaming.set(false);
+      this._isConnecting.set(false);
+    });
+  }
+
+  private updateAgentMessage(content: string, typing: boolean, agent: AgentInfo): void {
+    this._messages.update(msgs => {
+      const lastIndex = msgs.length - 1;
+      if (lastIndex >= 0 && msgs[lastIndex].persona === 'agent') {
+        const currentMessage = msgs[lastIndex];
+        const updatedMessage = {
+          ...currentMessage,
+          text: typing ? currentMessage.text + content : content,
+          typing,
+          agentType: agent.name,
+          agentInfo: agent
+        };
+
+        return [
+          ...msgs.slice(0, lastIndex),
+          updatedMessage
+        ];
+      }
+      return msgs;
+    });
+  }
+
+  private handleAgentError(errorMessage: string): void {
+    this.ngZone.run(() => {
+      this._messages.update(msgs => {
+        const lastIndex = msgs.length - 1;
+        if (lastIndex >= 0 && msgs[lastIndex].persona === 'agent') {
+          return [
+            ...msgs.slice(0, lastIndex),
+            { ...msgs[lastIndex], text: errorMessage, typing: false }
           ];
         }
         return msgs;
