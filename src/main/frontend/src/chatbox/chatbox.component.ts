@@ -32,6 +32,7 @@ import {ApiService} from '../services/api.service';
 import {MatTooltip} from '@angular/material/tooltip';
 import {ThinkTagParser} from './think-tag-parser';
 import {AgentSelectionService, AgentInfo, AgentMessage} from '../services/agent-selection.service';
+import {MessageFactoryService, ChatboxMessage as FactoryMessage} from '../services/message-factory.service';
 
 interface ErrorInfo {
   message: string;
@@ -42,14 +43,21 @@ interface ErrorInfo {
 }
 
 interface ChatboxMessage {
+  id: string;
   text: string;
   persona: 'user' | 'bot' | 'agent';
+  agentType?: string;
+  timestamp: Date;
+  // New fields for message behavior discrimination
+  messageType: 'single-response' | 'multi-response';
+  parentMessageId?: string; // For linking agent responses to user message
+  responseIndex?: number; // For ordering multiple agent responses
+  isComplete?: boolean; // Indicates if message sequence is complete
   typing?: boolean;
   reasoning?: string;
   showReasoning?: boolean;
   error?: ErrorInfo;
   showError?: boolean;
-  agentType?: string;
   agentInfo?: AgentInfo;
 }
 
@@ -223,7 +231,8 @@ export class ChatboxComponent implements OnDestroy {
     private dialog: MatDialog,
     private promptResolutionService: PromptResolutionService,
     private apiService: ApiService,
-    public agentSelectionService: AgentSelectionService
+    public agentSelectionService: AgentSelectionService,
+    private messageFactory: MessageFactoryService
   ) {
 
     // Effects for side effects
@@ -351,21 +360,21 @@ export class ChatboxComponent implements OnDestroy {
     const messageText = this._chatMessage();
     const selectedAgent = this.agentSelectionService.selectedAgent();
 
-    this.addUserMessage(messageText);
+    const userMessage = this.addUserMessage(messageText);
     this._chatMessage.set('');
 
     // Route message based on agent selection
     if (selectedAgent) {
-      await this.sendAgentMessage(messageText, selectedAgent);
+      await this.sendAgentMessage(messageText, selectedAgent, userMessage.id);
       // Auto-deselect agent after sending
       this.agentSelectionService.deselectAgent();
     } else {
-      await this.sendRegularChatMessage(messageText);
+      await this.sendRegularChatMessage(messageText, userMessage.id);
     }
   }
 
-  private async sendRegularChatMessage(messageText: string): Promise<void> {
-    this.addBotMessagePlaceholder();
+  private async sendRegularChatMessage(messageText: string, userMessageId: string): Promise<void> {
+    this.addBotMessagePlaceholder(userMessageId);
     this._isConnecting.set(true);
 
     // Reset the parser for the new message
@@ -395,8 +404,8 @@ export class ChatboxComponent implements OnDestroy {
     }
   }
 
-  private async sendAgentMessage(messageText: string, agent: AgentInfo): Promise<void> {
-    this.addAgentMessagePlaceholder(agent);
+  private async sendAgentMessage(messageText: string, agent: AgentInfo, userMessageId: string): Promise<void> {
+    this.addAgentMessagePlaceholder(agent, userMessageId);
     this._isConnecting.set(true);
 
     try {
@@ -454,34 +463,38 @@ export class ChatboxComponent implements OnDestroy {
     });
   }
 
-  private addUserMessage(text: string): void {
+  private addUserMessage(text: string): ChatboxMessage {
+    const userMessage = this.messageFactory.createUserMessage(text);
     this._messages.update(msgs => [
       ...msgs,
-      { text, persona: 'user' }
+      userMessage
     ]);
+    return userMessage;
   }
 
-  private addBotMessagePlaceholder(): ChatboxMessage {
-    const botMessage: ChatboxMessage = {
-      text: '',
-      persona: 'bot',
-      typing: true,
-      reasoning: '',
-      showReasoning: false
-    };
+  private addBotMessagePlaceholder(userMessageId: string): ChatboxMessage {
+    const botMessage = this.messageFactory.createBotMessagePlaceholder(userMessageId);
     this._messages.update(msgs => [...msgs, botMessage]);
     return botMessage;
   }
 
-  private addAgentMessagePlaceholder(agent: AgentInfo): ChatboxMessage {
+  private addAgentMessagePlaceholder(agent: AgentInfo, userMessageId: string): ChatboxMessage {
+    // For now, create a placeholder similar to bot messages but with agent persona
+    // Note: According to the design, agent messages should not show placeholders
+    // This will be updated in later phases to implement the deferred container display
     const agentMessage: ChatboxMessage = {
+      id: this.messageFactory.generateId(),
       text: '',
       persona: 'agent',
+      messageType: 'multi-response',
+      parentMessageId: userMessageId,
+      timestamp: new Date(),
       typing: true,
       reasoning: '',
       showReasoning: false,
       agentType: agent.name,
-      agentInfo: agent
+      agentInfo: agent,
+      isComplete: false
     };
     this._messages.update(msgs => [...msgs, agentMessage]);
     return agentMessage;
