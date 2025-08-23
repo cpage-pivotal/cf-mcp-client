@@ -530,7 +530,7 @@ export class ChatboxComponent implements OnDestroy {
       if (this.lastBotMessage()?.text === '') {
         this._messages.update(msgs => {
           const lastIndex = msgs.length - 1;
-          if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
+          if (lastIndex >= 0 && (msgs[lastIndex].persona === 'bot' || msgs[lastIndex].persona === 'agent' as any)) {
             return [
               ...msgs.slice(0, lastIndex),
               { ...msgs[lastIndex], text: errorMessage, typing: false }
@@ -549,7 +549,7 @@ export class ChatboxComponent implements OnDestroy {
       this.setBotMessageTyping(false);
       this._messages.update(msgs => {
         const lastIndex = msgs.length - 1;
-        if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
+        if (lastIndex >= 0 && (msgs[lastIndex].persona === 'bot' || msgs[lastIndex].persona === 'agent' as any)) {
           return [
             ...msgs.slice(0, lastIndex),
             {

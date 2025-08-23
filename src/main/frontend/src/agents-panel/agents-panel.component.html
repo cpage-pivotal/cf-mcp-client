@@ -14,120 +14,77 @@
       </button>
     </div>
 
-    <!-- Agent Status Section -->
+    <!-- Agent System Status -->
     <div class="agent-status-section">
       <h3>Agent System Status</h3>
-      <div class="agent-list">
-        <div class="agent-item">
-          <div class="agent-info">
-            <div class="agent-header">
-              <h4>{{ selectedAgent | titlecase }} Agent</h4>
-            </div>
-            <div class="agent-details">
-              <p>Status: {{ agentStatus().connectionStatus | titlecase }}</p>
-              <p>Implementation: {{ agentStatus().implementation | titlecase }}</p>
-              <p>Active Handlers: {{ agentStatus().activeHandlers }}</p>
-              <p *ngIf="agentStatus().message" class="status-message">{{ agentStatus().message }}</p>
-            </div>
-          </div>
-          <div class="agent-status">
-            <div class="status-indicator"
-                 [ngClass]="{
-                   'status-green': isConnected(),
-                   'status-red': !isConnected()
-                 }">
-              <mat-icon>{{ isConnected() ? 'check_circle' : 'error' }}</mat-icon>
-              <span class="status-text">{{ isConnected() ? 'Connected' : 'Disconnected' }}</span>
-            </div>
-          </div>
+      <div class="system-status">
+        <div class="status-indicator"
+             [ngClass]="{
+               'status-green': isConnected(),
+               'status-red': !isConnected()
+             }">
+          <mat-icon>{{ isConnected() ? 'check_circle' : 'error' }}</mat-icon>
+          <span class="status-text">{{ isConnected() ? 'Connected' : 'Disconnected' }}</span>
+        </div>
+        <div class="status-details">
+          <p>Implementation: {{ agentStatus().implementation | titlecase }}</p>
+          <p>Active Handlers: {{ agentStatus().activeHandlers }}</p>
+          <p *ngIf="agentStatus().message" class="status-message">{{ agentStatus().message }}</p>
         </div>
       </div>
     </div>
 
-    <!-- Agent Interaction Section (only show if connected) -->
-    <div class="agent-interaction-container" *ngIf="isConnected()">
-      <!-- Agent Selection -->
-      <div class="agent-selector">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Select Agent</mat-label>
-          <mat-select [(value)]="selectedAgent">
-            <mat-option *ngFor="let agent of availableAgents; trackBy: trackByAgent" [value]="agent">
-              {{ agent | titlecase }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <!-- Message History -->
-      <div class="message-history">
-        <div class="message-header">
-          <h3>Conversation</h3>
-          <button mat-icon-button
-                  (click)="clearMessages()"
-                  matTooltip="Clear Messages"
-                  [disabled]="messages().length === 0">
-            <mat-icon>clear_all</mat-icon>
-          </button>
-        </div>
-
-        <div class="messages-container">
-          <div *ngFor="let message of messages(); trackBy: trackByMessage"
-               class="message"
-               [ngClass]="{
-                 'user-message': message.sender === 'user',
-                 'agent-message': message.sender === 'agent',
-                 'error-message': message.isError
-               }">
-            <div class="message-avatar">
-              <mat-icon [ngClass]="{'agent-avatar-icon': message.sender === 'agent'}">
-                {{ message.sender === 'user' ? 'person' : 'smart_toy' }}
+    <!-- Agent Selection Section (only show if connected) -->
+    <div class="agent-selection-container" *ngIf="isConnected()">
+      <h3>Available Agents</h3>
+      <p class="selection-help">Select an agent to start a conversation in the chat panel</p>
+      
+      <div class="agents-grid">
+        <div *ngFor="let agent of availableAgents(); trackBy: trackByAgent"
+             class="agent-card"
+             [ngClass]="{
+               'selected': isAgentSelected(agent),
+               'available': agent.status === 'connected',
+               'busy': agent.status === 'busy',
+               'disconnected': agent.status === 'disconnected'
+             }"
+             (click)="selectAgent(agent)">
+          
+          <!-- Agent Icon -->
+          <div class="agent-icon" [style.background-color]="agent.color">
+            <mat-icon>{{ agent.icon || 'smart_toy' }}</mat-icon>
+          </div>
+          
+          <!-- Agent Info -->
+          <div class="agent-info">
+            <h4 class="agent-name">{{ agent.name }}</h4>
+            <p class="agent-description">{{ agent.description }}</p>
+            
+            <!-- Agent Status -->
+            <div class="agent-status-badge"
+                 [ngClass]="'status-' + agent.status">
+              <mat-icon class="status-icon">
+                {{ agent.status === 'connected' ? 'check_circle' : 
+                   agent.status === 'busy' ? 'schedule' : 'error' }}
               </mat-icon>
-            </div>
-            <div class="message-content">
-              <div class="message-header-small">
-                <span class="sender-name">{{ message.sender === 'user' ? 'You' : (message.agentType | titlecase) }}</span>
-                <span class="message-time">{{ message.timestamp | date:'short' }}</span>
-              </div>
-              <div class="message-text">{{ message.content }}</div>
-              <div *ngIf="message.sender === 'agent' && !message.isComplete && !message.isError" class="streaming-indicator">
-                <mat-icon class="streaming-icon">more_horiz</mat-icon>
-                <span>Typing...</span>
-              </div>
+              <span>{{ agent.status | titlecase }}</span>
             </div>
           </div>
-
-          <div *ngIf="messages().length === 0" class="empty-state">
-            <mat-icon>chat</mat-icon>
-            <p>Start a conversation with the {{ selectedAgent }} agent</p>
+          
+          <!-- Selection Indicator -->
+          <div class="selection-indicator" *ngIf="isAgentSelected(agent)">
+            <mat-icon>check</mat-icon>
           </div>
         </div>
       </div>
-
-      <!-- Message Input -->
-      <div class="message-input-container">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Type your message...</mat-label>
-          <textarea matInput
-                    [value]="currentPrompt()"
-                    (input)="updatePrompt($any($event.target).value)"
-                    (keydown)="onKeyPress($event)"
-                    placeholder="Ask the agent to help with your task..."
-                    rows="3"
-                    [disabled]="isLoading()"></textarea>
-        </mat-form-field>
-
-        <div class="input-actions">
-          <div *ngIf="isLoading()" class="loading-indicator">
-            <mat-spinner diameter="20"></mat-spinner>
-            <span>Agent is thinking...</span>
-          </div>
-          <button *ngIf="!isLoading()"
-                  mat-raised-button
-                  color="primary"
-                  (click)="sendMessage()"
-                  [disabled]="!currentPrompt().trim() || isLoading()">
-            <mat-icon>send</mat-icon>
-            Send
+      
+      <!-- Selected Agent Info -->
+      <div class="selected-agent-info" *ngIf="selectedAgent()">
+        <div class="selected-banner">
+          <mat-icon>info</mat-icon>
+          <span>{{ selectedAgent()?.name }} is selected. Go to the chat panel to start a conversation.</span>
+          <button mat-icon-button (click)="agentSelectionService.deselectAgent()" matTooltip="Deselect">
+            <mat-icon>close</mat-icon>
           </button>
         </div>
       </div>

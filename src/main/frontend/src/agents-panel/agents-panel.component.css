@@ -68,41 +68,19 @@ mat-sidenav-content {
   color: #333;
 }
 
-.agent-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.agent-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 12px;
+.system-status {
   background-color: #f8f9fa;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
+  padding: 12px;
 }
 
-.agent-info {
-  flex: 1;
+.status-details {
+  margin-top: 8px;
 }
 
-.agent-header h4 {
-  margin: 0 0 8px 0;
-  font-size: 16px;
-  font-weight: 500;
-  color: #0066CC;
-}
-
-.agent-details {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.agent-details p {
-  margin: 0;
+.status-details p {
+  margin: 0 0 4px 0;
   font-size: 12px;
   color: #666;
 }
@@ -110,12 +88,6 @@ mat-sidenav-content {
 .status-message {
   font-style: italic;
   color: #888;
-}
-
-.agent-status {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
 }
 
 .status-indicator {
@@ -144,179 +116,182 @@ mat-sidenav-content {
   font-weight: 500;
 }
 
-/* Agent Interaction Styles */
-.agent-interaction-container {
+/* Agent Selection Styles */
+.agent-selection-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 200px);
 }
 
-/* Agent Selection */
-.agent-selector {
-  margin-bottom: 16px;
-}
-
-.full-width {
-  width: 100%;
-}
-
-/* Message History Styles */
-.message-history {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.message-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  margin-bottom: 16px;
-}
-
-.message-header h3 {
-  margin: 0;
+.agent-selection-container h3 {
+  margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 500;
   color: #0066CC;
 }
 
-.messages-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 0;
-  min-height: 0;
+.selection-help {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
 }
 
-.message {
+.agents-grid {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 16px;
-  align-items: flex-start;
 }
 
-.message-avatar {
-  margin-right: 8px;
+.agent-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.agent-card:hover {
+  background: #f0f4ff;
+  border-color: #b3d9ff;
+}
+
+.agent-card.selected {
+  background: #e6f2ff;
+  border-color: #0066CC;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.15);
+}
+
+.agent-card.disconnected {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.agent-card.busy {
+  border-color: #ff9800;
+}
+
+.agent-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin-right: 16px;
   flex-shrink: 0;
 }
 
-.message-avatar mat-icon {
-  font-size: 20px;
-  height: 20px;
-  width: 20px;
-  color: #666;
+.agent-icon mat-icon {
+  font-size: 24px;
+  height: 24px;
+  width: 24px;
+  color: white;
 }
 
-.agent-avatar-icon {
-  color: #0066CC !important;
-}
-
-.message-content {
+.agent-info {
   flex: 1;
   min-width: 0;
 }
 
-.message-header-small {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.sender-name {
-  font-size: 12px;
+.agent-name {
+  margin: 0 0 4px 0;
+  font-size: 16px;
   font-weight: 500;
-  color: #666;
-}
-
-.message-time {
-  font-size: 10px;
-  color: #999;
-}
-
-.message-text {
-  font-size: 14px;
-  line-height: 1.4;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.user-message .message-text {
   color: #333;
 }
 
-.agent-message .message-text {
-  color: #0066CC;
+.agent-description {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.3;
 }
 
-.error-message .message-text {
+.agent-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.agent-status-badge .status-icon {
+  font-size: 14px !important;
+  height: 14px !important;
+  width: 14px !important;
+}
+
+.status-connected {
+  color: #4CAF50;
+}
+
+.status-busy {
+  color: #FF9800;
+}
+
+.status-disconnected {
   color: #F44336;
 }
 
-.streaming-indicator {
+.selection-indicator {
+  position: absolute;
+  top: 12px;
+  right: 12px;
   display: flex;
   align-items: center;
-  margin-top: 4px;
-  font-size: 12px;
-  color: #666;
-  font-style: italic;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #0066CC;
+  border-radius: 50%;
+  color: white;
 }
 
-.streaming-icon {
+.selection-indicator mat-icon {
   font-size: 16px !important;
   height: 16px !important;
   width: 16px !important;
-  margin-right: 4px;
-  animation: pulse 1.5s infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 16px;
-  color: #999;
-  text-align: center;
-}
-
-.empty-state mat-icon {
-  font-size: 48px;
-  height: 48px;
-  width: 48px;
-  margin-bottom: 16px;
-  opacity: 0.5;
-}
-
-/* Message Input Styles */
-.message-input-container {
+.selected-agent-info {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.input-actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-top: 8px;
-  min-height: 40px;
-}
-
-.loading-indicator {
+.selected-banner {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #0066CC;
+  padding: 12px 16px;
+  background: #e6f2ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 8px;
   font-size: 14px;
+  color: #0066CC;
+}
+
+.selected-banner mat-icon {
+  font-size: 16px !important;
+  height: 16px !important;
+  width: 16px !important;
+  color: #0066CC;
+}
+
+.selected-banner span {
+  flex: 1;
+}
+
+.selected-banner button {
+  margin-left: auto;
 }
 
 /* Disconnected State Styles */
