@@ -42,6 +42,16 @@ interface ErrorInfo {
   context?: Record<string, string>;
 }
 
+interface AgentResponse {
+  text: string;
+  correlationId: string;
+  agentId: string;
+  agentInfo: AgentInfo;
+  timestamp: Date;
+  isComplete: boolean;
+  metadata: Record<string, any>;
+}
+
 interface ChatboxMessage {
   id: string;
   text: string;
@@ -105,6 +115,10 @@ export class ChatboxComponent implements OnDestroy {
   private readonly _chatMessage = signal<string>('');
   private readonly _isStreaming = signal<boolean>(false);
   private readonly _isConnecting = signal<boolean>(false);
+  
+  // New signals for message tracking
+  private readonly _pendingBotResponses = signal<Map<string, ChatboxMessage>>(new Map());
+  private readonly _agentResponseStreams = signal<Map<string, ChatboxMessage[]>>(new Map());
 
   // Public readonly signals
   readonly messages = this._messages.asReadonly();
@@ -358,30 +372,32 @@ export class ChatboxComponent implements OnDestroy {
     if (!this.canSendMessage()) return;
 
     const messageText = this._chatMessage();
-    const selectedAgent = this.agentSelectionService.selectedAgent();
-
     const userMessage = this.addUserMessage(messageText);
     this._chatMessage.set('');
 
     // Route message based on agent selection
-    if (selectedAgent) {
-      await this.sendAgentMessage(messageText, selectedAgent, userMessage.id);
-      // Auto-deselect agent after sending
-      this.agentSelectionService.deselectAgent();
+    if (this.hasSelectedAgent()) {
+      // Agent flow - no immediate placeholder
+      await this.sendAgentMessage(userMessage);
     } else {
-      await this.sendRegularChatMessage(messageText, userMessage.id);
+      // Bot flow - immediate placeholder
+      await this.sendBotMessage(userMessage);
     }
   }
 
-  private async sendRegularChatMessage(messageText: string, userMessageId: string): Promise<void> {
-    this.addBotMessagePlaceholder(userMessageId);
+  private async sendBotMessage(userMessage: ChatboxMessage): Promise<void> {
+    // Create and display placeholder immediately
+    const placeholder = this.messageFactory.createBotMessagePlaceholder(userMessage.id);
+    this._messages.update(msgs => [...msgs, placeholder]);
+    this._pendingBotResponses.update(map => new Map(map.set(userMessage.id, placeholder)));
+    
     this._isConnecting.set(true);
 
     // Reset the parser for the new message
     this.thinkTagParser.reset();
 
     // Create HTTP params
-    let params: HttpParams = new HttpParams().set('chat', messageText);
+    let params: HttpParams = new HttpParams().set('chat', userMessage.text);
     if (this.documentIds.length > 0) {
       // Send multiple document IDs as comma-separated string
       params = params.set('documentIds', this.documentIds.join(','));
@@ -391,7 +407,7 @@ export class ChatboxComponent implements OnDestroy {
       // Check if chat model is available
       const metrics = this._metricsInput();
       if (!metrics.chatModel) {
-        this.handleChatError('No chat model is available');
+        this.handleBotError(userMessage.id, 'No chat model is available');
         return;
       }
 
@@ -400,46 +416,56 @@ export class ChatboxComponent implements OnDestroy {
 
     } catch (error) {
       console.error('Chat request error:', error);
-      this.handleChatError('Sorry, I encountered an error processing your request.');
+      this.handleBotError(userMessage.id, 'Sorry, I encountered an error processing your request.');
     }
   }
 
-  private async sendAgentMessage(messageText: string, agent: AgentInfo, userMessageId: string): Promise<void> {
-    this.addAgentMessagePlaceholder(agent, userMessageId);
+  private async sendAgentMessage(userMessage: ChatboxMessage): Promise<void> {
+    // No immediate placeholder for agent messages
     this._isConnecting.set(true);
-
+    
     try {
+      // Initialize stream tracking
+      this._agentResponseStreams.update(map => new Map(map.set(userMessage.id, [])));
+      
+      const selectedAgent = this.agentSelectionService.selectedAgent();
+      if (!selectedAgent) {
+        this.handleAgentError(userMessage.id, 'No agent selected');
+        return;
+      }
+      
       // Send message to agent via AgentSelectionService
-      this.agentSelectionService.sendAgentMessage(messageText).subscribe({
+      this.agentSelectionService.sendAgentMessage(userMessage.text).subscribe({
         next: (response) => {
           this.ngZone.run(() => {
             if ('error' in response) {
               // Handle error response
-              this.handleAgentError(response.message);
+              this.handleAgentError(userMessage.id, response.message);
             } else {
               // Handle agent message event
-              if (response.isComplete) {
-                this.updateAgentMessage(response.content, false, agent);
-                this._isConnecting.set(false);
-                this._isStreaming.set(false);
-              } else {
-                if (this._isConnecting()) {
-                  this._isConnecting.set(false);
-                  this._isStreaming.set(true);
-                }
-                this.updateAgentMessage(response.content, true, agent);
-              }
+              this.handleAgentResponse({
+                text: response.content,
+                correlationId: userMessage.id,
+                agentId: selectedAgent.id,
+                agentInfo: selectedAgent,
+                timestamp: new Date(),
+                isComplete: response.isComplete || false,
+                metadata: {}
+              });
             }
           });
         },
         error: (error) => {
           console.error('Agent message error:', error);
-          this.handleAgentError('Failed to communicate with agent');
+          this.handleAgentError(userMessage.id, 'Failed to communicate with agent');
         }
       });
+      
+      // Auto-deselect agent after sending
+      this.agentSelectionService.deselectAgent();
     } catch (error) {
       console.error('Agent request error:', error);
-      this.handleAgentError('Sorry, I encountered an error communicating with the agent.');
+      this.handleAgentError(userMessage.id, 'Sorry, I encountered an error communicating with the agent.');
     }
   }
 
@@ -472,33 +498,8 @@ export class ChatboxComponent implements OnDestroy {
     return userMessage;
   }
 
-  private addBotMessagePlaceholder(userMessageId: string): ChatboxMessage {
-    const botMessage = this.messageFactory.createBotMessagePlaceholder(userMessageId);
-    this._messages.update(msgs => [...msgs, botMessage]);
-    return botMessage;
-  }
-
-  private addAgentMessagePlaceholder(agent: AgentInfo, userMessageId: string): ChatboxMessage {
-    // For now, create a placeholder similar to bot messages but with agent persona
-    // Note: According to the design, agent messages should not show placeholders
-    // This will be updated in later phases to implement the deferred container display
-    const agentMessage: ChatboxMessage = {
-      id: this.messageFactory.generateId(),
-      text: '',
-      persona: 'agent',
-      messageType: 'multi-response',
-      parentMessageId: userMessageId,
-      timestamp: new Date(),
-      typing: true,
-      reasoning: '',
-      showReasoning: false,
-      agentType: agent.name,
-      agentInfo: agent,
-      isComplete: false
-    };
-    this._messages.update(msgs => [...msgs, agentMessage]);
-    return agentMessage;
-  }
+  // Removed deprecated placeholder methods - bot messages use immediate placeholders
+  // via sendBotMessage, agent messages use deferred containers via handleAgentResponse
 
   private updateBotMessage(content: string, typing: boolean = false): void {
     if (!content && !typing) return;
@@ -587,8 +588,18 @@ export class ChatboxComponent implements OnDestroy {
           ...currentMessage,
           text: currentMessage.text + mainContent,
           reasoning: (currentMessage.reasoning || '') + reasoningContent,
-          typing
+          typing,
+          isComplete: !typing
         };
+        
+        // Update pending responses if this message completes
+        if (!typing && currentMessage.parentMessageId) {
+          this._pendingBotResponses.update(map => {
+            const newMap = new Map(map);
+            newMap.delete(currentMessage.parentMessageId!);
+            return newMap;
+          });
+        }
 
         return [
           ...msgs.slice(0, lastIndex),
@@ -603,10 +614,22 @@ export class ChatboxComponent implements OnDestroy {
     this._messages.update(msgs => {
       const lastIndex = msgs.length - 1;
       if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
+        const currentMessage = msgs[lastIndex];
         const updatedMessage = {
-          ...msgs[lastIndex],
-          typing
+          ...currentMessage,
+          typing,
+          isComplete: !typing
         };
+        
+        // Update pending responses if this message completes
+        if (!typing && currentMessage.parentMessageId) {
+          this._pendingBotResponses.update(map => {
+            const newMap = new Map(map);
+            newMap.delete(currentMessage.parentMessageId!);
+            return newMap;
+          });
+        }
+        
         return [
           ...msgs.slice(0, lastIndex),
           updatedMessage
@@ -616,21 +639,41 @@ export class ChatboxComponent implements OnDestroy {
     });
   }
 
-  private handleChatError(errorMessage: string): void {
+  private handleBotError(userMessageId: string, errorMessage: string): void {
     this.ngZone.run(() => {
-      this.setBotMessageTyping(false);
-      if (this.lastBotMessage()?.text === '') {
+      // Find and update the pending bot response
+      const pendingResponse = this._pendingBotResponses().get(userMessageId);
+      if (pendingResponse) {
         this._messages.update(msgs => {
-          const lastIndex = msgs.length - 1;
-          if (lastIndex >= 0 && (msgs[lastIndex].persona === 'bot' || msgs[lastIndex].persona === 'agent' as any)) {
+          const messageIndex = msgs.findIndex(m => m.id === pendingResponse.id);
+          if (messageIndex >= 0) {
+            const updatedMessage = {
+              ...msgs[messageIndex],
+              text: errorMessage,
+              typing: false,
+              error: {
+                message: errorMessage,
+                errorType: 'BOT_ERROR',
+                timestamp: new Date().toISOString()
+              }
+            };
             return [
-              ...msgs.slice(0, lastIndex),
-              { ...msgs[lastIndex], text: errorMessage, typing: false }
+              ...msgs.slice(0, messageIndex),
+              updatedMessage,
+              ...msgs.slice(messageIndex + 1)
             ];
           }
           return msgs;
         });
+        
+        // Remove from pending responses
+        this._pendingBotResponses.update(map => {
+          const newMap = new Map(map);
+          newMap.delete(userMessageId);
+          return newMap;
+        });
       }
+      
       this._isStreaming.set(false);
       this._isConnecting.set(false);
     });
@@ -638,62 +681,130 @@ export class ChatboxComponent implements OnDestroy {
 
   private handleServerError(errorDetails: ErrorInfo): void {
     this.ngZone.run(() => {
-      this.setBotMessageTyping(false);
-      this._messages.update(msgs => {
-        const lastIndex = msgs.length - 1;
-        if (lastIndex >= 0 && (msgs[lastIndex].persona === 'bot' || msgs[lastIndex].persona === 'agent' as any)) {
-          return [
-            ...msgs.slice(0, lastIndex),
-            {
-              ...msgs[lastIndex],
+      // Find the current bot message being streamed
+      const currentBotMessage = this.lastBotMessage();
+      if (currentBotMessage && currentBotMessage.parentMessageId) {
+        // Update the bot message with error details
+        this._messages.update(msgs => {
+          const messageIndex = msgs.findIndex(m => m.id === currentBotMessage.id);
+          if (messageIndex >= 0) {
+            const updatedMessage = {
+              ...msgs[messageIndex],
               text: errorDetails.message,
               typing: false,
               error: errorDetails,
-              showError: false
-            }
-          ];
-        }
-        return msgs;
-      });
+              showError: false,
+              isComplete: true
+            };
+            return [
+              ...msgs.slice(0, messageIndex),
+              updatedMessage,
+              ...msgs.slice(messageIndex + 1)
+            ];
+          }
+          return msgs;
+        });
+        
+        // Remove from pending responses
+        this._pendingBotResponses.update(map => {
+          const newMap = new Map(map);
+          newMap.delete(currentBotMessage.parentMessageId!);
+          return newMap;
+        });
+      }
+      
       this._isStreaming.set(false);
       this._isConnecting.set(false);
     });
   }
 
-  private updateAgentMessage(content: string, typing: boolean, agent: AgentInfo): void {
-    this._messages.update(msgs => {
-      const lastIndex = msgs.length - 1;
-      if (lastIndex >= 0 && msgs[lastIndex].persona === 'agent') {
-        const currentMessage = msgs[lastIndex];
-        const updatedMessage = {
-          ...currentMessage,
-          text: typing ? currentMessage.text + content : content,
-          typing,
-          agentType: agent.name,
-          agentInfo: agent
-        };
+  // Removed deprecated updateAgentMessage - agent messages are now handled
+  // via handleAgentResponse with separate containers for each response
 
-        return [
-          ...msgs.slice(0, lastIndex),
-          updatedMessage
-        ];
-      }
-      return msgs;
+  private handleAgentResponse(response: AgentResponse): void {
+    // Each response creates a new message container
+    const userMessageId = response.correlationId;
+    const existingResponses = this._agentResponseStreams().get(userMessageId) || [];
+    
+    const agentMessage = this.messageFactory.createAgentMessage(
+      response.text,
+      userMessageId,
+      existingResponses.length
+    );
+    
+    // Set agent-specific properties
+    agentMessage.agentType = response.agentInfo.name;
+    agentMessage.agentInfo = response.agentInfo;
+    
+    // Add new message container
+    this._messages.update(msgs => [...msgs, agentMessage]);
+    
+    // Track in response stream
+    this._agentResponseStreams.update(map => {
+      const stream = map.get(userMessageId) || [];
+      return new Map(map.set(userMessageId, [...stream, agentMessage]));
     });
+    
+    // Check if stream is complete
+    if (response.isComplete) {
+      this.markAgentStreamComplete(userMessageId);
+    }
   }
-
-  private handleAgentError(errorMessage: string): void {
+  
+  private markAgentStreamComplete(userMessageId: string): void {
+    this._agentResponseStreams.update(map => {
+      const stream = map.get(userMessageId);
+      if (stream && stream.length > 0) {
+        // Mark the last message as complete
+        this._messages.update(msgs => {
+          // Find last agent message with matching parentMessageId (manual implementation)
+          let lastAgentIndex = -1;
+          for (let i = msgs.length - 1; i >= 0; i--) {
+            if (msgs[i].persona === 'agent' && msgs[i].parentMessageId === userMessageId) {
+              lastAgentIndex = i;
+              break;
+            }
+          }
+          
+          if (lastAgentIndex >= 0) {
+            const updatedMessage = { ...msgs[lastAgentIndex], isComplete: true };
+            return [
+              ...msgs.slice(0, lastAgentIndex),
+              updatedMessage,
+              ...msgs.slice(lastAgentIndex + 1)
+            ];
+          }
+          return msgs;
+        });
+      }
+      return map;
+    });
+    
+    this._isStreaming.set(false);
+    this._isConnecting.set(false);
+  }
+  
+  private handleAgentError(userMessageId: string, errorMessage: string): void {
     this.ngZone.run(() => {
-      this._messages.update(msgs => {
-        const lastIndex = msgs.length - 1;
-        if (lastIndex >= 0 && msgs[lastIndex].persona === 'agent') {
-          return [
-            ...msgs.slice(0, lastIndex),
-            { ...msgs[lastIndex], text: errorMessage, typing: false }
-          ];
+      // Create an error agent message
+      const errorAgentMessage: ChatboxMessage = {
+        id: this.messageFactory.generateId(),
+        text: errorMessage,
+        persona: 'agent',
+        messageType: 'multi-response',
+        parentMessageId: userMessageId,
+        responseIndex: 0,
+        timestamp: new Date(),
+        typing: false,
+        isComplete: true,
+        error: {
+          message: errorMessage,
+          errorType: 'AGENT_ERROR',
+          timestamp: new Date().toISOString()
         }
-        return msgs;
-      });
+      };
+      
+      this._messages.update(msgs => [...msgs, errorAgentMessage]);
       this._isStreaming.set(false);
       this._isConnecting.set(false);
     });
@@ -792,7 +903,11 @@ export class ChatboxComponent implements OnDestroy {
       eventSource.onerror = (error) => {
         console.error('EventSource error:', error);
         eventSource.close();
-        this.handleChatError('Sorry, I encountered an error processing your request.');
+        // Find the current bot message being streamed
+        const currentBotMessage = this.lastBotMessage();
+        if (currentBotMessage && currentBotMessage.parentMessageId) {
+          this.handleBotError(currentBotMessage.parentMessageId, 'Sorry, I encountered an error processing your request.');
+        }
         reject(error);
       };
 
@@ -804,7 +919,11 @@ export class ChatboxComponent implements OnDestroy {
             this.handleServerError(errorDetails);
           } catch (e) {
             console.error('Failed to parse error details:', e);
-            this.handleChatError('Sorry, I encountered an error processing your request.');
+            // Find the current bot message being streamed
+            const currentBotMessage = this.lastBotMessage();
+            if (currentBotMessage && currentBotMessage.parentMessageId) {
+              this.handleBotError(currentBotMessage.parentMessageId, 'Sorry, I encountered an error processing your request.');
+            }
           }
         });
         eventSource.close();
