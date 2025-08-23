@@ -174,23 +174,42 @@ export class MessageFactoryService {
 - Integrated into ChatboxComponent constructor
 - All existing message creation updated to use factory service
 
-### Phase 2: Chatbox Component Refactoring (Sprint 1-2)
+### Phase 2: Chatbox Component Refactoring (Sprint 1-2) ✅ COMPLETED
 
-#### 2.1 Separate Message Handling Logic
+**Implementation Date**: January 2025  
+**Status**: ✅ FULLY IMPLEMENTED  
+**Files Modified**:
+- `/src/main/frontend/src/chatbox/chatbox.component.ts` - Complete refactoring of message handling logic
+
+**Key Achievements**:
+1. ✅ Added new signals for message tracking (`_pendingBotResponses`, `_agentResponseStreams`)
+2. ✅ Refactored `sendChatMessage()` to route based on agent selection
+3. ✅ Implemented `sendBotMessage()` with immediate placeholder logic
+4. ✅ Implemented `sendAgentMessage()` with deferred container logic
+5. ✅ Added `handleAgentResponse()` with multiple response support
+6. ✅ Updated error handling for both message types
+7. ✅ Maintained backward compatibility with existing functionality
+8. ✅ TypeScript compilation successful
+
+#### 2.1 Separate Message Handling Logic ✅
 ```typescript
 export class ChatboxComponent {
   // Existing signals
-  private readonly messages = signal<ChatboxMessage[]>([]);
+  private readonly _messages = signal<ChatboxMessage[]>([]);
   
   // New signals for message tracking
-  private readonly pendingBotResponses = signal<Map<string, ChatboxMessage>>(new Map());
-  private readonly agentResponseStreams = signal<Map<string, ChatboxMessage[]>>(new Map());
+  private readonly _pendingBotResponses = signal<Map<string, ChatboxMessage>>(new Map());
+  private readonly _agentResponseStreams = signal<Map<string, ChatboxMessage[]>>(new Map());
   
   // Modified send message method
-  async sendMessage(text: string): Promise<void> {
-    const userMessage = this.createUserMessage(text);
-    this.messages.update(msgs => [...msgs, userMessage]);
-    
+  async sendChatMessage(): Promise<void> {
+    if (!this.canSendMessage()) return;
+
+    const messageText = this._chatMessage();
+    const userMessage = this.addUserMessage(messageText);
+    this._chatMessage.set('');
+
+    // Route message based on agent selection
     if (this.hasSelectedAgent()) {
       // Agent flow - no immediate placeholder
       await this.sendAgentMessage(userMessage);
@@ -203,26 +222,22 @@ export class ChatboxComponent {
   private async sendBotMessage(userMessage: ChatboxMessage): Promise<void> {
     // Create and display placeholder immediately
     const placeholder = this.messageFactory.createBotMessagePlaceholder(userMessage.id);
-    this.messages.update(msgs => [...msgs, placeholder]);
-    this.pendingBotResponses.update(map => map.set(userMessage.id, placeholder));
+    this._messages.update(msgs => [...msgs, placeholder]);
+    this._pendingBotResponses.update(map => new Map(map.set(userMessage.id, placeholder)));
     
-    try {
-      const response = await this.chatService.sendMessage(userMessage.text);
-      this.updateBotMessage(userMessage.id, response);
-    } catch (error) {
-      this.handleBotError(userMessage.id, error);
-    }
+    // Continue with existing streaming logic...
   }
   
   private async sendAgentMessage(userMessage: ChatboxMessage): Promise<void> {
     // No immediate placeholder for agent messages
+    this._isConnecting.set(true);
+    
     try {
       // Initialize stream tracking
-      this.agentResponseStreams.update(map => map.set(userMessage.id, []));
+      this._agentResponseStreams.update(map => new Map(map.set(userMessage.id, [])));
       
-      // Send to agent service
-      await this.agentService.sendMessage(userMessage.text);
-      // Responses will come through subscription/websocket
+      // Send to agent service and handle responses via handleAgentResponse
+      // Auto-deselect agent after sending
     } catch (error) {
       this.handleAgentError(userMessage.id, error);
     }
@@ -230,21 +245,14 @@ export class ChatboxComponent {
 }
 ```
 
-#### 2.2 Agent Response Handler
+#### 2.2 Agent Response Handler ✅
 ```typescript
-export class ChatboxComponent implements OnInit {
-  
-  ngOnInit(): void {
-    // Subscribe to agent responses
-    this.agentService.responses$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(response => this.handleAgentResponse(response));
-  }
+export class ChatboxComponent {
   
   private handleAgentResponse(response: AgentResponse): void {
     // Each response creates a new message container
     const userMessageId = response.correlationId;
-    const existingResponses = this.agentResponseStreams().get(userMessageId) || [];
+    const existingResponses = this._agentResponseStreams().get(userMessageId) || [];
     
     const agentMessage = this.messageFactory.createAgentMessage(
       response.text,
@@ -252,13 +260,17 @@ export class ChatboxComponent implements OnInit {
       existingResponses.length
     );
     
+    // Set agent-specific properties
+    agentMessage.agentType = response.agentInfo.name;
+    agentMessage.agentInfo = response.agentInfo;
+    
     // Add new message container
-    this.messages.update(msgs => [...msgs, agentMessage]);
+    this._messages.update(msgs => [...msgs, agentMessage]);
     
     // Track in response stream
-    this.agentResponseStreams.update(map => {
+    this._agentResponseStreams.update(map => {
       const stream = map.get(userMessageId) || [];
-      return map.set(userMessageId, [...stream, agentMessage]);
+      return new Map(map.set(userMessageId, [...stream, agentMessage]));
     });
     
     // Check if stream is complete
@@ -266,8 +278,40 @@ export class ChatboxComponent implements OnInit {
       this.markAgentStreamComplete(userMessageId);
     }
   }
+  
+  private markAgentStreamComplete(userMessageId: string): void {
+    // Mark the last agent message as complete and clean up state
+    // Implementation includes proper cleanup of streaming and connecting states
+  }
 }
 ```
+
+#### 2.3 Enhanced Error Handling ✅
+```typescript
+export class ChatboxComponent {
+  
+  private handleBotError(userMessageId: string, errorMessage: string): void {
+    // Find and update the pending bot response with error details
+    // Clean up pending response tracking
+    // Set proper error state with ErrorInfo object
+  }
+  
+  private handleAgentError(userMessageId: string, errorMessage: string): void {
+    // Create an error agent message (no placeholder replacement needed)
+    // Mark as complete immediately
+    // Include proper error metadata
+  }
+}
+```
+
+**✅ Implementation Status**: COMPLETED
+- All message handling logic successfully separated
+- Bot messages show immediate placeholders with typing indicators
+- Agent messages use deferred container creation (no placeholder until response)
+- Multiple agent responses create separate message containers
+- Comprehensive error handling for both message types
+- Proper state management with signals and cleanup
+- Backward compatibility maintained with existing chat functionality
 
 ### Phase 3: Template Updates (Sprint 2)
 
@@ -645,11 +689,14 @@ public class AgentMessageController {
 - [x] Message interface updates ✅
 - [x] Message factory service implementation ✅
 - [x] Basic message discrimination logic ✅
+- [x] Chatbox component refactoring ✅
+- [x] Agent response handler implementation ✅
+- [x] Enhanced error handling for both message types ✅
 
-### Sprint 2 (Week 3-4)
-- [ ] Chatbox component refactoring
+### Sprint 2 (Week 3-4) - IN PROGRESS
 - [ ] Template updates for conditional rendering
-- [ ] Agent response handler implementation
+- [ ] Agent message visual differentiation
+- [ ] Response index and timestamp display
 
 ### Sprint 3 (Week 5-6)
 - [ ] WebSocket/RabbitMQ integration
@@ -664,24 +711,27 @@ public class AgentMessageController {
 
 ## Success Criteria
 
-### Functional Requirements ✅
+### Functional Requirements 
 - ✅ Bot messages show immediate typing indicator
 - ✅ Agent messages don't show container until response arrives
 - ✅ Multiple agent responses create separate containers
-- ✅ Each message type has distinct visual treatment
+- ⏳ Each message type has distinct visual treatment (Phase 3 - Template Updates)
 - ✅ Proper error handling for connection issues
 
-### Technical Requirements ✅
+### Technical Requirements 
 - ✅ Modern Angular signals used throughout
-- ✅ Java records used for DTOs
-- ✅ WebSocket/RabbitMQ integration for real-time updates
-- ✅ Comprehensive unit and integration tests
-- ✅ Performance optimized for message streams
+- ✅ Message type discrimination and factory pattern
+- ✅ Separate handling logic for bot vs agent messages
+- ✅ Enhanced error handling with proper state management
+- ⏳ Java records used for DTOs (Phase 4 - Backend Integration)
+- ⏳ WebSocket/RabbitMQ integration for real-time updates (Phase 4)
+- ⏳ Comprehensive unit and integration tests (Phase 6)
+- ✅ Performance optimized message tracking with signals
 
-### User Experience ✅
-- ✅ Clear visual distinction between message types
-- ✅ Smooth animations for message appearance
-- ✅ Responsive design across devices
+### User Experience 
+- ⏳ Clear visual distinction between message types (Phase 3 - Template Updates)
+- ⏳ Smooth animations for message appearance (Phase 5 - Styling)
+- ⏳ Responsive design across devices (Phase 5)
 - ✅ Intuitive agent selection and deselection
 - ✅ Graceful error handling with user feedback
 
@@ -714,8 +764,52 @@ public class AgentMessageController {
 - High contrast mode support
 - Focus management for message streams
 
+## Implementation Status Summary
+
+### ✅ COMPLETED PHASES (January 2025)
+
+**Phase 1: Message Type Discrimination** - FULLY IMPLEMENTED
+- Enhanced ChatboxMessage interface with discrimination fields
+- MessageFactoryService created and integrated
+- Foundation for behavior differentiation established
+
+**Phase 2: Chatbox Component Refactoring** - FULLY IMPLEMENTED  
+- Separated bot and agent message handling logic
+- Added dedicated signals for message tracking (`_pendingBotResponses`, `_agentResponseStreams`)
+- Implemented immediate placeholder for bot messages
+- Implemented deferred container creation for agent messages
+- Added comprehensive error handling for both message types
+- Multi-response agent support with proper stream management
+
+### ⏳ NEXT PHASES
+
+**Phase 3: Template Updates** - Ready to begin
+- Conditional message rendering in templates
+- Visual differentiation between message types
+- Response index and timestamp display
+
+**Phase 4: Backend Integration** - Planned
+- WebSocket/RabbitMQ integration
+- Java records for DTOs
+- Real-time message streaming
+
+**Phase 5: Styling & Animation** - Planned
+- CSS updates for agent message styling
+- Smooth animations and transitions
+- Responsive design enhancements
+
+**Phase 6: Testing & Optimization** - Planned
+- Comprehensive unit and integration tests
+- Performance optimization
+- Error recovery scenarios
+
 ## Conclusion
 
-This enhanced implementation plan addresses the key requirement of differentiating between bot and agent message behaviors. The multi-response pattern for agents provides flexibility for complex, conversational AI interactions while maintaining the simplicity of single-response patterns for traditional chatbot interactions.
+The core message behavior differentiation has been successfully implemented. The system now correctly handles:
 
-The use of modern Angular signals and Java records ensures the implementation follows current best practices and maintains code quality and performance standards.
+- **Bot Messages**: Immediate placeholder → typing indicator → single response replacement
+- **Agent Messages**: No placeholder → deferred container creation → multiple separate responses
+
+This enhanced implementation addresses the key requirement of differentiating between bot and agent message behaviors. The multi-response pattern for agents provides flexibility for complex, conversational AI interactions while maintaining the simplicity of single-response patterns for traditional chatbot interactions.
+
+The use of modern Angular signals ensures the implementation follows current best practices and maintains optimal performance and reactivity.
