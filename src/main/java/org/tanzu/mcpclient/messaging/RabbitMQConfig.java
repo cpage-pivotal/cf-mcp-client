@@ -1,4 +1,4 @@
-package org.tanzu.mcpclient.agents;
+package org.tanzu.mcpclient.messaging;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -6,8 +6,8 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
  * Sets up queues and exchanges for agent communication as specified in AGENTS.md.
  */
 @Configuration
-@ConditionalOnClass(ConnectionFactory.class)
+@Conditional(RabbitMQAvailableCondition.class)
 public class RabbitMQConfig {
 
     // Queue names as specified in AGENTS.md

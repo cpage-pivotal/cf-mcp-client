@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * REST controller for agent interactions.
  * Provides endpoints for sending requests to agents and receiving responses via SSE.
- * Updated to stream individual responses immediately as they arrive.
+ * Updated to work with both RabbitMQ and in-memory fallback implementations.
  */
 @RestController
 @RequestMapping("/api/agents")
@@ -27,11 +27,11 @@ public class AgentController {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentController.class);
 
-    private final AgentMessageService agentMessageService;
+    private final AgentMessageServiceInterface agentMessageService;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AgentController(@Autowired(required = false) AgentMessageService agentMessageService) {
+    public AgentController(@Autowired(required = false) AgentMessageServiceInterface agentMessageService) {
         this.agentMessageService = agentMessageService;
     }
 
@@ -57,7 +57,7 @@ public class AgentController {
         executor.execute(() -> {
             try {
                 if (agentMessageService == null) {
-                    handleAgentError(emitter, new RuntimeException("Agent messaging system not available - RabbitMQ not configured"), userId);
+                    handleAgentError(emitter, new RuntimeException("Agent messaging system not available"), userId);
                     return;
                 }
 
@@ -157,7 +157,7 @@ public class AgentController {
             return Map.of(
                     "connectionStatus", "disconnected",
                     "activeHandlers", 0,
-                    "message", "RabbitMQ not configured"
+                    "message", "Agent messaging service not configured"
             );
         }
         return agentMessageService.getConnectionStatus();

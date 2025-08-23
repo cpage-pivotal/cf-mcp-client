@@ -4,8 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
+import org.tanzu.mcpclient.messaging.RabbitMQAvailableCondition;
+import org.tanzu.mcpclient.messaging.RabbitMQConfig;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -16,12 +18,13 @@ import java.util.function.Consumer;
 /**
  * Service for handling agent message queue operations.
  * Manages correlation IDs and response routing as specified in AGENTS.md.
+ * Only enabled when RabbitMQ is available.
  *
  * Updated to stream individual responses immediately to the UI instead of accumulating.
  */
 @Service
-@ConditionalOnClass(RabbitTemplate.class)
-public class AgentMessageService {
+@Conditional(RabbitMQAvailableCondition.class)
+public class AgentMessageService implements AgentMessageServiceInterface {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentMessageService.class);
 
@@ -35,17 +38,18 @@ public class AgentMessageService {
 
     public AgentMessageService(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
+        logger.info("RabbitMQ-based AgentMessageService initialized");
     }
 
     /**
-     * Response handler for streaming individual responses as they arrive.
+     * Response handler class for managing streaming responses.
      */
     public static class ResponseHandler {
         private final Consumer<AgentResponse> onResponse;
         private final Consumer<Throwable> onError;
         private final Runnable onComplete;
         private final CompletableFuture<Void> completionFuture;
-        private volatile boolean isCompleted = false;
+        private volatile boolean completed = false;
 
         public ResponseHandler(Consumer<AgentResponse> onResponse,
                                Consumer<Throwable> onError,
@@ -57,28 +61,35 @@ public class AgentMessageService {
         }
 
         public void handleResponse(AgentResponse response) {
-            if (!isCompleted) {
-                onResponse.accept(response);
-
-                // Check if this is the final response
-                if (Boolean.TRUE.equals(response.isComplete())) {
-                    complete();
+            if (!completed) {
+                try {
+                    onResponse.accept(response);
+                } catch (Exception e) {
+                    handleError(e);
                 }
             }
         }
 
         public void handleError(Throwable error) {
-            if (!isCompleted) {
-                isCompleted = true;
-                onError.accept(error);
+            if (!completed) {
+                completed = true;
+                try {
+                    onError.accept(error);
+                } catch (Exception e) {
+                    logger.error("Error in error handler", e);
+                }
                 completionFuture.completeExceptionally(error);
             }
         }
 
-        public void complete() {
-            if (!isCompleted) {
-                isCompleted = true;
-                onComplete.run();
+        public void handleCompletion() {
+            if (!completed) {
+                completed = true;
+                try {
+                    onComplete.run();
+                } catch (Exception e) {
+                    logger.error("Error in completion handler", e);
+                }
                 completionFuture.complete(null);
             }
         }
@@ -88,22 +99,11 @@ public class AgentMessageService {
         }
 
         public boolean isCompleted() {
-            return isCompleted;
+            return completed;
         }
     }
 
-    /**
-     * Sends a request to an agent and streams responses as they arrive.
-     * Each response is delivered immediately via the provided handlers.
-     *
-     * @param agentType The type of agent (e.g., "reviewer")
-     * @param prompt The prompt to send to the agent
-     * @param userId The user ID making the request
-     * @param onResponse Called for each response as it arrives
-     * @param onError Called if an error occurs
-     * @param onComplete Called when the response sequence is complete
-     * @return CompletableFuture that completes when the entire sequence is done
-     */
+    @Override
     public CompletableFuture<Void> sendAgentRequest(String agentType, String prompt, String userId,
                                                     Consumer<AgentResponse> onResponse,
                                                     Consumer<Throwable> onError,
@@ -149,10 +149,7 @@ public class AgentMessageService {
         return handler.getCompletionFuture();
     }
 
-    /**
-     * Convenience method for backward compatibility.
-     * Returns a CompletableFuture with the first response only.
-     */
+    @Override
     public CompletableFuture<AgentResponse> sendAgentRequest(String agentType, String prompt, String userId) {
         CompletableFuture<AgentResponse> firstResponseFuture = new CompletableFuture<>();
 
@@ -182,8 +179,6 @@ public class AgentMessageService {
     /**
      * Handles incoming agent responses from the reply queue.
      * Streams each response immediately to registered handlers.
-     *
-     * @param response The agent response received from the queue
      */
     @RabbitListener(queues = RabbitMQConfig.AGENT_REPLY_QUEUE)
     public void handleAgentResponse(AgentResponse response) {
@@ -197,6 +192,13 @@ public class AgentMessageService {
             // Stream this response immediately to the handler
             handler.handleResponse(response);
             logger.debug("Streamed response to handler for correlationId: {}", correlationId);
+
+            // If this is the final response, complete the conversation
+            if (Boolean.TRUE.equals(response.isComplete())) {
+                handler.handleCompletion();
+                activeHandlers.remove(correlationId);
+                logger.info("Agent conversation completed - CorrelationId: {}", correlationId);
+            }
         } else {
             logger.warn("Received response for unknown correlationId: {} (may have timed out or completed)",
                     correlationId);
@@ -205,9 +207,6 @@ public class AgentMessageService {
 
     /**
      * Gets the routing key for agent requests based on agent type.
-     *
-     * @param agentType The type of agent
-     * @return The routing key for the request
      */
     private String getRequestRoutingKey(String agentType) {
         return switch (agentType.toLowerCase()) {
@@ -216,21 +215,19 @@ public class AgentMessageService {
         };
     }
 
-    /**
-     * Gets the current connection status for monitoring.
-     *
-     * @return Status information about the message queue connection
-     */
+    @Override
     public Map<String, Object> getConnectionStatus() {
+        // Clean up any completed handlers
+        activeHandlers.entrySet().removeIf(entry -> entry.getValue().isCompleted());
+
         return Map.of(
-                "connectionStatus", "connected", // TODO: Implement actual connection monitoring
-                "activeHandlers", activeHandlers.size()
+                "connectionStatus", "connected",
+                "activeHandlers", activeHandlers.size(),
+                "implementation", "rabbitmq"
         );
     }
 
-    /**
-     * Clears any active handlers (useful for cleanup).
-     */
+    @Override
     public void clearActiveHandlers() {
         activeHandlers.forEach((correlationId, handler) -> {
             if (!handler.isCompleted()) {
@@ -241,11 +238,7 @@ public class AgentMessageService {
         logger.info("Cleared all active agent response handlers");
     }
 
-    /**
-     * Gets the number of active response handlers.
-     *
-     * @return Number of active handlers
-     */
+    @Override
     public int getActiveHandlerCount() {
         return activeHandlers.size();
     }
