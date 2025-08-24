@@ -99,8 +99,8 @@
 
 /* Agent message styling */
 .chat-message.agent mat-card {
-  background-color: #E6F2FF;
-  border-left: 3px solid #0066CC;
+  background-color: var(--mat-sys-tertiary-container);
+  border-left: 3px solid var(--mat-sys-tertiary);
 }
 
 .chatbox-footer {
@@ -166,7 +166,7 @@ button:active:not(:disabled) {
 }
 
 .streaming {
-  color: blue;
+  color: var(--mat-sys-tertiary);
 }
 
 .error {
@@ -614,9 +614,9 @@ button:active:not(:disabled) {
 
 /* Agent Mode Styling */
 .chatbox-footer.agent-mode {
-  --agent-primary: #0066CC;
-  --agent-background: #E6F2FF;
-  --agent-border: #B3D9FF;
+  --agent-primary: var(--mat-sys-tertiary);
+  --agent-background: var(--mat-sys-tertiary-container);
+  --agent-border: var(--mat-sys-tertiary);
 }
 
 /* Agent Indicator in Footer */
@@ -624,8 +624,8 @@ button:active:not(:disabled) {
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  background: var(--agent-primary, #0066CC);
-  color: white;
+  background: var(--agent-primary, var(--mat-sys-tertiary));
+  color: var(--mat-sys-on-tertiary);
   border-radius: 8px;
   gap: 8px;
   font-size: 14px;
@@ -637,7 +637,7 @@ button:active:not(:disabled) {
   font-size: 18px;
   width: 18px;
   height: 18px;
-  color: white;
+  color: var(--mat-sys-on-tertiary);
 }
 
 .agent-indicator .agent-name {
@@ -650,13 +650,13 @@ button:active:not(:disabled) {
   height: 24px;
   margin: 0;
   padding: 0;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(var(--mat-sys-on-tertiary-rgb), 0.8);
   transition: color var(--motion-duration) var(--motion-easing);
 }
 
 .agent-indicator .deselect-agent-btn:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--mat-sys-on-tertiary);
+  background: rgba(var(--mat-sys-on-tertiary-rgb), 0.1);
 }
 
 .agent-indicator .deselect-agent-btn mat-icon {
@@ -669,43 +669,43 @@ button:active:not(:disabled) {
 .mat-mdc-form-field.agent-input .mdc-text-field--outlined .mdc-notched-outline__leading,
 .mat-mdc-form-field.agent-input .mdc-text-field--outlined .mdc-notched-outline__notch,
 .mat-mdc-form-field.agent-input .mdc-text-field--outlined .mdc-notched-outline__trailing {
-  border-color: #0066CC;
+  border-color: var(--mat-sys-tertiary);
   border-width: 2px;
 }
 
 .mat-mdc-form-field.agent-input .mdc-text-field--focused .mdc-notched-outline__leading,
 .mat-mdc-form-field.agent-input .mdc-text-field--focused .mdc-notched-outline__notch,
 .mat-mdc-form-field.agent-input .mdc-text-field--focused .mdc-notched-outline__trailing {
-  border-color: #0066CC;
+  border-color: var(--mat-sys-tertiary);
   border-width: 2px;
-  box-shadow: 0 0 0 1px rgba(0, 102, 204, 0.2);
+  box-shadow: 0 0 0 1px rgba(var(--mat-sys-tertiary-rgb), 0.2);
 }
 
 /* Agent Send Button */
 .mat-flat-button.agent-send-button {
-  background-color: #0066CC !important;
-  color: white !important;
+  background-color: var(--mat-sys-tertiary) !important;
+  color: var(--mat-sys-on-tertiary) !important;
   border: none;
-  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+  box-shadow: 0 2px 8px rgba(var(--mat-sys-tertiary-rgb), 0.3);
   transition: all var(--motion-duration) var(--motion-easing);
 }
 
 .mat-flat-button.agent-send-button:hover:not(:disabled) {
-  background-color: #0052A3 !important;
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+  background-color: var(--mat-sys-tertiary-fixed-dim) !important;
+  box-shadow: 0 4px 12px rgba(var(--mat-sys-tertiary-rgb), 0.4);
   transform: translateY(-1px);
 }
 
 .mat-flat-button.agent-send-button:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.3);
+  box-shadow: 0 2px 6px rgba(var(--mat-sys-tertiary-rgb), 0.3);
 }
 
 /* Agent Message Styling */
 .chat-message.agent-message {
-  --agent-primary: #0066CC;
-  --agent-background: #E6F2FF;
-  --agent-border: #B3D9FF;
+  --agent-primary: var(--mat-sys-tertiary);
+  --agent-background: var(--mat-sys-tertiary-container);
+  --agent-border: var(--mat-sys-tertiary);
 }
 
 .chat-message.agent mat-card {
@@ -745,10 +745,10 @@ button:active:not(:disabled) {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: rgba(0, 102, 204, 0.1);
+  background: rgba(var(--mat-sys-tertiary-rgb), 0.1);
   padding: 4px 8px;
   border-radius: 12px;
-  border: 1px solid rgba(0, 102, 204, 0.2);
+  border: 1px solid rgba(var(--mat-sys-tertiary-rgb), 0.2);
 }
 
 /* Agent Message Content */
@@ -767,18 +767,18 @@ button:active:not(:disabled) {
 }
 
 .chat-message.agent .main-content markdown code {
-  background: rgba(0, 102, 204, 0.1);
-  border: 1px solid rgba(0, 102, 204, 0.2);
+  background: rgba(var(--mat-sys-tertiary-rgb), 0.1);
+  border: 1px solid rgba(var(--mat-sys-tertiary-rgb), 0.2);
 }
 
 .chat-message.agent .main-content markdown pre {
-  background: rgba(0, 102, 204, 0.05);
+  background: rgba(var(--mat-sys-tertiary-rgb), 0.05);
   border-left: 4px solid var(--agent-primary);
 }
 
 /* Agent Reasoning Section */
 .chat-message.agent .reasoning-section {
-  background: rgba(0, 102, 204, 0.05);
+  background: rgba(var(--mat-sys-tertiary-rgb), 0.05);
   border-left-color: var(--agent-primary);
 }
 

@@ -47,7 +47,7 @@ mat-sidenav {
   margin: 0;
   font-size: 20px;
   font-weight: 500;
-  color: #0066CC;
+  color: var(--mat-sys-tertiary);
 }
 
 mat-sidenav-content {
@@ -127,7 +127,7 @@ mat-sidenav-content {
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 500;
-  color: #0066CC;
+  color: var(--mat-sys-tertiary);
 }
 
 .selection-help {
@@ -157,14 +157,14 @@ mat-sidenav-content {
 }
 
 .agent-card:hover {
-  background: #f0f4ff;
-  border-color: #b3d9ff;
+  background: var(--mat-sys-tertiary-container);
+  border-color: var(--mat-sys-tertiary);
 }
 
 .agent-card.selected {
-  background: #e6f2ff;
-  border-color: #0066CC;
-  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.15);
+  background: var(--mat-sys-tertiary-container);
+  border-color: var(--mat-sys-tertiary);
+  box-shadow: 0 2px 8px rgba(var(--mat-sys-tertiary-rgb), 0.15);
 }
 
 .agent-card.disconnected {
@@ -250,9 +250,9 @@ mat-sidenav-content {
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: #0066CC;
+  background: var(--mat-sys-tertiary);
   border-radius: 50%;
-  color: white;
+  color: var(--mat-sys-on-tertiary);
 }
 
 .selection-indicator mat-icon {
@@ -272,18 +272,18 @@ mat-sidenav-content {
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: #e6f2ff;
-  border: 1px solid #b3d9ff;
+  background: var(--mat-sys-tertiary-container);
+  border: 1px solid var(--mat-sys-tertiary);
   border-radius: 8px;
   font-size: 14px;
-  color: #0066CC;
+  color: var(--mat-sys-on-tertiary-container);
 }
 
 .selected-banner mat-icon {
   font-size: 16px !important;
   height: 16px !important;
   width: 16px !important;
-  color: #0066CC;
+  color: var(--mat-sys-tertiary);
 }
 
 .selected-banner span {

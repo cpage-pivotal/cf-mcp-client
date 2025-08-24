@@ -137,7 +137,7 @@
       @if (selectedAgent()) {
         <!-- Agent indicator with deselect option -->
         <div class="agent-indicator">
-          <mat-icon class="agent-icon" [style.color]="selectedAgent()?.color || '#0066CC'">{{ selectedAgent()?.icon || 'smart_toy' }}</mat-icon>
+          <mat-icon class="agent-icon" [style.color]="selectedAgent()?.color || 'var(--mat-sys-tertiary)'">{{ selectedAgent()?.icon || 'smart_toy' }}</mat-icon>
           <span class="agent-name">{{ selectedAgent()?.name }}</span>
           <button mat-icon-button
                   type="button"
