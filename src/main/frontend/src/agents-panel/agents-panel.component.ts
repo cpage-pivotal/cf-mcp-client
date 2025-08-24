@@ -51,13 +51,11 @@ export class AgentsPanelComponent implements OnDestroy, AfterViewInit {
     }
   });
 
-
   // Computed signals for reactive UI updates
   readonly agentStatus = computed(() => this._metrics().agentStatus);
   readonly isConnected = computed(() => this.agentStatus().available);
   readonly availableAgents = computed(() => this.agentSelectionService.availableAgents());
   readonly selectedAgent = computed(() => this.agentSelectionService.selectedAgent());
-
 
   constructor(
     private readonly sidenavService: SidenavService,
@@ -97,10 +95,27 @@ export class AgentsPanelComponent implements OnDestroy, AfterViewInit {
   }
 
   /**
+   * Gets the human-readable status label for an agent.
+   */
+  getStatusLabel(status: AgentInfo['status']): string {
+    switch (status) {
+      case 'available':
+        return 'Available';
+      case 'busy':
+        return 'Busy';
+      case 'offline':
+        return 'Offline';
+      case 'error':
+        return 'Error';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  /**
    * TrackBy function for agent list performance optimization.
    */
   trackByAgent(index: number, agent: AgentInfo): string {
     return agent.id;
   }
 }
-

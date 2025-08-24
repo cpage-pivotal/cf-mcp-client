@@ -148,9 +148,15 @@ mat-sidenav-content {
   box-shadow: 0 2px 8px rgba(var(--mat-sys-tertiary-rgb), 0.15);
 }
 
-.agent-card.disconnected {
+.agent-card.offline {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.agent-card.error {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: #F44336;
 }
 
 .agent-card.busy {
@@ -210,7 +216,8 @@ mat-sidenav-content {
   width: 14px !important;
 }
 
-.status-connected {
+/* 🔧 FIXED: Updated status class names to match new AgentStatus values */
+.status-available {
   color: #4CAF50;
 }
 
@@ -218,7 +225,11 @@ mat-sidenav-content {
   color: #FF9800;
 }
 
-.status-disconnected {
+.status-offline {
+  color: #9E9E9E;
+}
+
+.status-error {
   color: #F44336;
 }
 

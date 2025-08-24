@@ -25,63 +25,74 @@
     </div>
 
     <!-- Agent Selection Section (only show if connected) -->
-    <div class="agent-selection-container" *ngIf="isConnected()">
-      <h3>Available Agents</h3>
-      <p class="selection-help">Select an agent to start a conversation in the chat panel</p>
+    @if (isConnected()) {
+      <div class="agent-selection-container">
+        <h3>Available Agents</h3>
+        <p class="selection-help">Select an agent to start a conversation in the chat panel</p>
 
-      <div class="agents-grid">
-        <div *ngFor="let agent of availableAgents(); trackBy: trackByAgent"
-             class="agent-card"
-             [ngClass]="{
-               'selected': isAgentSelected(agent),
-               'available': agent.status === 'connected',
-               'busy': agent.status === 'busy',
-               'disconnected': agent.status === 'disconnected'
-             }"
-             (click)="selectAgent(agent)">
+        <div class="agents-grid">
+          @for (agent of availableAgents(); track trackByAgent($index, agent)) {
+            <div class="agent-card"
+                 [ngClass]="{
+                   'selected': isAgentSelected(agent),
+                   'available': agent.status === 'available',
+                   'busy': agent.status === 'busy',
+                   'offline': agent.status === 'offline',
+                   'error': agent.status === 'error'
+                 }"
+                 (click)="selectAgent(agent)">
 
-          <!-- Agent Icon -->
-          <div class="agent-icon" [style.background-color]="agent.color">
-            <mat-icon>{{ agent.icon || 'smart_toy' }}</mat-icon>
-          </div>
+              <!-- Agent Icon -->
+              <div class="agent-icon" [style.background-color]="agent.color">
+                <mat-icon>{{ agent.icon || 'smart_toy' }}</mat-icon>
+              </div>
 
-          <!-- Agent Info -->
-          <div class="agent-info">
-            <h4 class="agent-name">{{ agent.name }}</h4>
-            <p class="agent-description">{{ agent.description }}</p>
+              <!-- Agent Info -->
+              <div class="agent-info">
+                <h4 class="agent-name">{{ agent.name }}</h4>
+                <p class="agent-description">{{ agent.description }}</p>
 
-            <!-- Agent Status -->
-            <div class="agent-status-badge"
-                 [ngClass]="'status-' + agent.status">
-              <mat-icon class="status-icon">
-                {{ agent.status === 'connected' ? 'check_circle' :
-                   agent.status === 'busy' ? 'schedule' : 'error' }}
-              </mat-icon>
-              <span>{{ agent.status | titlecase }}</span>
+                <!-- Agent Status -->
+                <div class="agent-status-badge"
+                     [ngClass]="'status-' + agent.status">
+                  <mat-icon class="status-icon">
+                    {{ agent.status === 'available' ? 'check_circle' :
+                    agent.status === 'busy' ? 'schedule' :
+                      agent.status === 'offline' ? 'offline_bolt' : 'error' }}
+                  </mat-icon>
+                  <span>{{ getStatusLabel(agent.status) }}</span>
+                </div>
+              </div>
+
+              <!-- Selection Indicator -->
+              @if (isAgentSelected(agent)) {
+                <div class="selection-indicator">
+                  <mat-icon>check</mat-icon>
+                </div>
+              }
             </div>
-          </div>
-
-          <!-- Selection Indicator -->
-          <div class="selection-indicator" *ngIf="isAgentSelected(agent)">
-            <mat-icon>check</mat-icon>
-          </div>
+          }
         </div>
-      </div>
 
-    </div>
+      </div>
+    }
 
     <!-- Disconnected State -->
-    <div *ngIf="!isConnected()" class="disconnected-state">
-      <mat-icon class="large-icon">cloud_off</mat-icon>
-      <h3>Agent System Unavailable</h3>
-      <p>{{ agentStatus().message }}</p>
-      <p class="help-text">
-        The messaging system needs to be configured for agent communication.
-        <span *ngIf="agentStatus().implementation === 'none'">
-          Please configure RabbitMQ or enable in-memory messaging.
-        </span>
-      </p>
-    </div>
+    @if (!isConnected()) {
+      <div class="disconnected-state">
+        <mat-icon class="large-icon">cloud_off</mat-icon>
+        <h3>Agent System Unavailable</h3>
+        <p>{{ agentStatus().message }}</p>
+        <p class="help-text">
+          The messaging system needs to be configured for agent communication.
+          @if (agentStatus().implementation === 'none') {
+            <span>
+              Please configure RabbitMQ or enable in-memory messaging.
+            </span>
+          }
+        </p>
+      </div>
+    }
   </mat-sidenav>
 
   <mat-sidenav-content>
