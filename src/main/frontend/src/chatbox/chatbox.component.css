@@ -619,6 +619,21 @@ button:active:not(:disabled) {
   --agent-border: var(--mat-sys-tertiary);
 }
 
+/* Force agent mode styling with high specificity */
+.chatbox-footer.agent-mode .mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color: var(--mat-sys-tertiary) !important;
+  --mdc-outlined-text-field-focus-outline-color: var(--mat-sys-tertiary) !important;
+  --mdc-outlined-text-field-hover-outline-color: var(--mat-sys-tertiary) !important;
+  --mdc-outlined-text-field-focus-label-text-color: var(--mat-sys-tertiary) !important;
+}
+
+.chatbox-footer.agent-mode .mat-flat-button {
+  --mdc-filled-button-container-color: var(--mat-sys-tertiary) !important;
+  --mdc-filled-button-label-text-color: var(--mat-sys-on-tertiary) !important;
+  background-color: var(--mat-sys-tertiary) !important;
+  color: var(--mat-sys-on-tertiary) !important;
+}
+
 /* Agent Indicator in Footer */
 .agent-indicator {
   display: flex;
@@ -665,40 +680,92 @@ button:active:not(:disabled) {
   height: 16px;
 }
 
-/* Agent Input Styling */
-.mat-mdc-form-field.agent-input .mdc-text-field--outlined .mdc-notched-outline__leading,
-.mat-mdc-form-field.agent-input .mdc-text-field--outlined .mdc-notched-outline__notch,
-.mat-mdc-form-field.agent-input .mdc-text-field--outlined .mdc-notched-outline__trailing {
-  border-color: var(--mat-sys-tertiary);
-  border-width: 2px;
+/* Simplified Agent Input Styling - using CSS custom properties approach */
+.mat-mdc-form-field.agent-input,
+.chatbox-footer.agent-mode .mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color: var(--mat-sys-tertiary) !important;
+  --mdc-outlined-text-field-focus-outline-color: var(--mat-sys-tertiary) !important;
+  --mdc-outlined-text-field-hover-outline-color: var(--mat-sys-tertiary) !important;
+  --mdc-outlined-text-field-focus-label-text-color: var(--mat-sys-tertiary) !important;
 }
 
-.mat-mdc-form-field.agent-input .mdc-text-field--focused .mdc-notched-outline__leading,
-.mat-mdc-form-field.agent-input .mdc-text-field--focused .mdc-notched-outline__notch,
-.mat-mdc-form-field.agent-input .mdc-text-field--focused .mdc-notched-outline__trailing {
-  border-color: var(--mat-sys-tertiary);
-  border-width: 2px;
-  box-shadow: 0 0 0 1px rgba(var(--mat-sys-tertiary-rgb), 0.2);
+/* Direct border overrides as fallback */
+.chatbox-footer.agent-mode .mdc-notched-outline .mdc-notched-outline__leading,
+.chatbox-footer.agent-mode .mdc-notched-outline .mdc-notched-outline__notch,
+.chatbox-footer.agent-mode .mdc-notched-outline .mdc-notched-outline__trailing {
+  border-color: var(--mat-sys-tertiary) !important;
+  border-width: 2px !important;
 }
 
-/* Agent Send Button */
-.mat-flat-button.agent-send-button {
+.chatbox-footer.agent-mode .mdc-text-field--focused .mdc-notched-outline .mdc-notched-outline__leading,
+.chatbox-footer.agent-mode .mdc-text-field--focused .mdc-notched-outline .mdc-notched-outline__notch,
+.chatbox-footer.agent-mode .mdc-text-field--focused .mdc-notched-outline .mdc-notched-outline__trailing {
+  border-color: var(--mat-sys-tertiary) !important;
+  border-width: 3px !important;
+}
+
+/* Simplified Agent Send Button Styling */
+.mat-flat-button.agent-send-button,
+.chatbox-footer.agent-mode .mat-flat-button,
+.chatbox-footer.agent-mode button.mat-flat-button {
+  --mdc-filled-button-container-color: var(--mat-sys-tertiary) !important;
+  --mdc-filled-button-label-text-color: var(--mat-sys-on-tertiary) !important;
+  --mdc-filled-button-hover-state-layer-color: var(--mat-sys-on-tertiary) !important;
+  --mdc-filled-button-pressed-state-layer-color: var(--mat-sys-on-tertiary) !important;
   background-color: var(--mat-sys-tertiary) !important;
   color: var(--mat-sys-on-tertiary) !important;
-  border: none;
-  box-shadow: 0 2px 8px rgba(var(--mat-sys-tertiary-rgb), 0.3);
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(var(--mat-sys-tertiary-rgb), 0.3) !important;
   transition: all var(--motion-duration) var(--motion-easing);
 }
 
-.mat-flat-button.agent-send-button:hover:not(:disabled) {
-  background-color: var(--mat-sys-tertiary-fixed-dim) !important;
-  box-shadow: 0 4px 12px rgba(var(--mat-sys-tertiary-rgb), 0.4);
+.mat-flat-button.agent-send-button:hover:not(:disabled),
+.chatbox-footer.agent-mode .mat-flat-button:hover:not(:disabled),
+.chatbox-footer.agent-mode button.mat-flat-button:hover:not(:disabled) {
+  background-color: var(--mat-sys-tertiary) !important;
+  box-shadow: 0 4px 12px rgba(var(--mat-sys-tertiary-rgb), 0.4) !important;
   transform: translateY(-1px);
 }
 
-.mat-flat-button.agent-send-button:active:not(:disabled) {
+.mat-flat-button.agent-send-button:active:not(:disabled),
+.chatbox-footer.agent-mode .mat-flat-button:active:not(:disabled),
+.chatbox-footer.agent-mode button.mat-flat-button:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(var(--mat-sys-tertiary-rgb), 0.3);
+  background-color: var(--mat-sys-tertiary) !important;
+  box-shadow: 0 2px 6px rgba(var(--mat-sys-tertiary-rgb), 0.3) !important;
+}
+
+/* Force Material Design button color with maximum specificity */
+.chatbox-footer.agent-mode .mdc-button.mdc-button--raised,
+.chatbox-footer.agent-mode .mdc-button--unelevated {
+  background-color: var(--mat-sys-tertiary) !important;
+  color: var(--mat-sys-on-tertiary) !important;
+}
+
+/* Ultra-specific overrides for stubborn Material Design styles */
+.chatbox-footer.agent-mode button.mat-mdc-button.mat-mdc-flat-button.mat-flat-button {
+  background-color: var(--mat-sys-tertiary) !important;
+  color: var(--mat-sys-on-tertiary) !important;
+}
+
+.chatbox-footer.agent-mode .mat-mdc-form-field.mat-form-field .mdc-text-field.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading,
+.chatbox-footer.agent-mode .mat-mdc-form-field.mat-form-field .mdc-text-field.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__notch,
+.chatbox-footer.agent-mode .mat-mdc-form-field.mat-form-field .mdc-text-field.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__trailing {
+  border-color: var(--mat-sys-tertiary) !important;
+  border-width: 2px !important;
+}
+
+.chatbox-footer.agent-mode .mat-mdc-form-field.mat-form-field .mdc-text-field.mdc-text-field--focused .mdc-notched-outline .mdc-notched-outline__leading,
+.chatbox-footer.agent-mode .mat-mdc-form-field.mat-form-field .mdc-text-field.mdc-text-field--focused .mdc-notched-outline .mdc-notched-outline__notch,
+.chatbox-footer.agent-mode .mat-mdc-form-field.mat-form-field .mdc-text-field.mdc-text-field--focused .mdc-notched-outline .mdc-notched-outline__trailing {
+  border-color: var(--mat-sys-tertiary) !important;
+  border-width: 3px !important;
+}
+
+/* Fallback: Target any button in agent mode footer */
+.chatbox-footer.agent-mode button[type="button"] {
+  background-color: var(--mat-sys-tertiary) !important;
+  color: var(--mat-sys-on-tertiary) !important;
 }
 
 /* Agent Message Styling */
