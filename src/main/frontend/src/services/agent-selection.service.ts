@@ -29,10 +29,10 @@ export class AgentSelectionService {
   private readonly _availableAgents = signal<AgentInfo[]>([
     {
       id: 'reviewer',
-      name: 'Code Reviewer',
-      description: 'Reviews code for best practices, bugs, and improvements',
+      name: 'Literary Critic',
+      description: 'Authors book reviews',
       status: 'connected',
-      icon: 'search',
+      icon: 'rate_review',
       color: '#0066CC'
     }
   ]);
@@ -81,7 +81,7 @@ export class AgentSelectionService {
    */
   handleAgentResponse(response: AgentMessage): void {
     this._agentResponses.update(responses => [...responses, response]);
-    
+
     if (response.isComplete || response.isError) {
       this._isAgentBusy.set(false);
     }
@@ -98,8 +98,8 @@ export class AgentSelectionService {
    * Updates the status of a specific agent.
    */
   updateAgentStatus(agentId: string, status: AgentInfo['status']): void {
-    this._availableAgents.update(agents => 
-      agents.map(agent => 
+    this._availableAgents.update(agents =>
+      agents.map(agent =>
         agent.id === agentId ? { ...agent, status } : agent
       )
     );
