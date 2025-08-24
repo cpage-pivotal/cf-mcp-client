@@ -84,6 +84,8 @@ export class AgentsPanelComponent implements OnDestroy, AfterViewInit {
     } else {
       // Select the clicked agent
       this.agentSelectionService.selectAgent(agent);
+      // Close the agents panel
+      this.sidenavService.close('agents');
     }
   }
 

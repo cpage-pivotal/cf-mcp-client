@@ -78,16 +78,6 @@
         </div>
       </div>
       
-      <!-- Selected Agent Info -->
-      <div class="selected-agent-info" *ngIf="selectedAgent()">
-        <div class="selected-banner">
-          <mat-icon>info</mat-icon>
-          <span>{{ selectedAgent()?.name }} is selected. Go to the chat panel to start a conversation.</span>
-          <button mat-icon-button (click)="agentSelectionService.deselectAgent()" matTooltip="Deselect">
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Disconnected State -->

@@ -239,6 +239,7 @@ export class ChatboxComponent implements OnDestroy {
   } | null = null;
 
   @ViewChild("chatboxMessages") private chatboxMessages?: ElementRef<HTMLDivElement>;
+  @ViewChild("chatboxInput") private chatboxInput?: ElementRef<HTMLInputElement>;
 
   constructor(
     private injector: Injector,
@@ -318,10 +319,27 @@ export class ChatboxComponent implements OnDestroy {
         console.warn('Cannot send: Chat model not available');
       }
     });
+
+    // Focus input when agent is selected
+    effect(() => {
+      const selectedAgent = this.selectedAgent();
+      if (selectedAgent) {
+        // Use setTimeout to ensure the view has updated
+        setTimeout(() => {
+          this.focusInput();
+        }, 100);
+      }
+    });
   }
 
   updateChatMessage(message: string): void {
     this._chatMessage.set(message);
+  }
+
+  focusInput(): void {
+    if (this.chatboxInput?.nativeElement) {
+      this.chatboxInput.nativeElement.focus();
+    }
   }
 
   toggleReasoning(messageIndex: number): void {

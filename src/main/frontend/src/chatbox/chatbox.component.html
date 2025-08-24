@@ -158,7 +158,8 @@
         </button>
       }
       <mat-form-field style="flex-grow: 1" [class]="inputBorderClass()">
-        <input name="chatbox-input"
+        <input #chatboxInput
+               name="chatbox-input"
                [placeholder]="selectedAgent() ? 'Message ' + selectedAgent()?.name + '...' : 'Type a message...'"
                matInput
                [ngModel]="chatMessage()"
