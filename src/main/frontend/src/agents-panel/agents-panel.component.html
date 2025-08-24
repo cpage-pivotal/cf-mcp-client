@@ -14,23 +14,13 @@
       </button>
     </div>
 
-    <!-- Agent System Status -->
-    <div class="agent-status-section">
-      <h3>Agent System Status</h3>
-      <div class="system-status">
-        <div class="status-indicator"
-             [ngClass]="{
-               'status-green': isConnected(),
-               'status-red': !isConnected()
-             }">
+    <div class="status-container">
+      <div class="status-row">
+        <span class="status-label">RabbitMQ:</span>
+        <span class="status-indicator" [ngClass]="{'status-green': isConnected(), 'status-red': !isConnected()}">
           <mat-icon>{{ isConnected() ? 'check_circle' : 'error' }}</mat-icon>
           <span class="status-text">{{ isConnected() ? 'Connected' : 'Disconnected' }}</span>
-        </div>
-        <div class="status-details">
-          <p>Implementation: {{ agentStatus().implementation | titlecase }}</p>
-          <p>Active Handlers: {{ agentStatus().activeHandlers }}</p>
-          <p *ngIf="agentStatus().message" class="status-message">{{ agentStatus().message }}</p>
-        </div>
+        </span>
       </div>
     </div>
 
@@ -38,7 +28,7 @@
     <div class="agent-selection-container" *ngIf="isConnected()">
       <h3>Available Agents</h3>
       <p class="selection-help">Select an agent to start a conversation in the chat panel</p>
-      
+
       <div class="agents-grid">
         <div *ngFor="let agent of availableAgents(); trackBy: trackByAgent"
              class="agent-card"
@@ -49,35 +39,35 @@
                'disconnected': agent.status === 'disconnected'
              }"
              (click)="selectAgent(agent)">
-          
+
           <!-- Agent Icon -->
           <div class="agent-icon" [style.background-color]="agent.color">
             <mat-icon>{{ agent.icon || 'smart_toy' }}</mat-icon>
           </div>
-          
+
           <!-- Agent Info -->
           <div class="agent-info">
             <h4 class="agent-name">{{ agent.name }}</h4>
             <p class="agent-description">{{ agent.description }}</p>
-            
+
             <!-- Agent Status -->
             <div class="agent-status-badge"
                  [ngClass]="'status-' + agent.status">
               <mat-icon class="status-icon">
-                {{ agent.status === 'connected' ? 'check_circle' : 
+                {{ agent.status === 'connected' ? 'check_circle' :
                    agent.status === 'busy' ? 'schedule' : 'error' }}
               </mat-icon>
               <span>{{ agent.status | titlecase }}</span>
             </div>
           </div>
-          
+
           <!-- Selection Indicator -->
           <div class="selection-indicator" *ngIf="isAgentSelected(agent)">
             <mat-icon>check</mat-icon>
           </div>
         </div>
       </div>
-      
+
     </div>
 
     <!-- Disconnected State -->

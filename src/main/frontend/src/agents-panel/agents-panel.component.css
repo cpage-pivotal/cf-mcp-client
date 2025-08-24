@@ -54,53 +54,35 @@ mat-sidenav-content {
   background: transparent;
 }
 
-/* Agent Status Section Styles */
-.agent-status-section {
-  margin-bottom: 20px;
+/* Status Container Styles */
+.status-container {
+  margin-bottom: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.agent-status-section h3 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
+.status-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.status-label {
+  flex: 0 0 100px;
   font-weight: 500;
-  color: #333;
-}
-
-.system-status {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  padding: 12px;
-}
-
-.status-details {
-  margin-top: 8px;
-}
-
-.status-details p {
-  margin: 0 0 4px 0;
-  font-size: 12px;
-  color: #666;
-}
-
-.status-message {
-  font-style: italic;
-  color: #888;
+  font-size: 14px;
 }
 
 .status-indicator {
   display: flex;
   align-items: center;
-  font-size: 12px;
 }
 
 .status-indicator mat-icon {
-  margin-right: 4px;
-  font-size: 16px;
-  height: 16px;
-  width: 16px;
+  margin-right: 8px;
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
 }
 
 .status-green {
@@ -112,8 +94,7 @@ mat-sidenav-content {
 }
 
 .status-text {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 14px;
 }
 
 /* Agent Selection Styles */
