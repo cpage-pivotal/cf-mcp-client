@@ -53,15 +53,15 @@
                 <p class="agent-description">{{ agent.description }}</p>
 
                 <!-- Agent Status -->
-                <div class="agent-status-badge"
-                     [ngClass]="'status-' + agent.status">
-                  <mat-icon class="status-icon">
-                    {{ agent.status === 'available' ? 'check_circle' :
-                    agent.status === 'busy' ? 'schedule' :
-                      agent.status === 'offline' ? 'offline_bolt' : 'error' }}
-                  </mat-icon>
-                  <span>{{ getStatusLabel(agent.status) }}</span>
-                </div>
+<!--                <div class="agent-status-badge"-->
+<!--                     [ngClass]="'status-' + agent.status">-->
+<!--                  <mat-icon class="status-icon">-->
+<!--                    {{ agent.status === 'available' ? 'check_circle' :-->
+<!--                    agent.status === 'busy' ? 'schedule' :-->
+<!--                      agent.status === 'offline' ? 'offline_bolt' : 'error' }}-->
+<!--                  </mat-icon>-->
+<!--                  <span>{{ getStatusLabel(agent.status) }}</span>-->
+<!--                </div>-->
               </div>
 
               <!-- Selection Indicator -->

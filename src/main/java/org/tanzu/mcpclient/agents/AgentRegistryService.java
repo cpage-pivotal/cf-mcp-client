@@ -10,7 +10,7 @@ import java.util.Optional;
  * Much simpler than complex configuration - just define agents here.
  */
 @Service
-public class SimpleAgentRegistryService {
+public class AgentRegistryService {
 
     // Define your agents here - add more as needed
     private static final List<AgentInfo> AVAILABLE_AGENTS = List.of(
@@ -20,15 +20,15 @@ public class SimpleAgentRegistryService {
                     "Authors book reviews and literary analysis",
                     AgentStatus.AVAILABLE,
                     "rate_review",
-                    "#0066CC"
+                    "#28A745"
             ),
             new AgentInfo(
                     "editor",
-                    "Content Editor",
-                    "Edits and improves written content",
+                    "Cloud Foundry Operator",
+                    "Site Reliability Engineering for Tanzu Platform",
                     AgentStatus.AVAILABLE,
-                    "edit",
-                    "#28A745"
+                    "cloud",
+                    "#8dd1e4"
             )
     );
 

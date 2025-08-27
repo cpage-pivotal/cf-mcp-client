@@ -32,7 +32,7 @@ public class AgentMessageService implements AgentMessageServiceInterface {
             "reviewer", "editor", "translator", "summarizer"
     );
 
-    private static final int RESPONSE_TIMEOUT_SECONDS = 30;
+    private static final int RESPONSE_TIMEOUT_SECONDS = 300;
 
     public AgentMessageService(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;

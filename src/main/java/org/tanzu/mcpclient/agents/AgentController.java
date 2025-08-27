@@ -28,13 +28,13 @@ public class AgentController {
     private static final Logger logger = LoggerFactory.getLogger(AgentController.class);
 
     private final AgentMessageServiceInterface agentMessageService;
-    private final SimpleAgentRegistryService agentRegistry;
+    private final AgentRegistryService agentRegistry;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AgentController(
             @Autowired(required = false) AgentMessageServiceInterface agentMessageService,
-            SimpleAgentRegistryService agentRegistry) {
+            AgentRegistryService agentRegistry) {
         this.agentMessageService = agentMessageService;
         this.agentRegistry = agentRegistry;
     }
