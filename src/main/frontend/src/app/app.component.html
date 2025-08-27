@@ -2,6 +2,14 @@
   <mat-toolbar>
     <span>Tanzu Platform Chat</span>
     <span style="flex:1 1 auto"></span>
+    
+    @if (motivationalMessage()) {
+      <span class="motivational-message">{{ motivationalMessage() }}</span>
+    }
+    
+    <button mat-icon-button (click)="showMotivation()" title="Get motivated!">
+      <mat-icon>psychology</mat-icon>
+    </button>
   </mat-toolbar>
 
   <app-chat-panel

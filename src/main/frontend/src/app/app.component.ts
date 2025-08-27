@@ -4,6 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
 import { MatToolbar } from '@angular/material/toolbar';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
@@ -19,6 +21,8 @@ import { ApiService } from '../services/api.service';
   imports: [
     CommonModule,
     MatToolbar,
+    MatIconButton,
+    MatIcon,
     ChatPanelComponent,
     MemoryPanelComponent,
     DocumentPanelComponent,
@@ -34,6 +38,7 @@ export class AppComponent {
 
   // Modern Angular signals for reactive state management
   private readonly _currentDocumentIds = signal<string[]>([]);
+  private readonly _motivationalMessage = signal<string>('');
   private readonly _metrics = signal<PlatformMetrics>({
     conversationId: '',
     chatModel: '',
@@ -57,6 +62,7 @@ export class AppComponent {
 
   // Public readonly signals
   readonly currentDocumentIds = this._currentDocumentIds.asReadonly();
+  readonly motivationalMessage = this._motivationalMessage.asReadonly();
   readonly metrics = this._metrics.asReadonly();
 
   // Computed properties for specific metric aspects
@@ -67,6 +73,15 @@ export class AppComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly httpClient = inject(HttpClient);
   private readonly apiService = inject(ApiService);
+
+  // Predefined motivational messages
+  private readonly motivationalMessages = [
+    "You're doing amazing! Keep pushing forward! 🚀",
+    "Every great achievement starts with a single step! ✨",
+    "Believe in yourself - you've got this! 💪",
+    "Success is the sum of small efforts repeated day in and day out! 🌟",
+    "The only way to do great work is to love what you do! ❤️"
+  ];
 
   constructor() {
     this.initMetricsPolling();
@@ -83,6 +98,19 @@ export class AppComponent {
   // Method to handle document selection from DocumentPanelComponent
   onDocumentIdsChanged(documentIds: string[]): void {
     this._currentDocumentIds.set([...documentIds]);
+  }
+
+  // Method to show a random motivational message
+  showMotivation(): void {
+    const randomIndex = Math.floor(Math.random() * this.motivationalMessages.length);
+    const randomMessage = this.motivationalMessages[randomIndex];
+    
+    this._motivationalMessage.set(randomMessage);
+    
+    // Clear the message after 3 seconds
+    setTimeout(() => {
+      this._motivationalMessage.set('');
+    }, 3000);
   }
 
   // Initialize metrics polling with improved error handling

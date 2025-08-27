@@ -8,6 +8,19 @@ mat-toolbar {
   height: 64px;
 }
 
+/* Motivational message styling */
+.motivational-message {
+  margin-right: 16px;
+  font-weight: 500;
+  color: #4caf50;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* Main content wrapper */
 main {
   padding-top: 64px; /* Same as toolbar height */
