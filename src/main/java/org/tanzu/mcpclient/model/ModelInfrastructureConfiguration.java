@@ -1,6 +1,5 @@
 package org.tanzu.mcpclient.model;
 
-import io.micrometer.observation.ObservationRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -96,11 +95,6 @@ public class ModelInfrastructureConfiguration {
         return RetryUtils.DEFAULT_RETRY_TEMPLATE;
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public ObservationRegistry observationRegistry() {
-        return ObservationRegistry.NOOP;
-    }
 
     @Bean
     @ConditionalOnMissingBean

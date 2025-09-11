@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.3</version>
+		<version>3.5.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.tanzu</groupId>
 	<artifactId>cf-mcp-client</artifactId>
-	<version>1.5.2</version>
+	<version>1.5.3</version>
 	<name>cf-mcp-client</name>
 	<description>Chat Client that can bind to GenAI LLMs, MCP Servers, external memory</description>
 
@@ -83,7 +83,12 @@
 			<version>3.5.0</version>
 		</dependency>
 
-		<dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
