@@ -12,11 +12,14 @@ import org.tanzu.mcpclient.metrics.McpServer;
 import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import org.tanzu.mcpclient.mcp.McpClientFactory;
 import org.tanzu.mcpclient.mcp.McpDiscoveryService;
+import org.tanzu.mcpclient.mcp.McpServerService;
+import org.tanzu.mcpclient.mcp.ProtocolType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Configuration
 public class ChatConfiguration {
@@ -30,13 +33,17 @@ public class ChatConfiguration {
     private final List<String> healthyMcpServiceURLs;
     private final ApplicationEventPublisher eventPublisher;
     private final McpClientFactory mcpClientFactory;
+    private final McpDiscoveryService mcpDiscoveryService;
 
     // Map to store server names by URL for use by other services
     private final Map<String, String> serverNamesByUrl = new ConcurrentHashMap<>();
+    // Protocol-aware MCP server services
+    private final List<McpServerService> mcpServerServices = new ArrayList<>();
 
     public ChatConfiguration(ModelDiscoveryService modelDiscoveryService, McpDiscoveryService mcpDiscoveryService,
                              ApplicationEventPublisher eventPublisher, McpClientFactory mcpClientFactory) {
         this.chatModel = modelDiscoveryService.getChatModelName();
+        this.mcpDiscoveryService = mcpDiscoveryService;
         this.agentServices = mcpDiscoveryService.getMcpServiceNames();
         this.allMcpServiceURLs = mcpDiscoveryService.getAllMcpServiceUrls();
         this.eventPublisher = eventPublisher;
@@ -44,8 +51,21 @@ public class ChatConfiguration {
         this.mcpServersWithHealth = new ArrayList<>();
         this.healthyMcpServiceURLs = new ArrayList<>();
 
+        // Initialize protocol-aware services from new discovery method
+        List<McpDiscoveryService.McpServiceConfiguration> serviceConfigs = mcpDiscoveryService.getMcpServicesWithProtocol();
+        this.mcpServerServices.addAll(serviceConfigs.stream()
+                .map(config -> new McpServerService(config.serviceName(), config.serverUrl(), config.protocol(), mcpClientFactory))
+                .collect(Collectors.toList()));
+
         if (!allMcpServiceURLs.isEmpty()) {
             logger.info("Found MCP Services: {}", allMcpServiceURLs);
+        }
+        
+        if (!mcpServerServices.isEmpty()) {
+            logger.info("Found {} MCP services with protocol information", mcpServerServices.size());
+            mcpServerServices.forEach(service -> 
+                logger.debug("MCP Service: {} -> {} ({})", service.getName(), service.getServerUrl(), service.getProtocol().getDisplayName())
+            );
         }
     }
 
@@ -69,19 +89,70 @@ public class ChatConfiguration {
     }
 
     /**
-     * Test the health of all configured MCP servers by attempting to initialize them.
-     * Updated to handle MCP service URLs from both GenaiLocator and CF services.
+     * Test the health of all configured MCP servers using the new protocol-aware architecture.
+     * Falls back to legacy method if no protocol-aware services are found.
      */
     private void testMcpServerHealth() {
         mcpServersWithHealth.clear();
         healthyMcpServiceURLs.clear();
         serverNamesByUrl.clear();
 
-        if (allMcpServiceURLs.isEmpty()) {
+        // Use new protocol-aware services if available
+        if (!mcpServerServices.isEmpty()) {
+            testProtocolAwareMcpServerHealth();
+        }
+        // Fallback to legacy method for backward compatibility
+        else if (!allMcpServiceURLs.isEmpty()) {
+            testLegacyMcpServerHealth();
+        } else {
             logger.debug("No MCP services configured for health checking");
             return;
         }
 
+        int healthyCount = healthyMcpServiceURLs.size();
+        int totalCount = mcpServersWithHealth.size();
+
+        logger.info("MCP Server health check completed. Healthy: {}, Unhealthy: {}",
+                healthyCount, totalCount - healthyCount);
+
+        if (healthyCount > 0) {
+            logger.info("Healthy MCP servers that will be used for chat: {}", healthyMcpServiceURLs);
+        }
+
+        if (healthyCount < totalCount) {
+            logger.warn("Some MCP servers are unhealthy and will not be used for chat operations");
+        }
+    }
+
+    /**
+     * Test the health of MCP servers using the new protocol-aware architecture.
+     */
+    private void testProtocolAwareMcpServerHealth() {
+        logger.debug("Testing MCP server health using protocol-aware services");
+        
+        for (McpServerService serverService : mcpServerServices) {
+            logger.debug("Testing health of MCP server: {} at {} ({})", 
+                serverService.getName(), serverService.getServerUrl(), serverService.getProtocol().getDisplayName());
+
+            McpServer mcpServer = serverService.getHealthyMcpServer();
+            mcpServersWithHealth.add(mcpServer);
+
+            // Store server name mapping for other services
+            serverNamesByUrl.put(serverService.getServerUrl(), mcpServer.serverName());
+
+            // Only add healthy servers to the list used by ChatService
+            if (mcpServer.healthy()) {
+                healthyMcpServiceURLs.add(serverService.getServerUrl());
+            }
+        }
+    }
+
+    /**
+     * Legacy health testing method for backward compatibility.
+     */
+    private void testLegacyMcpServerHealth() {
+        logger.debug("Testing MCP server health using legacy method");
+        
         // If we have more URLs than service names (e.g., from GenaiLocator),
         // create synthetic service names
         List<String> serviceNames = ensureServiceNames(agentServices, allMcpServiceURLs);
@@ -97,20 +168,6 @@ public class ChatConfiguration {
             if (mcpServer.healthy()) {
                 healthyMcpServiceURLs.add(serviceUrl);
             }
-        }
-
-        int healthyCount = healthyMcpServiceURLs.size();
-        int totalCount = mcpServersWithHealth.size();
-
-        logger.info("MCP Server health check completed. Healthy: {}, Unhealthy: {}",
-                healthyCount, totalCount - healthyCount);
-
-        if (healthyCount > 0) {
-            logger.info("Healthy MCP servers that will be used for chat: {}", healthyMcpServiceURLs);
-        }
-
-        if (healthyCount < totalCount) {
-            logger.warn("Some MCP servers are unhealthy and will not be used for chat operations");
         }
     }
 
@@ -203,11 +260,11 @@ public class ChatConfiguration {
             // Clean up the test client
             client.closeGracefully();
 
-            return new McpServer(serviceName, serverName, true, tools);
+            return new McpServer(serviceName, serverName, true, tools, ProtocolType.SSE);
 
         } catch (Exception e) {
             logger.warn("MCP server {} at {} is unhealthy: {}", serviceName, serviceUrl, e.getMessage());
-            return new McpServer(serviceName, serverName, false, List.of());
+            return new McpServer(serviceName, serverName, false, List.of(), ProtocolType.SSE);
         }
     }
 }

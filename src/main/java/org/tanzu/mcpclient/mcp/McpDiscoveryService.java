@@ -10,6 +10,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -20,8 +22,10 @@ import java.util.stream.Collectors;
 public class McpDiscoveryService {
     private static final Logger logger = LoggerFactory.getLogger(McpDiscoveryService.class);
 
-    // Constants
-    public static final String MCP_SERVICE_URL = "mcpServiceURL";
+    // Constants for service binding keys
+    public static final String MCP_SERVICE_URL = "mcpServiceURL";           // Legacy SSE support
+    public static final String MCP_SSE_URL = "mcpSseURL";                   // Explicit SSE support
+    public static final String MCP_STREAMABLE_URL = "mcpStreamableURL";     // Streamable HTTP support
 
     private final CfEnv cfEnv;
     private final GenaiLocator genaiLocator; // Optional - may be null
@@ -114,10 +118,73 @@ public class McpDiscoveryService {
     }
 
     /**
-     * Checks if a Cloud Foundry service has an MCP service URL configured.
+     * Checks if a Cloud Foundry service has an MCP service URL configured (legacy method).
      */
     public boolean hasMcpServiceUrl(CfService service) {
         CfCredentials credentials = service.getCredentials();
         return credentials != null && credentials.getString(MCP_SERVICE_URL) != null;
     }
+
+    /**
+     * Gets MCP services with protocol information from Cloud Foundry service bindings.
+     * Returns services with their URLs and detected protocol types.
+     */
+    public List<McpServiceConfiguration> getMcpServicesWithProtocol() {
+        try {
+            return cfEnv.findAllServices().stream()
+                    .map(this::extractMcpServiceConfiguration)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.warn("Error getting MCP services with protocol information: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * Extracts MCP service configuration from a Cloud Foundry service binding.
+     * Checks keys in priority order: mcpStreamableURL > mcpSseURL > mcpServiceURL
+     */
+    private McpServiceConfiguration extractMcpServiceConfiguration(CfService service) {
+        CfCredentials credentials = service.getCredentials();
+        if (credentials == null) {
+            return null;
+        }
+
+        Map<String, Object> credentialsMap = credentials.getMap();
+
+        // Check keys in priority order
+        if (credentialsMap.containsKey(MCP_STREAMABLE_URL)) {
+            String url = (String) credentialsMap.get(MCP_STREAMABLE_URL);
+            if (url != null && !url.trim().isEmpty()) {
+                return new McpServiceConfiguration(service.getName(), url, ProtocolType.STREAMABLE_HTTP);
+            }
+        }
+
+        if (credentialsMap.containsKey(MCP_SSE_URL)) {
+            String url = (String) credentialsMap.get(MCP_SSE_URL);
+            if (url != null && !url.trim().isEmpty()) {
+                return new McpServiceConfiguration(service.getName(), url, ProtocolType.SSE);
+            }
+        }
+
+        if (credentialsMap.containsKey(MCP_SERVICE_URL)) {
+            // Legacy support - defaults to SSE protocol
+            String url = (String) credentialsMap.get(MCP_SERVICE_URL);
+            if (url != null && !url.trim().isEmpty()) {
+                return new McpServiceConfiguration(service.getName(), url, ProtocolType.SSE);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Record representing MCP service configuration with protocol information.
+     */
+    public record McpServiceConfiguration(
+            String serviceName,
+            String serverUrl,
+            ProtocolType protocol
+    ) {}
 }
