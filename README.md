@@ -91,25 +91,43 @@ Now your chatbot will respond to queries about the uploaded document
 
 Model Context Protocol (MCP) servers are lightweight programs that expose specific capabilities to AI models through a standardized interface. These servers act as bridges between LLMs and external tools, data sources, or services, allowing your AI application to perform actions like searching databases, accessing files, or calling external APIs without complex custom integrations.
 
-1. Create a user-provided service that provides the URL for an existing MCP server:
+#### SSE Protocol (Server-Sent Events)
+
+1. Create a user-provided service for an SSE-based MCP server:
 
 ```bash
-cf cups mcp-server -p '{"mcpServiceURL":"https://your-mcp-server.example.com"}'
+cf cups mcp-server-sse -p '{"mcpSseURL":"https://your-sse-mcp-server.example.com"}'
 ```
 
 2. Bind the MCP service to your application:
 
 ```bash
-cf bind-service ai-tool-chat mcp-server
+cf bind-service ai-tool-chat mcp-server-sse
 ```
 
-3. Restart your application:
+#### Streamable HTTP Protocol
+
+1. Create a user-provided service for a Streamable HTTP-based MCP server:
+
+```bash
+cf cups mcp-server-streamable -p '{"mcpStreamableURL":"https://your-streamable-mcp-server.example.com"}'
+```
+
+2. Bind the MCP service to your application:
+
+```bash
+cf bind-service ai-tool-chat mcp-server-streamable
+```
+
+#### Complete the Setup
+
+3. Restart your application to apply the bindings:
 
 ```bash
 cf restart ai-tool-chat
 ```
 
-Your chatbot will now register with the MCP agent, and the LLM will be able to invoke the agent's capabilities when responding to chat requests.
+Your chatbot will now register with the MCP agents, and the LLM will be able to invoke the agents' capabilities when responding to chat requests. The application supports both SSE and Streamable HTTP protocols simultaneously.
 
 ![Binding to Agents](images/cf-agents.png)
 
