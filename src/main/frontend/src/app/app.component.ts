@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Inject, inject, signal, effect } from '@angular/core';
+import { Component, DestroyRef, inject, signal, effect } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
