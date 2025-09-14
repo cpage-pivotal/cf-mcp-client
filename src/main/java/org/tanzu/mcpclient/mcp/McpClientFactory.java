@@ -48,8 +48,12 @@ public class McpClientFactory {
      */
     public McpSyncClient createHealthCheckClient(String serverUrl, ProtocolType protocol) {
         return switch (protocol) {
-            case SSE -> createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
-            case STREAMABLE_HTTP -> createStreamableClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
+            case ProtocolType.StreamableHttp streamableHttp ->
+                    createStreamableClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
+            case ProtocolType.SSE sse ->
+                    createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
+            case ProtocolType.Legacy legacy ->
+                    createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
         };
     }
 

@@ -157,22 +157,22 @@ public class McpDiscoveryService {
         if (credentialsMap.containsKey(MCP_STREAMABLE_URL)) {
             String url = (String) credentialsMap.get(MCP_STREAMABLE_URL);
             if (url != null && !url.trim().isEmpty()) {
-                return new McpServiceConfiguration(service.getName(), url, ProtocolType.STREAMABLE_HTTP);
+                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.StreamableHttp());
             }
         }
 
         if (credentialsMap.containsKey(MCP_SSE_URL)) {
             String url = (String) credentialsMap.get(MCP_SSE_URL);
             if (url != null && !url.trim().isEmpty()) {
-                return new McpServiceConfiguration(service.getName(), url, ProtocolType.SSE);
+                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.SSE());
             }
         }
 
         if (credentialsMap.containsKey(MCP_SERVICE_URL)) {
-            // Legacy support - defaults to SSE protocol
+            // Legacy support - defaults to Legacy protocol (which uses SSE)
             String url = (String) credentialsMap.get(MCP_SERVICE_URL);
             if (url != null && !url.trim().isEmpty()) {
-                return new McpServiceConfiguration(service.getName(), url, ProtocolType.SSE);
+                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.Legacy());
             }
         }
 

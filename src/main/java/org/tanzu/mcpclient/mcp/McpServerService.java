@@ -35,8 +35,12 @@ public class McpServerService {
      */
     public McpSyncClient createMcpSyncClient() {
         return switch (protocol) {
-            case SSE -> clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
-            case STREAMABLE_HTTP -> clientFactory.createStreamableClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+            case ProtocolType.StreamableHttp streamableHttp ->
+                    clientFactory.createStreamableClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+            case ProtocolType.SSE sse ->
+                    clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+            case ProtocolType.Legacy legacy ->
+                    clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
         };
     }
 
@@ -55,40 +59,35 @@ public class McpServerService {
         try (McpSyncClient client = createHealthCheckClient()) {
             // Initialize connection
             McpSchema.InitializeResult initResult = client.initialize();
-            logger.debug("Initialized MCP server {}: protocol version {}", name, 
-                initResult.protocolVersion());
+            logger.debug("Initialized MCP server {}: protocol version {}", name,
+                    initResult.protocolVersion());
 
             // Get server name from initialization result if available
-            String serverName = initResult.serverInfo() != null 
-                ? initResult.serverInfo().name() 
-                : name;
+            String serverName = initResult.serverInfo() != null
+                    ? initResult.serverInfo().name()
+                    : name;
 
-            // List available tools
+            // Get available tools
             McpSchema.ListToolsResult toolsResult = client.listTools();
+
+            // Convert McpSchema.Tool to McpServer.Tool
             List<McpServer.Tool> tools = toolsResult.tools().stream()
-                    .map(this::convertToTool)
+                    .map(tool -> new McpServer.Tool(tool.name(), tool.description()))
                     .collect(Collectors.toList());
 
-            logger.debug("MCP server {} health check successful: {} tools available", name, tools.size());
+            logger.info("MCP server {} is healthy with {} tools ({})",
+                    serverName, tools.size(), protocol.displayName());
+
             return new McpServer(name, serverName, true, tools, protocol);
 
         } catch (Exception e) {
-            logger.warn("Health check failed for MCP server {} ({}): {}", name, protocol.getDisplayName(), e.getMessage());
+            logger.warn("Health check failed for MCP server {} ({}): {}",
+                    name, protocol.displayName(), e.getMessage());
             return new McpServer(name, name, false, Collections.emptyList(), protocol);
         }
     }
 
-    /**
-     * Converts an MCP tool schema to our internal Tool representation.
-     */
-    private McpServer.Tool convertToTool(McpSchema.Tool mcpTool) {
-        return new McpServer.Tool(
-            mcpTool.name(),
-            mcpTool.description() != null ? mcpTool.description() : "No description available"
-        );
-    }
-
-    // Getters
+    // Getter methods
     public String getName() {
         return name;
     }

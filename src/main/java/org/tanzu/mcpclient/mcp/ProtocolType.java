@@ -1,23 +1,40 @@
 package org.tanzu.mcpclient.mcp;
 
-/**
- * Enumeration of supported MCP transport protocols.
- * Used to distinguish between different transport mechanisms for MCP servers.
- */
-public enum ProtocolType {
-    SSE("SSE"),
-    STREAMABLE_HTTP("Streamable HTTP");
-    
-    private final String displayName;
-    
-    ProtocolType(String displayName) {
-        this.displayName = displayName;
+import java.util.Map;
+
+public sealed interface ProtocolType
+        permits ProtocolType.SSE, ProtocolType.StreamableHttp, ProtocolType.Legacy {
+
+    record SSE() implements ProtocolType {
+        public String displayName() { return "SSE"; }
+        public String bindingKey() { return "mcpSseURL"; }
     }
-    
+
+    record StreamableHttp() implements ProtocolType {
+        public String displayName() { return "Streamable HTTP"; }
+        public String bindingKey() { return "mcpStreamableURL"; }
+    }
+
+    record Legacy() implements ProtocolType {
+        public String displayName() { return "SSE"; }
+        public String bindingKey() { return "mcpServiceURL"; }
+    }
+
+    // Default methods
+    String displayName();
+    String bindingKey();
+
     /**
-     * Returns the human-readable display name for this protocol type.
+     * Factory method for creating protocol from service credentials
      */
-    public String getDisplayName() {
-        return displayName;
+    static ProtocolType fromCredentials(Map<String, Object> credentials) {
+        if (credentials.containsKey("mcpStreamableURL")) {
+            return new StreamableHttp();
+        } else if (credentials.containsKey("mcpSseURL")) {
+            return new SSE();
+        } else if (credentials.containsKey("mcpServiceURL")) {
+            return new Legacy();
+        }
+        throw new IllegalArgumentException("No valid MCP binding key found in credentials");
     }
 }

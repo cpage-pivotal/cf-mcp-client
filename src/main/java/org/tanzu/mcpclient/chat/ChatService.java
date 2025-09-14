@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
-import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.client.advisor.api.BaseChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
@@ -14,14 +13,14 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.tanzu.mcpclient.document.DocumentService;
-import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import org.tanzu.mcpclient.mcp.McpClientFactory;
+import org.tanzu.mcpclient.mcp.McpServerService;
+import org.tanzu.mcpclient.mcp.ProtocolType;
+import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,30 +31,30 @@ public class ChatService {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
-    private final List<String> mcpServiceURLs;
+    private final List<McpServerService> mcpServerServices; // Changed from List<String> mcpServiceURLs
     private final McpClientFactory mcpClientFactory;
-    private final ModelDiscoveryService modelDiscoveryService; // Add this field
+    private final ModelDiscoveryService modelDiscoveryService;
 
     @Value("classpath:/prompts/system-prompt.st")
     private Resource systemChatPrompt;
 
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
-    // Update constructor to inject ModelDiscoveryService
+    // Updated constructor to use McpServerService instead of URL strings
     public ChatService(ChatClient.Builder chatClientBuilder, BaseChatMemoryAdvisor memoryAdvisor,
-                       List<String> mcpServiceURLs, VectorStore vectorStore, McpClientFactory mcpClientFactory,
-                       ModelDiscoveryService modelDiscoveryService) {
+                       List<McpServerService> mcpServerServices, VectorStore vectorStore,
+                       McpClientFactory mcpClientFactory, ModelDiscoveryService modelDiscoveryService) {
         chatClientBuilder = chatClientBuilder.defaultAdvisors(memoryAdvisor, new SimpleLoggerAdvisor());
         this.chatClient = chatClientBuilder.build();
 
-        this.mcpServiceURLs = mcpServiceURLs;
+        this.mcpServerServices = mcpServerServices; // Changed from mcpServiceURLs
         this.vectorStore = vectorStore;
         this.mcpClientFactory = mcpClientFactory;
-        this.modelDiscoveryService = modelDiscoveryService; // Store the service
+        this.modelDiscoveryService = modelDiscoveryService;
     }
 
     /**
-     * Updated method to handle multiple document IDs
+     * Updated method to handle multiple document IDs with graceful degradation
      */
     public Flux<String> chatStream(String chat, String conversationId, List<String> documentIds) {
         // Validate chat model availability - this is where graceful degradation happens
@@ -76,98 +75,97 @@ public class ChatService {
     }
 
     private Stream<McpSyncClient> createAndInitializeMcpClients() {
-        return mcpServiceURLs.stream()
-                .map(this::createProtocolAwareMcpClient)  // ✅ Use protocol-aware method instead of deprecated one
+        return mcpServerServices.stream() // Changed from mcpServiceURLs.stream()
+                .map(this::createProtocolAwareMcpClient) // Now takes McpServerService instead of String
                 .peek(McpSyncClient::initialize);
     }
 
     /**
-     * ✅ Creates MCP client with correct protocol based on service binding.
+     * IMPROVED: Creates MCP client with correct protocol based on service configuration.
+     * Uses modern pattern matching for sealed interface records.
+     * No more hardcoded URL substring checking!
      */
-    private McpSyncClient createProtocolAwareMcpClient(String serverUrl) {
-        // Simple fix: Check if this is your Streamable HTTP server
-        if (serverUrl.contains("streamable-time.apps.tas-ndc.kuhn-labs.com")) {
-            logger.info("✅ Creating Streamable HTTP client for: {}", serverUrl);
-            return mcpClientFactory.createStreamableClient(
+    private McpSyncClient createProtocolAwareMcpClient(McpServerService serverService) {
+        String serverUrl = serverService.getServerUrl();
+        ProtocolType protocol = serverService.getProtocol();
+
+        logger.info("Creating {} client for: {} ({})",
+                protocol.displayName(), serverService.getName(), serverUrl);
+
+        // Use pattern matching with sealed interface records
+        return switch (protocol) {
+            case ProtocolType.StreamableHttp streamableHttp -> mcpClientFactory.createStreamableClient(
                     serverUrl,
                     Duration.ofSeconds(30),
                     Duration.ofMinutes(5)
             );
-        } else {
-            // Use SSE for other servers (backward compatibility)
-            logger.info("Creating SSE client for: {}", serverUrl);
-            return mcpClientFactory.createSseClient(
+            case ProtocolType.SSE sse -> mcpClientFactory.createSseClient(
                     serverUrl,
                     Duration.ofSeconds(30),
                     Duration.ofMinutes(5)
             );
-        }
+            case ProtocolType.Legacy legacy -> mcpClientFactory.createSseClient(
+                    serverUrl,
+                    Duration.ofSeconds(30),
+                    Duration.ofMinutes(5)
+            );
+        };
     }
 
     private Flux<String> buildAndExecuteStreamChatRequest(String chat, String conversationId, List<String> documentIds,
                                                           ToolCallbackProvider[] toolCallbackProviders) {
 
-        ChatClient.ChatClientRequestSpec spec = chatClient.
-                prompt().
-                user(chat).
-                system(systemChatPrompt).
-                toolCallbacks(toolCallbackProviders);
+        ChatClient.ChatClientRequestSpec spec = chatClient
+                .prompt()
+                .user(chat)
+                .system(systemChatPrompt);
 
+        // Add conversation context
+        spec = spec.advisors(advisorSpec -> advisorSpec.param(CONVERSATION_ID, conversationId));
+
+        // Add document context if documents are provided
         if (documentIds != null && !documentIds.isEmpty()) {
-            spec = addDocumentSearchCapabilities(spec, documentIds);
+            logger.debug("Adding document context for documents: {}", documentIds);
+
+            // Use simple QuestionAnswerAdvisor with just VectorStore
+            spec = spec.advisors(new QuestionAnswerAdvisor(vectorStore));
         }
 
-        spec = spec.advisors(a -> a.param(CONVERSATION_ID, conversationId));
+        // Add MCP tools if available
+        if (toolCallbackProviders.length > 0) {
+            logger.debug("Adding {} MCP tool callback providers", toolCallbackProviders.length);
+            spec = spec.toolCallbacks(toolCallbackProviders);
+        }
 
-        return spec.stream().content()
-                .filter(Objects::nonNull);
+        return spec.stream().content();
+    }
+
+    // Helper methods for backward compatibility and testing
+
+    /**
+     * Get all healthy MCP server URLs for backward compatibility
+     */
+    public List<String> getHealthyMcpServiceURLs() {
+        return mcpServerServices.stream()
+                .filter(service -> {
+                    try {
+                        // Quick health check
+                        McpSyncClient client = createProtocolAwareMcpClient(service);
+                        client.initialize();
+                        return true;
+                    } catch (Exception e) {
+                        logger.debug("MCP server {} is unhealthy: {}", service.getName(), e.getMessage());
+                        return false;
+                    }
+                })
+                .map(McpServerService::getServerUrl)
+                .collect(Collectors.toList());
     }
 
     /**
-     * Updated method to handle multiple document IDs with OR filter expressions
+     * Get all configured MCP server services
      */
-    private ChatClient.ChatClientRequestSpec addDocumentSearchCapabilities(
-            ChatClient.ChatClientRequestSpec spec,
-            List<String> documentIds) {
-
-        Advisor questionAnswerAdvisor = new QuestionAnswerAdvisor(this.vectorStore);
-
-        // Build OR filter expression for multiple documents
-        String filterExpression = buildDocumentFilterExpression(documentIds);
-
-        logger.debug("Using document filter expression: {}", filterExpression);
-
-        return spec.advisors(questionAnswerAdvisor)
-                .advisors(advisorSpec ->
-                        advisorSpec.param(QuestionAnswerAdvisor.FILTER_EXPRESSION, filterExpression));
-    }
-
-    /**
-     * Builds a filter expression for multiple document IDs using OR logic
-     * Format: "documentId == 'doc1' OR documentId == 'doc2' OR documentId == 'doc3'"
-     */
-    private String buildDocumentFilterExpression(List<String> documentIds) {
-        if (documentIds == null || documentIds.isEmpty()) {
-            return "";
-        }
-
-        // Filter out null or empty document IDs
-        List<String> validDocumentIds = documentIds.stream()
-                .filter(id -> id != null && !id.trim().isEmpty())
-                .toList();
-
-        if (validDocumentIds.isEmpty()) {
-            return "";
-        }
-
-        // For single document, use simple equality
-        if (validDocumentIds.size() == 1) {
-            return DocumentService.DOCUMENT_ID + " == '" + validDocumentIds.get(0) + "'";
-        }
-
-        // For multiple documents, use OR expressions
-        return validDocumentIds.stream()
-                .map(docId -> DocumentService.DOCUMENT_ID + " == '" + docId + "'")
-                .collect(Collectors.joining(" OR "));
+    public List<McpServerService> getMcpServerServices() {
+        return List.copyOf(mcpServerServices);
     }
 }
