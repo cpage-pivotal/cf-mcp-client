@@ -110,29 +110,55 @@ public McpSyncClient createStreamableClient(String serverUrl, Duration connectTi
 
 public McpSyncClient createHealthCheckClient(String serverUrl, ProtocolType protocol) {
     return switch (protocol) {
-        case SSE -> createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
-        case STREAMABLE_HTTP -> createStreamableClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
+        case ProtocolType.StreamableHttp streamableHttp ->
+                createStreamableClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
+        case ProtocolType.SSE sse ->
+                createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
+        case ProtocolType.Legacy legacy ->
+                createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
     };
 }
 ```
 
-#### 3.1.2 Create ProtocolType Enum ✅
+#### 3.1.2 Create ProtocolType Sealed Interface ✅
 **File**: `src/main/java/org/tanzu/mcpclient/mcp/ProtocolType.java`
 
 **Implementation**:
 ```java
-public enum ProtocolType {
-    SSE("SSE"),
-    STREAMABLE_HTTP("Streamable HTTP");
-    
-    private final String displayName;
-    
-    ProtocolType(String displayName) {
-        this.displayName = displayName;
+public sealed interface ProtocolType
+        permits ProtocolType.SSE, ProtocolType.StreamableHttp, ProtocolType.Legacy {
+
+    record SSE() implements ProtocolType {
+        public String displayName() { return "SSE"; }
+        public String bindingKey() { return "mcpSseURL"; }
     }
-    
-    public String getDisplayName() {
-        return displayName;
+
+    record StreamableHttp() implements ProtocolType {
+        public String displayName() { return "Streamable HTTP"; }
+        public String bindingKey() { return "mcpStreamableURL"; }
+    }
+
+    record Legacy() implements ProtocolType {
+        public String displayName() { return "SSE"; }
+        public String bindingKey() { return "mcpServiceURL"; }
+    }
+
+    // Default methods
+    String displayName();
+    String bindingKey();
+
+    /**
+     * Factory method for creating protocol from service credentials
+     */
+    static ProtocolType fromCredentials(Map<String, Object> credentials) {
+        if (credentials.containsKey("mcpStreamableURL")) {
+            return new StreamableHttp();
+        } else if (credentials.containsKey("mcpSseURL")) {
+            return new SSE();
+        } else if (credentials.containsKey("mcpServiceURL")) {
+            return new Legacy();
+        }
+        throw new IllegalArgumentException("No valid MCP binding key found in credentials");
     }
 }
 ```
@@ -154,39 +180,42 @@ public enum ProtocolType {
 ```java
 private McpServiceConfiguration extractMcpServiceConfiguration(CfService service) {
     CfCredentials credentials = service.getCredentials();
-    if (credentials == null) return null;
+    if (credentials == null) {
+        return null;
+    }
+
     Map<String, Object> credentialsMap = credentials.getMap();
-    
-    // Check keys in priority order: mcpStreamableURL > mcpSseURL > mcpServiceURL
+
+    // Check keys in priority order
     if (credentialsMap.containsKey(MCP_STREAMABLE_URL)) {
         String url = (String) credentialsMap.get(MCP_STREAMABLE_URL);
         if (url != null && !url.trim().isEmpty()) {
-            return new McpServiceConfiguration(service.getName(), url, ProtocolType.STREAMABLE_HTTP);
+            return new McpServiceConfiguration(service.getName(), url, new ProtocolType.StreamableHttp());
         }
     }
-    
+
     if (credentialsMap.containsKey(MCP_SSE_URL)) {
         String url = (String) credentialsMap.get(MCP_SSE_URL);
         if (url != null && !url.trim().isEmpty()) {
-            return new McpServiceConfiguration(service.getName(), url, ProtocolType.SSE);
+            return new McpServiceConfiguration(service.getName(), url, new ProtocolType.SSE());
         }
     }
-    
+
     if (credentialsMap.containsKey(MCP_SERVICE_URL)) {
-        // Legacy support - defaults to SSE protocol
+        // Legacy support - defaults to Legacy protocol (which uses SSE)
         String url = (String) credentialsMap.get(MCP_SERVICE_URL);
         if (url != null && !url.trim().isEmpty()) {
-            return new McpServiceConfiguration(service.getName(), url, ProtocolType.SSE);
+            return new McpServiceConfiguration(service.getName(), url, new ProtocolType.Legacy());
         }
     }
-    
+
     return null;
 }
 
 public record McpServiceConfiguration(
-    String serviceName,
-    String serverUrl, 
-    ProtocolType protocol
+        String serviceName,
+        String serverUrl,
+        ProtocolType protocol
 ) {}
 ```
 
@@ -205,26 +234,43 @@ public record McpServiceConfiguration(
 ```java
 public McpSyncClient createMcpSyncClient() {
     return switch (protocol) {
-        case SSE -> clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
-        case STREAMABLE_HTTP -> clientFactory.createStreamableClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+        case ProtocolType.StreamableHttp streamableHttp ->
+                clientFactory.createStreamableClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+        case ProtocolType.SSE sse ->
+                clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+        case ProtocolType.Legacy legacy ->
+                clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
     };
 }
 
 public McpServer getHealthyMcpServer() {
     try (McpSyncClient client = createHealthCheckClient()) {
+        // Initialize connection
         McpSchema.InitializeResult initResult = client.initialize();
-        String serverName = initResult.serverInfo() != null 
-            ? initResult.serverInfo().name() 
-            : name;
+        logger.debug("Initialized MCP server {}: protocol version {}", name,
+                initResult.protocolVersion());
 
+        // Get server name from initialization result if available
+        String serverName = initResult.serverInfo() != null
+                ? initResult.serverInfo().name()
+                : name;
+
+        // Get available tools
         McpSchema.ListToolsResult toolsResult = client.listTools();
+
+        // Convert McpSchema.Tool to McpServer.Tool
         List<McpServer.Tool> tools = toolsResult.tools().stream()
-                .map(this::convertToTool)
+                .map(tool -> new McpServer.Tool(tool.name(), tool.description()))
                 .collect(Collectors.toList());
 
+        logger.info("MCP server {} is healthy with {} tools ({})",
+                serverName, tools.size(), protocol.displayName());
+
         return new McpServer(name, serverName, true, tools, protocol);
+
     } catch (Exception e) {
-        logger.warn("Health check failed for MCP server {} ({}): {}", name, protocol.getDisplayName(), e.getMessage());
+        logger.warn("Health check failed for MCP server {} ({}): {}",
+                name, protocol.displayName(), e.getMessage());
         return new McpServer(name, name, false, Collections.emptyList(), protocol);
     }
 }
@@ -267,6 +313,7 @@ public record McpServer(
 - ✅ Added `testLegacyMcpServerHealth()` method for backward compatibility
 - ✅ Updated legacy health check method to include protocol field (defaulting to SSE)
 - ✅ Maintained full backward compatibility with existing service bindings
+- ✅ Updated ChatService bean creation to pass McpServerService instances instead of raw URLs
 
 **Key Implementation**:
 ```java
@@ -274,14 +321,19 @@ public record McpServer(
 List<McpDiscoveryService.McpServiceConfiguration> serviceConfigs = mcpDiscoveryService.getMcpServicesWithProtocol();
 this.mcpServerServices.addAll(serviceConfigs.stream()
         .map(config -> new McpServerService(config.serviceName(), config.serverUrl(), config.protocol(), mcpClientFactory))
-        .collect(Collectors.toList()));
+        .toList());
+
+logger.info("ChatConfiguration initialized with {} MCP server services", mcpServerServices.size());
+mcpServerServices.forEach(service ->
+        logger.debug("Configured MCP service: {} at {} using {}",
+                service.getName(), service.getServerUrl(), service.getProtocol().displayName()));
 
 private void testProtocolAwareMcpServerHealth() {
     logger.debug("Testing MCP server health using protocol-aware services");
-    
+
     for (McpServerService serverService : mcpServerServices) {
-        logger.debug("Testing health of MCP server: {} at {} ({})", 
-            serverService.getName(), serverService.getServerUrl(), serverService.getProtocol().getDisplayName());
+        logger.debug("Testing health of MCP server: {} at {} ({})",
+                serverService.getName(), serverService.getServerUrl(), serverService.getProtocol().displayName());
 
         McpServer mcpServer = serverService.getHealthyMcpServer();
         mcpServersWithHealth.add(mcpServer);
@@ -318,7 +370,10 @@ export interface McpServer {
   serverName: string;
   healthy: boolean;
   tools: Tool[];
-  protocol?: 'SSE' | 'STREAMABLE_HTTP'; // New optional field for backward compatibility
+  protocol?: {
+    displayName: () => string;
+    bindingKey: () => string;
+  }; // New optional field for backward compatibility with sealed interface pattern
 }
 ```
 
@@ -338,8 +393,8 @@ Add protocol badges/indicators next to server names using Material Design chips 
   <span matListItemTitle>
     {{ server.name }}
     <mat-chip-listbox class="protocol-indicator" *ngIf="server.protocol">
-      <mat-chip [class.protocol-sse]="server.protocol === 'SSE'"
-                [class.protocol-streamable]="server.protocol === 'STREAMABLE_HTTP'">
+      <mat-chip [class.protocol-sse]="server.protocol?.displayName() === 'SSE'"
+                [class.protocol-streamable]="server.protocol?.displayName() === 'Streamable HTTP'">
         {{ getProtocolDisplayName(server.protocol) }}
       </mat-chip>
     </mat-chip-listbox>
@@ -349,12 +404,8 @@ Add protocol badges/indicators next to server names using Material Design chips 
 
 **Required Component Method**:
 ```typescript
-getProtocolDisplayName(protocol?: string): string {
-  switch (protocol) {
-    case 'SSE': return 'SSE';
-    case 'STREAMABLE_HTTP': return 'Streamable HTTP';
-    default: return 'SSE'; // Default for backward compatibility
-  }
+getProtocolDisplayName(protocol?: { displayName: () => string }): string {
+  return protocol?.displayName() || 'SSE'; // Default for backward compatibility
 }
 ```
 

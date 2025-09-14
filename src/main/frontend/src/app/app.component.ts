@@ -113,6 +113,11 @@ export interface McpServer {
   serverName: string;
   healthy: boolean;
   tools: Tool[];
+  protocol?: {
+    type: string;
+    displayName: string;
+    bindingKey: string;
+  }; // New optional field for protocol object
 }
 
 export interface PromptArgument {

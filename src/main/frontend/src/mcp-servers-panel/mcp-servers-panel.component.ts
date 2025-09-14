@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatListModule } from '@angular/material/list';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
 import { PlatformMetrics, McpServer } from '../app/app.component';
 import { SidenavService } from '../services/sidenav.service';
 import { ToolsModalComponent } from '../tools-modal/tools-modal.component';
@@ -20,7 +21,8 @@ import { ToolsModalComponent } from '../tools-modal/tools-modal.component';
     MatIconModule,
     MatTooltipModule,
     MatListModule,
-    MatDialogModule
+    MatDialogModule,
+    MatChipsModule
   ],
   templateUrl: './mcp-servers-panel.component.html',
   styleUrl: './mcp-servers-panel.component.css'
@@ -121,5 +123,47 @@ export class McpServersPanelComponent implements AfterViewInit {
     } else {
       return `${healthyCount}/${totalCount} Healthy`;
     }
+  }
+
+  getProtocolDisplayName(protocol?: { type: string; displayName: string; bindingKey: string } | string): string {
+    if (!protocol) {
+      return 'SSE'; // Default for backward compatibility
+    }
+    
+    // Handle new object format
+    if (typeof protocol === 'object') {
+      return protocol.displayName;
+    }
+    
+    // Handle legacy string format for backward compatibility
+    switch (protocol) {
+      case 'SSE': return 'SSE';
+      case 'STREAMABLE_HTTP': return 'Streamable HTTP';
+      default: return 'SSE';
+    }
+  }
+
+  isSSEProtocol(protocol?: { type: string; displayName: string; bindingKey: string } | string): boolean {
+    if (!protocol) {
+      return true; // Default to SSE for backward compatibility
+    }
+    
+    if (typeof protocol === 'object') {
+      return protocol.type === 'SSE' || protocol.type === 'Legacy';
+    }
+    
+    return protocol === 'SSE';
+  }
+
+  isStreamableHttpProtocol(protocol?: { type: string; displayName: string; bindingKey: string } | string): boolean {
+    if (!protocol) {
+      return false;
+    }
+    
+    if (typeof protocol === 'object') {
+      return protocol.type === 'StreamableHttp';
+    }
+    
+    return protocol === 'STREAMABLE_HTTP';
   }
 }

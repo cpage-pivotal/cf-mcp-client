@@ -133,3 +133,28 @@ mat-sidenav-content {
   top: auto !important;
   left: auto !important;
 }
+
+/* Protocol indicator styles */
+.protocol-indicator {
+  display: inline-flex;
+  margin-left: 8px;
+}
+
+.protocol-sse {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.protocol-streamable {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+  font-weight: 500;
+}
+
+mat-chip {
+  font-size: 10px;
+  min-height: 20px;
+  padding: 2px 8px;
+  border-radius: 8px;
+}

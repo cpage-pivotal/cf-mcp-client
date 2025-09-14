@@ -1,22 +1,41 @@
 package org.tanzu.mcpclient.mcp;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.Map;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = ProtocolType.SSE.class, name = "SSE"),
+    @JsonSubTypes.Type(value = ProtocolType.StreamableHttp.class, name = "StreamableHttp"),
+    @JsonSubTypes.Type(value = ProtocolType.Legacy.class, name = "Legacy")
+})
 public sealed interface ProtocolType
         permits ProtocolType.SSE, ProtocolType.StreamableHttp, ProtocolType.Legacy {
 
     record SSE() implements ProtocolType {
+        @JsonProperty("displayName")
         public String displayName() { return "SSE"; }
+        
+        @JsonProperty("bindingKey")
         public String bindingKey() { return "mcpSseURL"; }
     }
 
     record StreamableHttp() implements ProtocolType {
+        @JsonProperty("displayName")
         public String displayName() { return "Streamable HTTP"; }
+        
+        @JsonProperty("bindingKey")
         public String bindingKey() { return "mcpStreamableURL"; }
     }
 
     record Legacy() implements ProtocolType {
+        @JsonProperty("displayName")
         public String displayName() { return "SSE"; }
+        
+        @JsonProperty("bindingKey")
         public String bindingKey() { return "mcpServiceURL"; }
     }
 

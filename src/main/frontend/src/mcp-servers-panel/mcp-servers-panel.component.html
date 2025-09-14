@@ -35,7 +35,15 @@
                   matTooltipPosition="left">
             <mat-icon>{{ mcpServer.healthy ? 'info' : 'close' }}</mat-icon>
           </button>
-          <div matListItemTitle>{{ mcpServer.serverName || mcpServer.name }}</div>
+          <div matListItemTitle>
+            {{ mcpServer.serverName || mcpServer.name }}
+            <mat-chip-listbox class="protocol-indicator" *ngIf="mcpServer.protocol">
+              <mat-chip [class.protocol-sse]="isSSEProtocol(mcpServer.protocol)"
+                        [class.protocol-streamable]="isStreamableHttpProtocol(mcpServer.protocol)">
+                {{ getProtocolDisplayName(mcpServer.protocol) }}
+              </mat-chip>
+            </mat-chip-listbox>
+          </div>
           <div matListItemLine>
             {{ mcpServer.healthy ? (mcpServer.tools.length + ' tools available') : 'Unhealthy' }}
           </div>
