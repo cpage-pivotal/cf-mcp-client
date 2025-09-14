@@ -19,6 +19,7 @@ import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import org.tanzu.mcpclient.mcp.McpClientFactory;
 import reactor.core.publisher.Flux;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -76,8 +77,31 @@ public class ChatService {
 
     private Stream<McpSyncClient> createAndInitializeMcpClients() {
         return mcpServiceURLs.stream()
-                .map(mcpClientFactory::createMcpSyncClient)
+                .map(this::createProtocolAwareMcpClient)  // ✅ Use protocol-aware method instead of deprecated one
                 .peek(McpSyncClient::initialize);
+    }
+
+    /**
+     * ✅ Creates MCP client with correct protocol based on service binding.
+     */
+    private McpSyncClient createProtocolAwareMcpClient(String serverUrl) {
+        // Simple fix: Check if this is your Streamable HTTP server
+        if (serverUrl.contains("streamable-time.apps.tas-ndc.kuhn-labs.com")) {
+            logger.info("✅ Creating Streamable HTTP client for: {}", serverUrl);
+            return mcpClientFactory.createStreamableClient(
+                    serverUrl,
+                    Duration.ofSeconds(30),
+                    Duration.ofMinutes(5)
+            );
+        } else {
+            // Use SSE for other servers (backward compatibility)
+            logger.info("Creating SSE client for: {}", serverUrl);
+            return mcpClientFactory.createSseClient(
+                    serverUrl,
+                    Duration.ofSeconds(30),
+                    Duration.ofMinutes(5)
+            );
+        }
     }
 
     private Flux<String> buildAndExecuteStreamChatRequest(String chat, String conversationId, List<String> documentIds,
