@@ -1,0 +1,193 @@
+/* Navigation Rail Component - Material Design 3 */
+.navigation-rail {
+  position: fixed;
+  top: 64px; /* Below toolbar */
+  right: 0;
+  bottom: 0;
+  width: 96px; /* Increased width for better label visibility */
+  z-index: 1000;
+  background-color: var(--md-sys-color-surface-container, var(--mat-sys-surface-container));
+  border-left: 1px solid var(--md-sys-color-outline-variant, var(--mat-sys-outline-variant));
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-rail-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 4px; /* Material Design 3 spacing */
+}
+
+.nav-rail-item {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-rail-button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80px; /* Increased for better label space */
+  height: 64px; /* Increased height for better text layout */
+  min-height: 64px;
+  border: none;
+  border-radius: 16px; /* Material Design 3 container shape */
+  background-color: transparent;
+  cursor: pointer;
+  transition: all var(--md-sys-motion-duration-medium, 250ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  padding: 8px 4px;
+  
+  /* Focus indicator */
+  outline: none;
+  
+  /* State layer container */
+  overflow: hidden;
+}
+
+/* Focus ring - Material Design 3 */
+.nav-rail-button:focus-visible {
+  box-shadow: 0 0 0 2px var(--md-sys-color-primary, var(--mat-sys-primary));
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+/* Hover state layer */
+.nav-rail-button:hover {
+  background-color: var(--md-sys-color-on-surface, var(--mat-sys-on-surface));
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--mat-sys-on-surface)) 8%, transparent);
+}
+
+/* Pressed state layer */
+.nav-rail-button:active {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--mat-sys-on-surface)) 10%, transparent);
+}
+
+.nav-rail-button-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-rail-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  color: var(--md-sys-color-on-surface-variant, var(--mat-sys-on-surface-variant));
+  transition: color var(--md-sys-motion-duration-short, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+.nav-rail-status-indicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+  background-color: var(--md-sys-color-surface, var(--mat-sys-surface));
+  border-radius: 50%;
+  padding: 2px;
+  box-shadow: 0 0 0 1px var(--md-sys-color-surface, var(--mat-sys-surface));
+}
+
+.nav-rail-label {
+  font-family: var(--md-sys-typescale-label-medium-font, var(--mat-sys-label-medium-font));
+  font-size: var(--md-sys-typescale-label-medium-size, 11px);
+  font-weight: var(--md-sys-typescale-label-medium-weight, 500);
+  line-height: var(--md-sys-typescale-label-medium-line-height, 12px);
+  letter-spacing: var(--md-sys-typescale-label-medium-tracking, 0.5px);
+  color: var(--md-sys-color-on-surface-variant, var(--mat-sys-on-surface-variant));
+  margin-top: 2px;
+  text-align: center;
+  width: 100%;
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 2px;
+  box-sizing: border-box;
+}
+
+/* Status indicator colors - using semantic tokens */
+.status-green {
+  color: var(--md-sys-color-tertiary, #4CAF50);
+}
+
+.status-red {
+  color: var(--md-sys-color-error, #F44336);
+}
+
+.status-orange {
+  color: var(--md-sys-color-tertiary-container, #FF9800);
+}
+
+/* Selected/Active state (when sidenav is open) */
+.nav-rail-button[aria-expanded="true"],
+.nav-rail-button.active {
+  background-color: var(--md-sys-color-secondary-container, var(--mat-sys-secondary-container));
+}
+
+.nav-rail-button[aria-expanded="true"] .nav-rail-icon,
+.nav-rail-button.active .nav-rail-icon {
+  color: var(--md-sys-color-on-secondary-container, var(--mat-sys-on-secondary-container));
+}
+
+.nav-rail-button[aria-expanded="true"] .nav-rail-label,
+.nav-rail-button.active .nav-rail-label {
+  color: var(--md-sys-color-on-secondary-container, var(--mat-sys-on-secondary-container));
+}
+
+/* Responsive breakpoints following Material Design 3 */
+@media (max-width: 840px) {
+  .navigation-rail {
+    width: 80px; /* Compact rail width */
+  }
+  
+  .nav-rail-button {
+    width: 64px;
+    height: 56px;
+    border-radius: 12px;
+  }
+  
+  .nav-rail-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .nav-rail-label {
+    font-size: 10px;
+    line-height: 11px;
+    max-width: 72px;
+  }
+}
+
+@media (max-width: 600px) {
+  .navigation-rail {
+    display: none; /* Hide on mobile, could be replaced with bottom navigation */
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .navigation-rail {
+    border-left-width: 2px;
+  }
+  
+  .nav-rail-button:focus-visible {
+    box-shadow: 0 0 0 3px var(--md-sys-color-primary, var(--mat-sys-primary));
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .nav-rail-button,
+  .nav-rail-icon {
+    transition: none;
+  }
+}
