@@ -29,8 +29,9 @@ npm run build
 ```
 
 ### Running Tests
-- **Backend**: `mvn test`
+- **Backend**: `mvn test` (note: no test files currently exist)
 - **Frontend**: `cd src/main/frontend && npm test`
+- **Frontend Watch Mode**: `cd src/main/frontend && npm test -- --watch`
 
 ### Running the Application Locally
 ```bash
@@ -41,7 +42,7 @@ Starts the Spring Boot application on port 8080. Frontend must be built first or
 ## Architecture Overview
 
 ### Technology Stack
-- **Backend**: Spring Boot 3.5.0, Spring AI 1.0.0, Java 21
+- **Backend**: Spring Boot 3.5.5, Spring AI 1.1.0-M1, Java 21
 - **Frontend**: Angular 20, Angular Material, TypeScript
 - **Database**: PostgreSQL with pgvector extension for vector storage
 - **AI Integration**: Model Context Protocol (MCP) clients, OpenAI models
@@ -57,7 +58,9 @@ The application is structured around several key service layers:
 
 #### MCP Integration
 The application dynamically connects to Model Context Protocol servers through:
-- HTTP SSE transport with SSL context configuration
+- **Dual Protocol Support**: Both SSE (Server-Sent Events) and Streamable HTTP protocols
+- **HTTP SSE transport**: With SSL context configuration for legacy MCP servers
+- **Streamable HTTP**: Modern protocol with improved performance and reliability
 - Automatic tool discovery and registration from MCP servers
 - Session-based conversation management with tool callback providers
 
@@ -89,11 +92,22 @@ The application is designed for Cloud Foundry deployment with service binding su
 - **Session Management**: JDBC-based session storage for scaling
 
 ### Configuration Notes
-- Default PostgreSQL connection: `localhost:5432/postgres`
+- Default PostgreSQL connection: `localhost:5432/postgres` (user: postgres, pass: postgres)
 - Session timeout: 1440 minutes (24 hours)
+- Current version: 1.6.0
 - Spring AI BOM manages all AI-related dependencies
 - Frontend uses Angular Material with custom theming
-- Maven handles Node.js installation and frontend build integration
+- Maven handles Node.js installation (v22.12.0) and frontend build integration
+- Actuator endpoints exposed: `/actuator/health`, `/actuator/metrics`
+
+### Local Development Setup
+For local development, you'll need PostgreSQL running:
+```bash
+# Using Docker (recommended)
+docker run --name postgres-dev -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
+
+# Or use local PostgreSQL with database 'postgres', user 'postgres', password 'postgres'
+```
 
 ### Development Patterns
 - Service-oriented backend with clear separation of concerns

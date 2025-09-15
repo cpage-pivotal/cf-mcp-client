@@ -2,8 +2,11 @@
   <!-- Header -->
   <div class="dialog-header">
     <h2 mat-dialog-title>
-      <span *ngIf="!showArgumentForm">Select a Prompt</span>
-      <span *ngIf="showArgumentForm">Configure "{{ selectedPrompt?.name }}"</span>
+      @if (!showArgumentForm) {
+        <span>Select a Prompt</span>
+      } @else {
+        <span>Configure "{{ selectedPrompt?.name }}"</span>
+      }
     </h2>
     <button mat-icon-button (click)="cancel()" class="close-button">
       <mat-icon>close</mat-icon>
@@ -12,7 +15,8 @@
 
   <mat-dialog-content class="dialog-content">
     <!-- Prompt Selection View -->
-    <div *ngIf="!showArgumentForm" class="prompt-selection-view">
+    @if (!showArgumentForm) {
+      <div class="prompt-selection-view">
       <!-- Search Box -->
       <div class="search-container">
         <mat-form-field appearance="outline" class="search-field">
@@ -23,68 +27,82 @@
       </div>
 
       <!-- Results Summary -->
-      <div class="results-summary" *ngIf="searchTerm.trim()">
-        <span class="result-count">{{ getTotalFilteredPrompts() }} prompts found</span>
-      </div>
+      @if (searchTerm.trim()) {
+        <div class="results-summary">
+          <span class="result-count">{{ getTotalFilteredPrompts() }} prompts found</span>
+        </div>
+      }
 
       <!-- Empty State -->
-      <div class="empty-state" *ngIf="shouldShowEmptyState()">
-        <mat-icon class="empty-icon">psychology_alt</mat-icon>
-        <p *ngIf="!searchTerm.trim()">No prompts available</p>
-        <p *ngIf="searchTerm.trim()">No prompts match your search</p>
-        <small *ngIf="!searchTerm.trim()">Connect MCP servers to see available prompts</small>
-        <small *ngIf="searchTerm.trim()">Try different search terms</small>
-      </div>
+      @if (shouldShowEmptyState()) {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">psychology_alt</mat-icon>
+          @if (!searchTerm.trim()) {
+            <p>No prompts available</p>
+            <small>Connect MCP servers to see available prompts</small>
+          } @else {
+            <p>No prompts match your search</p>
+            <small>Try different search terms</small>
+          }
+        </div>
+      }
 
       <!-- Prompts List -->
-      <div class="prompts-list" *ngIf="!shouldShowEmptyState()">
-        <mat-accordion multi="true">
-          <mat-expansion-panel *ngFor="let serverId of getServerIds()" class="server-panel" [expanded]="true">
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                <mat-icon>dns</mat-icon>
-                <span class="server-name">{{ getServerDisplayName(serverId) }}</span>
-              </mat-panel-title>
-              <mat-panel-description>
-                <mat-chip-set>
-                  <mat-chip>{{ getPromptsForServer(serverId).length }} prompts</mat-chip>
-                </mat-chip-set>
-              </mat-panel-description>
-            </mat-expansion-panel-header>
+      @if (!shouldShowEmptyState()) {
+        <div class="prompts-list">
+          <mat-accordion multi="true">
+            @for (serverId of getServerIds(); track serverId) {
+              <mat-expansion-panel class="server-panel" [expanded]="true">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon>dns</mat-icon>
+                    <span class="server-name">{{ getServerDisplayName(serverId) }}</span>
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    <mat-chip-set>
+                      <mat-chip>{{ getPromptsForServer(serverId).length }} prompts</mat-chip>
+                    </mat-chip-set>
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
 
-            <div class="server-prompts">
-              <mat-list>
-                <mat-list-item
-                  *ngFor="let prompt of getPromptsForServer(serverId)"
-                  class="prompt-item"
-                  (click)="selectPrompt(prompt)">
-                  <mat-icon matListItemIcon>psychology</mat-icon>
-                  <div matListItemTitle class="prompt-title">
-                    {{ prompt.name }}
-                  </div>
-                  <div matListItemLine class="prompt-description">
-                    {{ prompt.description || 'No description available' }}
-                    <span *ngIf="hasArguments(prompt)" class="argument-info">
-                      • {{ getArgumentSummary(prompt) }}
-                    </span>
-                  </div>
-                  <button
-                    matListItemMeta
-                    mat-icon-button
-                    (click)="selectPrompt(prompt); $event.stopPropagation()"
-                    matTooltip="Select this prompt">
-                    <mat-icon>arrow_forward</mat-icon>
-                  </button>
-                </mat-list-item>
-              </mat-list>
-            </div>
-          </mat-expansion-panel>
-        </mat-accordion>
-      </div>
-    </div>
+                <div class="server-prompts">
+                  <mat-list>
+                    @for (prompt of getPromptsForServer(serverId); track prompt.name) {
+                      <mat-list-item class="prompt-item"
+                                     (click)="selectPrompt(prompt)">
+                        <mat-icon matListItemIcon>psychology</mat-icon>
+                        <div matListItemTitle class="prompt-title">
+                          {{ prompt.name }}
+                        </div>
+                        <div matListItemLine class="prompt-description">
+                          {{ prompt.description || 'No description available' }}
+                          @if (hasArguments(prompt)) {
+                            <span class="argument-info">
+                              • {{ getArgumentSummary(prompt) }}
+                            </span>
+                          }
+                        </div>
+                        <button
+                          matListItemMeta
+                          mat-icon-button
+                          (click)="selectPrompt(prompt); $event.stopPropagation()"
+                          matTooltip="Select this prompt">
+                          <mat-icon>arrow_forward</mat-icon>
+                        </button>
+                      </mat-list-item>
+                    }
+                  </mat-list>
+                </div>
+              </mat-expansion-panel>
+            }
+          </mat-accordion>
+        </div>
+      }
+    }
 
     <!-- Argument Configuration View -->
-    <div *ngIf="showArgumentForm" class="argument-form-view">
+    @if (showArgumentForm) {
+      <div class="argument-form-view">
       <!-- Prompt Info -->
       <div class="selected-prompt-info">
         <mat-card appearance="outlined">
@@ -99,50 +117,66 @@
       </div>
 
       <!-- Arguments Form -->
-      <div class="arguments-form" *ngIf="argumentForm">
-        <h3>Configure Arguments</h3>
-        <form [formGroup]="argumentForm" class="argument-form">
-          <div *ngFor="let arg of selectedPrompt?.arguments" class="argument-field">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>
-                {{ arg.name }}
-                <span *ngIf="arg.required" class="required-indicator">*</span>
-              </mat-label>
-              <input matInput [formControlName]="arg.name" [placeholder]="arg.description || 'Enter value'">
-              <mat-hint *ngIf="arg.description">{{ arg.description }}</mat-hint>
-              <mat-error *ngIf="argumentForm.get(arg.name)?.hasError('required')">
-                This field is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-        </form>
-      </div>
+      @if (argumentForm) {
+        <div class="arguments-form">
+          <h3>Configure Arguments</h3>
+          <form [formGroup]="argumentForm" class="argument-form">
+            @for (arg of selectedPrompt?.arguments; track arg.name) {
+              <div class="argument-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>
+                    {{ arg.name }}
+                    @if (arg.required) {
+                      <span class="required-indicator">*</span>
+                    }
+                  </mat-label>
+                  <input matInput [formControlName]="arg.name" [placeholder]="arg.description || 'Enter value'">
+                  @if (arg.description) {
+                    <mat-hint>{{ arg.description }}</mat-hint>
+                  }
+                  @if (argumentForm.get(arg.name)?.hasError('required')) {
+                    <mat-error>
+                      This field is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            }
+          </form>
+        </div>
+      }
 
       <!-- No Arguments Message -->
-      <div *ngIf="!selectedPrompt?.arguments || selectedPrompt?.arguments?.length === 0" class="no-arguments">
-        <mat-icon>info</mat-icon>
-        <p>This prompt doesn't require any arguments.</p>
-      </div>
-    </div>
+      @if (!selectedPrompt?.arguments || selectedPrompt?.arguments?.length === 0) {
+        <div class="no-arguments">
+          <mat-icon>info</mat-icon>
+          <p>This prompt doesn't require any arguments.</p>
+        </div>
+      }
+    }
   </mat-dialog-content>
 
   <mat-dialog-actions align="end" class="dialog-actions">
     <!-- Prompt Selection Actions -->
-    <div *ngIf="!showArgumentForm" class="selection-actions">
-      <button mat-button (click)="cancel()">Cancel</button>
-    </div>
+    @if (!showArgumentForm) {
+      <div class="selection-actions">
+        <button mat-button (click)="cancel()">Cancel</button>
+      </div>
+    }
 
     <!-- Argument Form Actions -->
-    <div *ngIf="showArgumentForm" class="form-actions">
-      <button mat-button (click)="goBack()">
-        <mat-icon>arrow_back</mat-icon>
-        Back
-      </button>
-      <button mat-button (click)="cancel()">Cancel</button>
-      <button mat-raised-button color="primary" (click)="proceedWithPrompt()">
-        <mat-icon>send</mat-icon>
-        Use Prompt
-      </button>
-    </div>
+    @if (showArgumentForm) {
+      <div class="form-actions">
+        <button mat-button (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Back
+        </button>
+        <button mat-button (click)="cancel()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="proceedWithPrompt()">
+          <mat-icon>send</mat-icon>
+          Use Prompt
+        </button>
+      </div>
+    }
   </mat-dialog-actions>
 </div>

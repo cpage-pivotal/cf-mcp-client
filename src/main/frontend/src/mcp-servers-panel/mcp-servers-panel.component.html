@@ -23,54 +23,60 @@
       </div>
     </div>
 
-    <div class="mcp-servers-list" *ngIf="sortedMcpServers.length > 0">
-      <h3>Available MCP Servers</h3>
-      <div class="server-cards">
-        <mat-card *ngFor="let mcpServer of sortedMcpServers; trackBy: trackByServerName"
-                  class="server-card"
-                  [class.server-unhealthy]="!mcpServer.healthy">
-          <mat-card-content>
-            <div class="server-header">
-              <button mat-icon-button
-                      class="server-status-button"
-                      [ngClass]="{'status-red': !mcpServer.healthy, 'status-green': mcpServer.healthy}"
-                      [disabled]="!mcpServer.healthy"
-                      (click)="showMcpServerTools(mcpServer)"
-                      [matTooltip]="mcpServer.healthy ? 'Click to view tools' : 'MCP Server is unhealthy'"
-                      matTooltipPosition="right">
-                <mat-icon>{{ mcpServer.healthy ? 'info' : 'close' }}</mat-icon>
-              </button>
-              <div class="server-info">
-                <div class="server-name">
-                  {{ mcpServer.serverName || mcpServer.name }}
+    @if (sortedMcpServers.length > 0) {
+      <div class="mcp-servers-list">
+        <h3>Available MCP Servers</h3>
+        <div class="server-cards">
+          @for (mcpServer of sortedMcpServers; track trackByServerName($index, mcpServer)) {
+            <mat-card class="server-card"
+                      [class.server-unhealthy]="!mcpServer.healthy">
+              <mat-card-content>
+                <div class="server-header">
+                  <button mat-icon-button
+                          class="server-status-button"
+                          [ngClass]="{'status-red': !mcpServer.healthy, 'status-green': mcpServer.healthy}"
+                          [disabled]="!mcpServer.healthy"
+                          (click)="showMcpServerTools(mcpServer)"
+                          [matTooltip]="mcpServer.healthy ? 'Click to view tools' : 'MCP Server is unhealthy'"
+                          matTooltipPosition="right">
+                    <mat-icon>{{ mcpServer.healthy ? 'info' : 'close' }}</mat-icon>
+                  </button>
+                  <div class="server-info">
+                    <div class="server-name">
+                      {{ mcpServer.serverName || mcpServer.name }}
+                    </div>
+                    <div class="server-tools">
+                      @if (mcpServer.healthy) {
+                        <mat-icon class="tools-icon">build</mat-icon>
+                        {{ mcpServer.tools.length }} {{ mcpServer.tools.length === 1 ? 'tool' : 'tools' }} available
+                      } @else {
+                        <mat-icon class="tools-icon status-red">error_outline</mat-icon>
+                        Unhealthy
+                      }
+                    </div>
+                  </div>
                 </div>
-                <div class="server-tools">
-                  <ng-container *ngIf="mcpServer.healthy; else unhealthyStatus">
-                    <mat-icon class="tools-icon">build</mat-icon>
-                    {{ mcpServer.tools.length }} {{ mcpServer.tools.length === 1 ? 'tool' : 'tools' }} available
-                  </ng-container>
-                  <ng-template #unhealthyStatus>
-                    <mat-icon class="tools-icon status-red">error_outline</mat-icon>
-                    Unhealthy
-                  </ng-template>
-                </div>
-              </div>
-            </div>
-            <div class="server-protocol" *ngIf="mcpServer.protocol">
-              <mat-chip [class.protocol-sse]="isSSEProtocol(mcpServer.protocol)"
-                        [class.protocol-streamable]="isStreamableHttpProtocol(mcpServer.protocol)">
-                {{ getProtocolDisplayName(mcpServer.protocol) }}
-              </mat-chip>
-            </div>
-          </mat-card-content>
-        </mat-card>
+                @if (mcpServer.protocol) {
+                  <div class="server-protocol">
+                    <mat-chip [class.protocol-sse]="isSSEProtocol(mcpServer.protocol)"
+                              [class.protocol-streamable]="isStreamableHttpProtocol(mcpServer.protocol)">
+                      {{ getProtocolDisplayName(mcpServer.protocol) }}
+                    </mat-chip>
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
       </div>
-    </div>
+    }
 
-    <div class="empty-state" *ngIf="sortedMcpServers.length === 0">
-      <mat-icon class="empty-icon">cloud_off</mat-icon>
-      <p>No MCP servers configured</p>
-    </div>
+    @if (sortedMcpServers.length === 0) {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">cloud_off</mat-icon>
+        <p>No MCP servers configured</p>
+      </div>
+    }
   </mat-sidenav>
 
   <mat-sidenav-content>

@@ -7,21 +7,27 @@
   </div>
 
   <mat-dialog-content class="modal-content">
-    <div *ngIf="data.mcpServer.tools.length === 0" class="no-tools">
-      <mat-icon class="no-tools-icon">info</mat-icon>
-      <p>This MCP server doesn't expose any tools.</p>
-    </div>
+    @if (data.mcpServer.tools.length === 0) {
+      <div class="no-tools">
+        <mat-icon class="no-tools-icon">info</mat-icon>
+        <p>This MCP server doesn't expose any tools.</p>
+      </div>
+    }
 
-    <div *ngIf="data.mcpServer.tools.length > 0" class="tools-list">
-      <mat-card *ngFor="let tool of data.mcpServer.tools" class="tool-card">
-        <mat-card-header>
-          <mat-card-title class="tool-name">{{ tool.name }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <p class="tool-description">{{ tool.description || 'No description available' }}</p>
-        </mat-card-content>
-      </mat-card>
-    </div>
+    @if (data.mcpServer.tools.length > 0) {
+      <div class="tools-list">
+        @for (tool of data.mcpServer.tools; track tool.name) {
+          <mat-card class="tool-card">
+            <mat-card-header>
+              <mat-card-title class="tool-name">{{ tool.name }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <p class="tool-description">{{ tool.description || 'No description available' }}</p>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">

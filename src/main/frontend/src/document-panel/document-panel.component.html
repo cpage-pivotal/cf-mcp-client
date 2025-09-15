@@ -37,42 +37,50 @@
       <input hidden (change)="onFileSelected($event)" #fileInput type="file" accept=".pdf,application/pdf">
 
       <!-- Upload progress indicator -->
-      <div *ngIf="isUploading" class="upload-progress-container">
-        <div class="file-name">Uploading: {{ currentFileName }}</div>
-        <mat-progress-bar mode="determinate" [value]="uploadProgress"></mat-progress-bar>
-        <div class="progress-percentage">{{ uploadProgress }}%</div>
-      </div>
+      @if (isUploading) {
+        <div class="upload-progress-container">
+          <div class="file-name">Uploading: {{ currentFileName }}</div>
+          <mat-progress-bar mode="determinate" [value]="uploadProgress"></mat-progress-bar>
+          <div class="progress-percentage">{{ uploadProgress }}%</div>
+        </div>
+      }
     </div>
 
     <div class="documents-list">
       <h3>Uploaded Files ({{ documents.length }})</h3>
 
-      <div class="empty-state" *ngIf="documents.length === 0">
-        No documents uploaded yet
-      </div>
+      @if (documents.length === 0) {
+        <div class="empty-state">
+          No documents uploaded yet
+        </div>
+      }
 
       <mat-list>
-        <mat-list-item *ngFor="let doc of documents" class="document-item">
-          <mat-icon matListItemIcon>insert_drive_file</mat-icon>
-          <div matListItemTitle>{{ doc.name }}</div>
-          <div matListItemLine>{{ doc.size | fileSize }}</div>
-          <button mat-icon-button 
-                  matListItemMeta 
-                  (click)="deleteDocument(doc.id)" 
-                  matTooltip="Delete document"
-                  class="delete-button">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </mat-list-item>
+        @for (doc of documents; track doc.id) {
+          <mat-list-item class="document-item">
+            <mat-icon matListItemIcon>insert_drive_file</mat-icon>
+            <div matListItemTitle>{{ doc.name }}</div>
+            <div matListItemLine>{{ doc.size | fileSize }}</div>
+            <button mat-icon-button 
+                    matListItemMeta 
+                    (click)="deleteDocument(doc.id)" 
+                    matTooltip="Delete document"
+                    class="delete-button">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-list-item>
+        }
       </mat-list>
     </div>
 
     <!-- Clear Files button -->
-    <div class="clear-files-container" *ngIf="documents.length > 0">
-      <button mat-raised-button color="warn" (click)="deleteAllDocuments()">
-        <mat-icon>delete_sweep</mat-icon> Clear Files
-      </button>
-    </div>
+    @if (documents.length > 0) {
+      <div class="clear-files-container">
+        <button mat-raised-button color="warn" (click)="deleteAllDocuments()">
+          <mat-icon>delete_sweep</mat-icon> Clear Files
+        </button>
+      </div>
+    }
   </mat-sidenav>
 
   <mat-sidenav-content>
