@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Inject, inject, signal, effect } from '@angular/core';
+import { Component, DestroyRef, inject, signal, effect } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
@@ -113,6 +113,11 @@ export interface McpServer {
   serverName: string;
   healthy: boolean;
   tools: Tool[];
+  protocol?: {
+    type: string;
+    displayName: string;
+    bindingKey: string;
+  }; // New optional field for protocol object
 }
 
 export interface PromptArgument {

@@ -1,3 +1,4 @@
+/* mcp-servers-panel.component.css */
 .mcp-servers-container {
   position: relative;
 }
@@ -26,7 +27,7 @@
 /* Enable pointer events on the sidenav itself */
 mat-sidenav {
   pointer-events: auto;
-  width: 300px;
+  width: 320px;
   padding: 16px;
   box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
 }
@@ -108,11 +109,141 @@ mat-sidenav {
   font-weight: 500;
 }
 
+/* Server cards container */
+.server-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Individual server card */
+.server-card {
+  padding: 0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.server-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.server-card mat-card-content {
+  padding: 12px;
+}
+
+/* Server header with icon and info */
+.server-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.server-status-button {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.server-info {
+  flex: 1;
+  min-width: 0; /* Allow text truncation */
+}
+
+.server-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--mat-sys-on-surface);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.server-tools {
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+/* Protocol section */
+.server-protocol {
+  display: flex;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.server-protocol mat-chip {
+  font-size: 11px;
+  height: 24px;
+  line-height: 24px;
+  padding: 0 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.protocol-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* Tools icon */
+.tools-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin-right: 4px;
+  vertical-align: middle;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+/* Protocol-specific styles */
+.protocol-sse {
+  background-color: #e3f2fd !important;
+  color: #1565c0 !important;
+}
+
+.protocol-streamable {
+  background-color: #f3e5f5 !important;
+  color: #6a1b9a !important;
+}
+
+/* Unhealthy server card */
+.server-card.server-unhealthy {
+  opacity: 0.8;
+  background-color: rgba(244, 67, 54, 0.04);
+}
+
+.server-card.server-unhealthy:hover {
+  box-shadow: 0 1px 4px rgba(244, 67, 54, 0.2);
+}
+
+/* Empty state */
 .empty-state {
   color: rgba(0, 0, 0, 0.6);
-  font-style: italic;
   text-align: center;
-  padding: 16px;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.empty-state .empty-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
 }
 
 /* Hide the content area without disabling its functions */
@@ -120,16 +251,45 @@ mat-sidenav-content {
   background: transparent;
 }
 
-/* Fix for button alignment in list items */
-.mcp-servers-list mat-list-item {
-  position: relative;
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+  mat-sidenav {
+    width: 280px;
+  }
+
+  .server-name {
+    font-size: 13px;
+  }
+
+  .server-tools {
+    font-size: 11px;
+  }
 }
 
-/* Override matListItemIcon positioning for buttons */
-.mcp-servers-list mat-list-item button[matListItemIcon] {
-  position: static !important;
-  margin-right: 16px !important;
-  transform: none !important;
-  top: auto !important;
-  left: auto !important;
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .server-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .server-card.server-unhealthy {
+    background-color: rgba(244, 67, 54, 0.08);
+  }
+
+  .server-protocol {
+    border-top-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .sidenav-header,
+  .status-container {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .empty-state .empty-icon {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .empty-state {
+    color: rgba(255, 255, 255, 0.6);
+  }
 }

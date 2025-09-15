@@ -6,6 +6,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatListModule } from '@angular/material/list';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatCardModule } from '@angular/material/card';
 import { PlatformMetrics, McpServer } from '../app/app.component';
 import { SidenavService } from '../services/sidenav.service';
 import { ToolsModalComponent } from '../tools-modal/tools-modal.component';
@@ -20,7 +22,9 @@ import { ToolsModalComponent } from '../tools-modal/tools-modal.component';
     MatIconModule,
     MatTooltipModule,
     MatListModule,
-    MatDialogModule
+    MatDialogModule,
+    MatChipsModule,
+    MatCardModule
   ],
   templateUrl: './mcp-servers-panel.component.html',
   styleUrl: './mcp-servers-panel.component.css'
@@ -39,7 +43,7 @@ export class McpServersPanelComponent implements AfterViewInit {
     this.sidenavService.registerSidenav('mcp-servers', this.sidenav);
   }
 
-  toggleSidenav() {
+  toggleSidenav(): void {
     this.sidenavService.toggle('mcp-servers');
   }
 
@@ -65,15 +69,16 @@ export class McpServersPanelComponent implements AfterViewInit {
     }
 
     this.dialog.open(ToolsModalComponent, {
-      data: { mcpServer: mcpServer },
-      width: '90vw', // Responsive width
-      maxWidth: '600px', // Maximum width constraint
+      data: { mcpServer },
+      width: '90vw',
+      maxWidth: '600px',
       maxHeight: '80vh',
       panelClass: 'custom-dialog-container'
     });
   }
+
   getOverallStatusClass(): string {
-    if (this.metrics.mcpServers.length === 0) {
+    if (!this.metrics?.mcpServers || this.metrics.mcpServers.length === 0) {
       return 'status-red';
     }
 
@@ -81,16 +86,16 @@ export class McpServersPanelComponent implements AfterViewInit {
     const hasHealthy = this.metrics.mcpServers.some(server => server.healthy);
 
     if (hasUnhealthy && hasHealthy) {
-      return 'status-orange'; // Mixed health status
+      return 'status-orange';
     } else if (hasHealthy) {
-      return 'status-green'; // All healthy
+      return 'status-green';
     } else {
-      return 'status-red'; // All unhealthy
+      return 'status-red';
     }
   }
 
   getOverallStatusIcon(): string {
-    if (this.metrics.mcpServers.length === 0) {
+    if (!this.metrics?.mcpServers || this.metrics.mcpServers.length === 0) {
       return 'error';
     }
 
@@ -98,16 +103,16 @@ export class McpServersPanelComponent implements AfterViewInit {
     const hasHealthy = this.metrics.mcpServers.some(server => server.healthy);
 
     if (hasUnhealthy && hasHealthy) {
-      return 'warning'; // Mixed health status
+      return 'warning';
     } else if (hasHealthy) {
-      return 'check_circle'; // All healthy
+      return 'check_circle';
     } else {
-      return 'error'; // All unhealthy
+      return 'error';
     }
   }
 
   getOverallStatusText(): string {
-    if (this.metrics.mcpServers.length === 0) {
+    if (!this.metrics?.mcpServers || this.metrics.mcpServers.length === 0) {
       return 'Not Available';
     }
 
@@ -121,5 +126,36 @@ export class McpServersPanelComponent implements AfterViewInit {
     } else {
       return `${healthyCount}/${totalCount} Healthy`;
     }
+  }
+
+  // Fixed to handle the actual protocol structure from backend
+  getProtocolDisplayName(protocol?: any): string {
+    if (!protocol) return 'SSE';
+    // Handle both function and string cases
+    if (typeof protocol.displayName === 'function') {
+      return protocol.displayName();
+    }
+    return protocol.displayName || 'SSE';
+  }
+
+  isSSEProtocol(protocol?: any): boolean {
+    if (!protocol) return true; // Default to SSE
+    const displayName = typeof protocol.displayName === 'function'
+      ? protocol.displayName()
+      : protocol.displayName;
+    return displayName === 'SSE';
+  }
+
+  isStreamableHttpProtocol(protocol?: any): boolean {
+    if (!protocol) return false;
+    const displayName = typeof protocol.displayName === 'function'
+      ? protocol.displayName()
+      : protocol.displayName;
+    return displayName === 'Streamable HTTP';
+  }
+
+  // Track function for ngFor optimization
+  trackByServerName(index: number, server: McpServer): string {
+    return server.name || server.serverName || index.toString();
   }
 }

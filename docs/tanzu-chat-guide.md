@@ -209,7 +209,7 @@ Now let's give it the ability to tell time!
 
 ### Step 10: Deploy a Time MCP Server
 
-MCP servers are lightweight applications that expose specific tools to AI models. Let's deploy one:
+MCP servers are lightweight applications that expose specific tools to AI models. Let's deploy one and connect it using the SSE protocol:
 
 ```bash
 # Clone the Time MCP Server
@@ -224,8 +224,8 @@ cf push
 
 # Note the URL it deploys to (e.g., https://time-mcp-server.apps.your-cf-domain.com)
 
-# Create a user-provided service pointing to the MCP server
-cf cups mcp-time-server -p '{"mcpServiceURL":"https://time-mcp-server.apps.your-cf-domain.com"}'
+# Create a user-provided service pointing to the MCP server using SSE protocol
+cf cups mcp-time-server -p '{"mcpSseURL":"https://time-mcp-server.apps.your-cf-domain.com"}'
 
 # Return to the chat app directory and bind the service
 cd ../cf-mcp-client
@@ -233,6 +233,15 @@ cf bind-service ai-tool-chat mcp-time-server
 
 # Restart the chat application
 cf restart ai-tool-chat
+```
+
+**Alternative: Streamable HTTP Protocol**
+
+If your MCP server supports Streamable HTTP Protocol instead of SSE, use:
+
+```bash
+# Create service with Streamable HTTP protocol
+cf cups mcp-time-server -p '{"mcpStreamableURL":"https://time-mcp-server.apps.your-cf-domain.com"}'
 ```
 
 ### Step 11: Test MCP Tool Usage
@@ -335,7 +344,8 @@ All managed by Cloud Foundry—you just focus on your application logic!
 **MCP tools not working?**
 - Verify the MCP server is running: `cf app time-mcp-server`
 - Check the Agents panel (🔌) shows your service
-- Confirm the mcpServiceURL matches the deployed app URL
+- Confirm the mcpSseURL or mcpStreamableURL matches the deployed app URL
+- Ensure you're using the correct protocol key for your MCP server type
 
 **Memory not persisting?**
 - Both vector store and embeddings must be bound
