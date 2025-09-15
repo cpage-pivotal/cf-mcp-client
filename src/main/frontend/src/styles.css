@@ -1,7 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 
-/* Import Material Design 3 Grid System */
+/* Import Material Design 3 Systems */
 @import './styles/material-grid.css';
+@import './styles/m3-color-system.css';
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

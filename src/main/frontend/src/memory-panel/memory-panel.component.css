@@ -24,7 +24,7 @@ mat-sidenav {
   pointer-events: auto;
   width: 300px;
   padding: 0; /* Remove default padding */
-  box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
+  box-shadow: -3px 0 5px var(--md-sys-elevation-shadow-3dp);
   margin-right: 96px; /* Space for navigation rail */
 }
 
@@ -51,7 +51,7 @@ mat-sidenav .sidenav-header {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .sidenav-header h2 {
@@ -68,7 +68,7 @@ mat-sidenav-content {
 .conversation-id-container {
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .conversation-id-field {
@@ -78,7 +78,7 @@ mat-sidenav-content {
 .status-container {
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .status-row {
@@ -106,15 +106,15 @@ mat-sidenav-content {
 }
 
 .status-green {
-  color: #4CAF50;
+  color: var(--md-sys-color-chat-connected);
 }
 
 .status-red {
-  color: #F44336;
+  color: var(--md-sys-color-chat-disconnected);
 }
 
 .status-orange {
-  color: #FF9800;
+  color: var(--md-sys-color-chat-pending);
 }
 
 .status-text {

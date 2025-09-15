@@ -24,7 +24,7 @@ mat-sidenav {
   pointer-events: auto;
   width: 350px;
   padding: 0; /* Remove default padding */
-  box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
+  box-shadow: -3px 0 5px var(--md-sys-elevation-shadow-3dp);
   margin-right: 96px; /* Space for navigation rail */
 }
 
@@ -53,7 +53,7 @@ mat-sidenav .sidenav-header {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .sidenav-header h2 {
@@ -65,7 +65,7 @@ mat-sidenav .sidenav-header {
 .upload-container {
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 /* Progress indicator styles */
@@ -73,7 +73,7 @@ mat-sidenav .sidenav-header {
   margin-top: 16px;
   padding: 12px;
   border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: var(--md-sys-color-surface-container-low);
 }
 
 .file-name {
@@ -88,7 +88,7 @@ mat-sidenav .sidenav-header {
   text-align: right;
   font-size: 12px;
   margin-top: 4px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 .documents-list {
@@ -104,7 +104,7 @@ mat-sidenav .sidenav-header {
 }
 
 .empty-state {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--md-sys-color-on-surface-variant);
   font-style: italic;
   text-align: center;
   padding: 16px;
@@ -124,7 +124,7 @@ mat-sidenav-content {
 .status-container {
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .status-row {
@@ -152,11 +152,11 @@ mat-sidenav-content {
 }
 
 .status-green {
-  color: #4CAF50;
+  color: var(--md-sys-color-document-uploaded);
 }
 
 .status-red {
-  color: #F44336;
+  color: var(--md-sys-color-document-failed);
 }
 
 .status-text {
@@ -168,16 +168,16 @@ mat-sidenav-content {
 }
 
 .delete-button {
-  color: rgba(0, 0, 0, 0.54);
+  color: var(--md-sys-color-on-surface-variant);
   transition: color 0.2s ease;
 }
 
 .delete-button:hover {
-  color: #f44336;
+  color: var(--md-sys-color-error);
 }
 
 .document-item:hover .delete-button {
-  color: rgba(0, 0, 0, 0.87);
+  color: var(--md-sys-color-on-surface);
 }
 
 /* Responsive adjustments for navigation rail positioning */

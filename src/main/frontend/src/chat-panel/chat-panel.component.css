@@ -24,7 +24,7 @@ mat-sidenav {
   pointer-events: auto;
   width: 300px;
   padding: 0; /* Remove default padding */
-  box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
+  box-shadow: -3px 0 5px var(--md-sys-elevation-shadow-3dp);
   margin-right: var(--md-spacing-24); /* Space for navigation rail (96px) */
 }
 
@@ -50,7 +50,7 @@ mat-sidenav .sidenav-header {
   align-items: center;
   margin-bottom: var(--md-spacing-4); /* 16px using Material spacing */
   padding-bottom: var(--md-spacing-2); /* 8px using Material spacing */
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .sidenav-header h2 {
@@ -62,7 +62,7 @@ mat-sidenav .sidenav-header {
 .status-container {
   margin-bottom: var(--md-spacing-4); /* 16px using Material spacing */
   padding-bottom: var(--md-spacing-4); /* 16px using Material spacing */
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .status-row {
@@ -90,11 +90,11 @@ mat-sidenav .sidenav-header {
 }
 
 .status-green {
-  color: #4CAF50;
+  color: var(--md-sys-color-chat-connected);
 }
 
 .status-red {
-  color: #F44336;
+  color: var(--md-sys-color-chat-disconnected);
 }
 
 .status-text {

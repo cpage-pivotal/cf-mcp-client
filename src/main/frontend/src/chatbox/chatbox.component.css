@@ -1,14 +1,14 @@
 /* CSS Variables for consistent theming */
 :host {
-  --reasoning-bg: rgba(var(--mat-sys-primary-rgb), 0.04);
-  --reasoning-border: var(--mat-sys-primary);
-  --reasoning-text: var(--mat-sys-on-surface);
-  --error-bg: rgba(var(--mat-sys-error-rgb), 0.04);
-  --error-border: var(--mat-sys-error);
-  --error-text: var(--mat-sys-on-surface);
-  --surface-elevation: var(--mat-sys-surface-container-low);
-  --motion-easing: cubic-bezier(0.2, 0, 0, 1);
-  --motion-duration: 250ms;
+  --reasoning-bg: var(--md-sys-color-reasoning-background);
+  --reasoning-border: var(--md-sys-color-primary);
+  --reasoning-text: var(--md-sys-color-on-surface);
+  --error-bg: var(--md-sys-color-error-background);
+  --error-border: var(--md-sys-color-error);
+  --error-text: var(--md-sys-color-on-surface);
+  --surface-elevation: var(--md-sys-color-surface-container-low);
+  --motion-easing: var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  --motion-duration: var(--md-sys-motion-duration-medium, 250ms);
 }
 
 /* Chat CSS using Material Design 3 Grid System */
@@ -184,7 +184,7 @@ button:active:not(:disabled) {
   font-size: 20px;
   width: 20px;
   height: 20px;
-  color: #ffc107;
+  color: var(--md-sys-color-warning);
   font-weight: 500;
   transition: color var(--motion-duration) var(--motion-easing);
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
@@ -242,7 +242,7 @@ button:active:not(:disabled) {
   font-size: 20px;
   width: 20px;
   height: 20px;
-  color: #f44336;
+  color: var(--md-sys-color-error);
   font-weight: 500;
   transition: color var(--motion-duration) var(--motion-easing);
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
@@ -490,7 +490,7 @@ button:active:not(:disabled) {
   }
   
   .reasoning-toggle mat-icon {
-    color: #ffc107;
+    color: var(--md-sys-color-warning);
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
   }
   
@@ -512,7 +512,7 @@ button:active:not(:disabled) {
   }
   
   .error-toggle mat-icon {
-    color: #f44336;
+    color: var(--md-sys-color-error);
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
   }
   
