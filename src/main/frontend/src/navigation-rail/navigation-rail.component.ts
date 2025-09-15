@@ -46,7 +46,7 @@ export class NavigationRailComponent {
     {
       id: 'mcp-servers',
       icon: 'hub',
-      label: 'Servers',
+      label: 'MCP',
       tooltip: 'MCP Server Connections'
     },
     {
@@ -80,9 +80,9 @@ export class NavigationRailComponent {
         const healthyServers = this.metrics.mcpServers.filter(server => server.healthy).length;
         return {
           show: this.metrics.mcpServers.length > 0,
-          color: healthyServers === this.metrics.mcpServers.length ? 'status-green' : 
+          color: healthyServers === this.metrics.mcpServers.length ? 'status-green' :
                  healthyServers > 0 ? 'status-orange' : 'status-red',
-          icon: healthyServers === this.metrics.mcpServers.length ? 'check_circle' : 
+          icon: healthyServers === this.metrics.mcpServers.length ? 'check_circle' :
                 healthyServers > 0 ? 'warning' : 'error'
         };
       case 'memory':

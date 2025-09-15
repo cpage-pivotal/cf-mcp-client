@@ -12,18 +12,13 @@
           [attr.data-nav-item]="item.id">
           
           <div class="nav-rail-button-content">
-            <!-- Main icon -->
-            <mat-icon class="nav-rail-icon" [attr.aria-hidden]="true">{{ item.icon }}</mat-icon>
-            
-            <!-- Status indicator -->
-            @if (getStatusIndicator(item.id).show) {
-              <mat-icon 
-                class="nav-rail-status-indicator" 
-                [ngClass]="getStatusIndicator(item.id).color"
-                [attr.aria-hidden]="true">
-                {{ getStatusIndicator(item.id).icon }}
-              </mat-icon>
-            }
+            <!-- Main icon with status color -->
+            <mat-icon 
+              class="nav-rail-icon" 
+              [ngClass]="getStatusIndicator(item.id).show ? getStatusIndicator(item.id).color : ''"
+              [attr.aria-hidden]="true">
+              {{ item.icon }}
+            </mat-icon>
           </div>
           
           <!-- Label -->
