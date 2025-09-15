@@ -8,10 +8,10 @@
 }
 
 .sidenav-container {
-  height: 100vh;
+  height: calc(100vh - 64px); /* Account for toolbar height */
   width: 100vw;
   position: fixed;
-  top: 0;
+  top: 64px; /* Align with navigation rail */
   left: 0;
   bottom: 0;
   right: 0;
@@ -24,9 +24,22 @@
 mat-sidenav {
   pointer-events: auto;
   width: 320px;
-  padding: 16px;
+  padding: 0; /* Remove default padding */
   box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
   margin-right: 96px; /* Space for navigation rail */
+}
+
+/* Add padding to sidenav content to align with navigation rail */
+mat-sidenav .sidenav-header,
+mat-sidenav .status-container,
+mat-sidenav .mcp-servers-list,
+mat-sidenav .empty-state {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+mat-sidenav .sidenav-header {
+  padding-top: 16px;
 }
 
 /* Keep backdrop clickable */
