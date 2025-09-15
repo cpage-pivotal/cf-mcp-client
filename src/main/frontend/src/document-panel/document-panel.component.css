@@ -152,12 +152,6 @@ mat-sidenav-content {
   font-size: 14px;
 }
 
-.upload-container {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
 .document-item {
   position: relative;
 }

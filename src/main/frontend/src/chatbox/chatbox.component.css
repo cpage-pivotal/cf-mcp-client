@@ -120,15 +120,7 @@
   cursor: not-allowed;
 }
 
-/* Enhanced loading states */
-.chat-message.bot.streaming {
-  opacity: 0.9;
-}
-
 /* Smooth transitions for better UX */
-.chat-message {
-  transition: opacity 0.2s ease-in-out;
-}
 
 button {
   transition: opacity 0.2s ease-in-out, transform 0.1s ease-in-out;
@@ -138,24 +130,6 @@ button:active:not(:disabled) {
   transform: scale(0.98);
 }
 
-/* Status indicators */
-.status-indicator {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.6);
-  margin-left: 8px;
-}
-
-.connecting {
-  color: orange;
-}
-
-.streaming {
-  color: blue;
-}
-
-.error {
-  color: red;
-}
 
 /* Bot message container */
 .bot-message-container {
