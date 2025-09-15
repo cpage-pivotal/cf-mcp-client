@@ -5,7 +5,7 @@
 </div>
 
 <mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true">
+  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true" [fixedTopGap]="64">
     <div class="sidenav-header">
       <h2>Chat</h2>
       <button mat-icon-button (click)="sidenav.close()">
