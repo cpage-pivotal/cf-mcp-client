@@ -59,7 +59,6 @@
             <div class="server-protocol" *ngIf="mcpServer.protocol">
               <mat-chip [class.protocol-sse]="isSSEProtocol(mcpServer.protocol)"
                         [class.protocol-streamable]="isStreamableHttpProtocol(mcpServer.protocol)">
-                <mat-icon class="protocol-icon">{{ isSSEProtocol(mcpServer.protocol) ? 'stream' : 'http' }}</mat-icon>
                 {{ getProtocolDisplayName(mcpServer.protocol) }}
               </mat-chip>
             </div>
