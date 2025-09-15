@@ -5,13 +5,13 @@ mat-toolbar {
   left: 0;
   right: 0;
   z-index: 2;
-  height: 64px;
+  height: var(--md-spacing-16); /* 64px using Material Design spacing */
 }
 
 /* Main content wrapper */
 main {
-  padding-top: 64px; /* Same as toolbar height */
-  padding-right: 96px; /* Space for navigation rail */
+  padding-top: var(--md-spacing-16); /* Same as toolbar height */
+  padding-right: var(--md-spacing-24); /* Space for navigation rail (96px) */
   height: 100vh;
   box-sizing: border-box;
 }
@@ -23,10 +23,10 @@ app-memory-panel {
   z-index: 10;
 }
 
-/* Responsive breakpoints for navigation rail */
+/* Responsive breakpoints for navigation rail using Material Design breakpoints */
 @media (max-width: 840px) {
   main {
-    padding-right: 80px; /* Compact rail width */
+    padding-right: var(--md-spacing-20); /* Compact rail width (80px) */
   }
 }
 

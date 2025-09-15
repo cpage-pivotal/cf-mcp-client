@@ -11,27 +11,27 @@
   --motion-duration: 250ms;
 }
 
-/* Chat CSS */
+/* Chat CSS using Material Design 3 Grid System */
 .chatbox {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  top: 64px; /* Same as toolbar height */
-  padding: 16px;
+  top: var(--md-spacing-16); /* Same as toolbar height */
+  padding: var(--md-layout-margin); /* Responsive padding */
   width: min(90%, 1200px);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   z-index: 1;
-  gap: 8px;
+  gap: var(--md-spacing-2); /* 8px using Material spacing */
 }
 
 .chatbox-messages {
   overflow-y: auto;
   flex-grow: 1;
-  margin-bottom: 12px;
-  padding: 4px;
+  margin-bottom: var(--md-spacing-3); /* 12px using Material spacing */
+  padding: var(--md-spacing-1); /* 4px using Material spacing */
   scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: var(--mat-sys-outline-variant) transparent;
@@ -54,8 +54,8 @@
 
 .chat-message {
   max-width: min(65%, 800px);
-  padding: 12px;
-  margin-bottom: 16px;
+  padding: var(--md-spacing-3); /* 12px using Material spacing */
+  margin-bottom: var(--md-spacing-4); /* 16px using Material spacing */
   position: relative;
   word-wrap: break-word;
   animation: messageSlideIn var(--motion-duration) var(--motion-easing);
@@ -88,7 +88,7 @@
 }
 
 .chatbox-footer {
-  margin-bottom: 15px;
+  margin-bottom: var(--md-spacing-4); /* 16px using Material spacing (rounded from 15px) */
 }
 
 .chatbox-footer input {
@@ -140,18 +140,18 @@ button:active:not(:disabled) {
 /* Message toggles container */
 .message-toggles {
   position: absolute;
-  top: 12px;
+  top: var(--md-spacing-3); /* 12px using Material spacing */
   right: -48px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--md-spacing-2); /* 8px using Material spacing */
   z-index: 10;
 }
 
 /* Reasoning toggle button */
 .reasoning-toggle {
-  width: 40px;
-  height: 40px;
+  width: var(--md-spacing-10); /* 40px using Material spacing */
+  height: var(--md-spacing-10); /* 40px using Material spacing */
   opacity: 0.9;
   background: rgba(var(--mat-sys-surface-rgb), 0.95);
   border: 1.5px solid var(--mat-sys-outline);
@@ -208,8 +208,8 @@ button:active:not(:disabled) {
 
 /* Error toggle button */
 .error-toggle {
-  width: 40px;
-  height: 40px;
+  width: var(--md-spacing-10); /* 40px using Material spacing */
+  height: var(--md-spacing-10); /* 40px using Material spacing */
   opacity: 0.9;
   background: rgba(var(--mat-sys-surface-rgb), 0.95);
   border: 1.5px solid var(--mat-sys-outline);
@@ -267,7 +267,7 @@ button:active:not(:disabled) {
 /* Main content area */
 .main-content {
   width: 100%;
-  padding-right: 12px;
+  padding-right: var(--md-spacing-3); /* 12px using Material spacing */
   font-size: 16px;
   line-height: 1.6;
   color: var(--mat-sys-on-surface);
@@ -308,11 +308,11 @@ button:active:not(:disabled) {
 
 /* Reasoning section */
 .reasoning-section {
-  margin-top: 20px;
-  padding: 16px;
+  margin-top: var(--md-spacing-5); /* 20px using Material spacing */
+  padding: var(--md-spacing-4); /* 16px using Material spacing */
   background: var(--reasoning-bg);
-  border-radius: 12px;
-  border-left: 4px solid var(--reasoning-border);
+  border-radius: var(--md-spacing-3); /* 12px using Material spacing */
+  border-left: var(--md-spacing-1) solid var(--reasoning-border); /* 4px using Material spacing */
   animation: slideDownAdvanced var(--motion-duration) var(--motion-easing);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -331,7 +331,7 @@ button:active:not(:disabled) {
 .reasoning-header {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--md-spacing-3); /* 12px using Material spacing */
   font-weight: 500;
   color: var(--reasoning-border);
   font-size: 13px;
@@ -343,7 +343,7 @@ button:active:not(:disabled) {
   font-size: 18px;
   width: 18px;
   height: 18px;
-  margin-right: 8px;
+  margin-right: var(--md-spacing-2); /* 8px using Material spacing */
   animation: pulseGlow 2s ease-in-out infinite;
 }
 
@@ -363,11 +363,11 @@ button:active:not(:disabled) {
 
 /* Error section */
 .error-section {
-  margin-top: 20px;
-  padding: 16px;
+  margin-top: var(--md-spacing-5); /* 20px using Material spacing */
+  padding: var(--md-spacing-4); /* 16px using Material spacing */
   background: var(--error-bg);
-  border-radius: 12px;
-  border-left: 4px solid var(--error-border);
+  border-radius: var(--md-spacing-3); /* 12px using Material spacing */
+  border-left: var(--md-spacing-1) solid var(--error-border); /* 4px using Material spacing */
   animation: slideDownAdvanced var(--motion-duration) var(--motion-easing);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -386,7 +386,7 @@ button:active:not(:disabled) {
 .error-header {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--md-spacing-3); /* 12px using Material spacing */
   font-weight: 500;
   color: var(--error-border);
   font-size: 13px;
@@ -398,7 +398,7 @@ button:active:not(:disabled) {
   font-size: 18px;
   width: 18px;
   height: 18px;
-  margin-right: 8px;
+  margin-right: var(--md-spacing-2); /* 8px using Material spacing */
   animation: pulseGlow 2s ease-in-out infinite;
 }
 
@@ -409,7 +409,7 @@ button:active:not(:disabled) {
 }
 
 .error-field {
-  margin-bottom: 12px;
+  margin-bottom: var(--md-spacing-3); /* 12px using Material spacing */
 }
 
 .error-field:last-child {
@@ -425,12 +425,12 @@ button:active:not(:disabled) {
 
 .error-stacktrace {
   background: var(--surface-elevation);
-  padding: 12px;
-  border-radius: 6px;
+  padding: var(--md-spacing-3); /* 12px using Material spacing */
+  border-radius: var(--md-spacing-2); /* 8px rounded to 6px - closest Material spacing */
   font-family: 'Roboto Mono', monospace;
   font-size: 12px;
   overflow-x: auto;
-  margin: 8px 0 0 0;
+  margin: var(--md-spacing-2) 0 0 0; /* 8px using Material spacing */
   border: 1px solid rgba(var(--mat-sys-error-rgb), 0.2);
   max-height: 200px;
   overflow-y: auto;
@@ -522,26 +522,52 @@ button:active:not(:disabled) {
   }
 }
 
-/* Responsive Design */
-@media (min-width: 1200px) {
-  .chatbox { width: min(85%, 1200px); padding: 24px; }
-  .chat-message { max-width: min(70%, 900px); padding: 16px; }
+/* Responsive Design using Material Design 3 breakpoints */
+@media (min-width: 1240px) {
+  .chatbox { 
+    width: min(85%, 1200px); 
+    padding: var(--md-spacing-6); /* 24px using Material spacing */
+  }
+  .chat-message { 
+    max-width: min(70%, 900px); 
+    padding: var(--md-spacing-4); /* 16px using Material spacing */
+  }
   .main-content { font-size: 17px; }
   .reasoning-content,
   .error-content { font-size: 15px; }
 }
 
-@media (max-width: 767px) {
-  .chatbox { width: 95%; padding: 12px; top: 56px; }
-  .chat-message { max-width: 90%; padding: 12px; }
-  .message-toggles { right: -3px; top: -3px; gap: 6px; }
+@media (max-width: 600px) {
+  .chatbox { 
+    width: 95%; 
+    padding: var(--md-spacing-3); /* 12px using Material spacing */
+    top: 56px; 
+  }
+  .chat-message { 
+    max-width: 90%; 
+    padding: var(--md-spacing-3); /* 12px using Material spacing */
+  }
+  .message-toggles { 
+    right: -3px; 
+    top: -3px; 
+    gap: var(--md-spacing-2); /* 8px rounded to 6px - closest Material spacing */
+  }
   .reasoning-toggle,
-  .error-toggle { width: 32px; height: 32px; }
+  .error-toggle { 
+    width: var(--md-spacing-8); /* 32px using Material spacing */
+    height: var(--md-spacing-8); /* 32px using Material spacing */
+  }
   .reasoning-toggle mat-icon,
   .error-toggle mat-icon { font-size: 18px; width: 18px; height: 18px; }
-  .main-content { font-size: 15px; padding-right: 8px; }
+  .main-content { 
+    font-size: 15px; 
+    padding-right: var(--md-spacing-2); /* 8px using Material spacing */
+  }
   .reasoning-section,
-  .error-section { padding: 12px; margin-top: 16px; }
+  .error-section { 
+    padding: var(--md-spacing-3); /* 12px using Material spacing */
+    margin-top: var(--md-spacing-4); /* 16px using Material spacing */
+  }
   .reasoning-content,
   .error-content { font-size: 13px; }
   .reasoning-icon,

@@ -25,18 +25,18 @@ mat-sidenav {
   width: 300px;
   padding: 0; /* Remove default padding */
   box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
-  margin-right: 96px; /* Space for navigation rail */
+  margin-right: var(--md-spacing-24); /* Space for navigation rail (96px) */
 }
 
 /* Add padding to sidenav content to align with navigation rail */
 mat-sidenav .sidenav-header,
 mat-sidenav .status-container {
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: var(--md-spacing-4); /* 16px using Material spacing */
+  padding-right: var(--md-spacing-4); /* 16px using Material spacing */
 }
 
 mat-sidenav .sidenav-header {
-  padding-top: 16px;
+  padding-top: var(--md-spacing-4); /* 16px using Material spacing */
 }
 
 /* Keep backdrop clickable */
@@ -48,8 +48,8 @@ mat-sidenav .sidenav-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  margin-bottom: var(--md-spacing-4); /* 16px using Material spacing */
+  padding-bottom: var(--md-spacing-2); /* 8px using Material spacing */
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
@@ -60,15 +60,15 @@ mat-sidenav .sidenav-header {
 }
 
 .status-container {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
+  margin-bottom: var(--md-spacing-4); /* 16px using Material spacing */
+  padding-bottom: var(--md-spacing-4); /* 16px using Material spacing */
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .status-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: var(--md-spacing-2); /* 8px using Material spacing */
 }
 
 .status-label {
@@ -83,7 +83,7 @@ mat-sidenav .sidenav-header {
 }
 
 .status-indicator mat-icon {
-  margin-right: 8px;
+  margin-right: var(--md-spacing-2); /* 8px using Material spacing */
   font-size: 18px;
   height: 18px;
   width: 18px;
@@ -106,10 +106,10 @@ mat-sidenav-content {
   background: transparent;
 }
 
-/* Responsive adjustments for navigation rail positioning */
+/* Responsive adjustments for navigation rail positioning using Material Design breakpoints */
 @media (max-width: 840px) {
   mat-sidenav {
-    margin-right: 80px; /* Compact rail width */
+    margin-right: var(--md-spacing-20); /* Compact rail width (80px) */
   }
 }
 
