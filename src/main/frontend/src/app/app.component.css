@@ -11,6 +11,7 @@ mat-toolbar {
 /* Main content wrapper */
 main {
   padding-top: 64px; /* Same as toolbar height */
+  padding-right: 96px; /* Space for navigation rail */
   height: 100vh;
   box-sizing: border-box;
 }
@@ -20,4 +21,17 @@ app-memory-panel {
   /* This component handles its own positioning */
   position: static;
   z-index: 10;
+}
+
+/* Responsive breakpoints for navigation rail */
+@media (max-width: 840px) {
+  main {
+    padding-right: 80px; /* Compact rail width */
+  }
+}
+
+@media (max-width: 600px) {
+  main {
+    padding-right: 0; /* No rail on mobile */
+  }
 }

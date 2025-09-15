@@ -4,11 +4,7 @@
 }
 
 .toggle-button {
-  position: fixed;
-  top: 168px;
-  right: 16px;
-  z-index: 1000;
-  background-color: var(--mat-sys-primary-container);
+  display: none; /* Hidden - replaced by navigation rail */
 }
 
 .sidenav-container {
@@ -30,6 +26,7 @@ mat-sidenav {
   width: 320px;
   padding: 16px;
   box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
+  margin-right: 96px; /* Space for navigation rail */
 }
 
 /* Keep backdrop clickable */
@@ -257,6 +254,19 @@ mat-sidenav-content {
 
   .server-tools {
     font-size: 11px;
+  }
+}
+
+/* Responsive adjustments for navigation rail positioning */
+@media (max-width: 840px) {
+  mat-sidenav {
+    margin-right: 80px; /* Compact rail width */
+  }
+}
+
+@media (max-width: 600px) {
+  mat-sidenav {
+    margin-right: 0; /* No rail on mobile */
   }
 }
 
