@@ -27,6 +27,7 @@ mat-sidenav {
   padding: 0; /* Remove default padding */
   box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
   margin-right: 96px; /* Space for navigation rail */
+  background-color: var(--md-sys-color-surface);
 }
 
 /* Add padding to sidenav content to align with navigation rail */
@@ -45,6 +46,8 @@ mat-sidenav .sidenav-header {
 /* Keep backdrop clickable */
 ::ng-deep .mat-drawer-backdrop.mat-drawer-shown {
   pointer-events: auto;
+  background-color: rgba(0, 0, 0, 0.32) !important;
+  opacity: 1 !important;
 }
 
 .sidenav-header {
@@ -93,15 +96,15 @@ mat-sidenav .sidenav-header {
 }
 
 .status-green {
-  color: #4CAF50;
+  color: var(--md-sys-color-server-healthy);
 }
 
 .status-red {
-  color: #F44336;
+  color: var(--md-sys-color-server-unhealthy);
 }
 
 .status-orange {
-  color: #FF9800;
+  color: var(--md-sys-color-server-warning);
 }
 
 .status-text {

@@ -30,3 +30,36 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .prompt-selection-dialog-container .mat-mdc-dialog-container {
   overflow-x: hidden !important;
 }
+
+.mat-drawer-backdrop {
+  background-color: transparent !important; /* Hidden by default */
+}
+
+.mat-drawer-backdrop.mat-drawer-shown {
+  background-color: rgba(0, 0, 0, 0.32) !important; /* Only when open */
+  opacity: 1 !important;
+}
+
+/* Dark mode backdrop */
+@media (prefers-color-scheme: dark) {
+  .mat-drawer-backdrop.mat-drawer-shown {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+  }
+}
+
+/* Ensure chatbox area is never affected */
+.chatbox {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: var(--md-spacing-16);
+  padding: var(--md-layout-margin);
+  width: min(90%, 1200px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  z-index: 1; /* Lower than panels but visible */
+  gap: var(--md-spacing-2);
+  background-color: transparent; /* No background interference */
+}

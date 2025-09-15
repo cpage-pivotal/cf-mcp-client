@@ -25,16 +25,20 @@
   flex-direction: column;
   z-index: 1;
   gap: var(--md-spacing-2); /* 8px using Material spacing */
+  background-color: var(--md-sys-color-surface);
 }
 
 .chatbox-messages {
   overflow-y: auto;
   flex-grow: 1;
   margin-bottom: var(--md-spacing-3); /* 12px using Material spacing */
-  padding: var(--md-spacing-1); /* 4px using Material spacing */
+  padding: var(--md-spacing-4); /* Increased padding for better visual separation */
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: var(--mat-sys-outline-variant) transparent;
+  scrollbar-color: var(--md-sys-color-outline-variant) transparent;
+  background-color: var(--md-sys-color-surface-dim);
+  border-radius: var(--md-spacing-3); /* 12px rounded corners */
+  border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .chatbox-messages::-webkit-scrollbar {
@@ -43,13 +47,13 @@
 }
 
 .chatbox-messages::-webkit-scrollbar-thumb {
-  background: var(--mat-sys-outline-variant);
+  background: var(--md-sys-color-outline);
   border-radius: 3px;
   transition: background var(--motion-duration) var(--motion-easing);
 }
 
 .chatbox-messages::-webkit-scrollbar-thumb:hover {
-  background: var(--mat-sys-outline);
+  background: var(--md-sys-color-on-surface-variant);
 }
 
 .chat-message {
@@ -88,7 +92,12 @@
 }
 
 .chatbox-footer {
-  margin-bottom: var(--md-spacing-4); /* 16px using Material spacing (rounded from 15px) */
+  margin-bottom: var(--md-spacing-4); /* 16px using Material spacing */
+  padding: var(--md-spacing-4); /* Add padding for visual consistency */
+  background-color: var(--md-sys-color-surface-container);
+  border-radius: var(--md-spacing-3); /* 12px rounded corners */
+  box-shadow: var(--md-sys-elevation-shadow-1dp);
+  border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .chatbox-footer input {
@@ -464,58 +473,58 @@ button:active:not(:disabled) {
     --reasoning-bg: rgba(var(--mat-sys-primary-rgb), 0.08);
     --error-bg: rgba(var(--mat-sys-error-rgb), 0.08);
   }
-  
+
   .reasoning-section,
   .error-section {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   }
-  
+
   .main-content markdown code,
   .reasoning-content markdown code,
   .main-content markdown pre,
   .reasoning-content markdown pre {
     background: rgba(255, 255, 255, 0.1);
   }
-  
+
   .reasoning-toggle {
     background: rgba(var(--mat-sys-surface-rgb), 0.9);
     border-color: var(--mat-sys-outline);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.2);
   }
-  
+
   .reasoning-toggle:hover {
     background: var(--mat-sys-secondary-container);
     border-color: var(--mat-sys-primary);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
   }
-  
+
   .reasoning-toggle mat-icon {
     color: var(--md-sys-color-warning);
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
   }
-  
+
   .reasoning-toggle:hover mat-icon {
     color: var(--mat-sys-primary);
     filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.4));
   }
-  
+
   .error-toggle {
     background: rgba(var(--mat-sys-surface-rgb), 0.9);
     border-color: var(--mat-sys-outline);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.2);
   }
-  
+
   .error-toggle:hover {
     background: var(--mat-sys-error-container);
     border-color: var(--mat-sys-error);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
   }
-  
+
   .error-toggle mat-icon {
     color: var(--md-sys-color-error);
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
   }
-  
+
   .error-toggle:hover mat-icon {
     color: var(--mat-sys-error);
     filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.4));
@@ -524,12 +533,12 @@ button:active:not(:disabled) {
 
 /* Responsive Design using Material Design 3 breakpoints */
 @media (min-width: 1240px) {
-  .chatbox { 
-    width: min(85%, 1200px); 
+  .chatbox {
+    width: min(85%, 1200px);
     padding: var(--md-spacing-6); /* 24px using Material spacing */
   }
-  .chat-message { 
-    max-width: min(70%, 900px); 
+  .chat-message {
+    max-width: min(70%, 900px);
     padding: var(--md-spacing-4); /* 16px using Material spacing */
   }
   .main-content { font-size: 17px; }
@@ -538,33 +547,33 @@ button:active:not(:disabled) {
 }
 
 @media (max-width: 600px) {
-  .chatbox { 
-    width: 95%; 
+  .chatbox {
+    width: 95%;
     padding: var(--md-spacing-3); /* 12px using Material spacing */
-    top: 56px; 
+    top: 56px;
   }
-  .chat-message { 
-    max-width: 90%; 
+  .chat-message {
+    max-width: 90%;
     padding: var(--md-spacing-3); /* 12px using Material spacing */
   }
-  .message-toggles { 
-    right: -3px; 
-    top: -3px; 
+  .message-toggles {
+    right: -3px;
+    top: -3px;
     gap: var(--md-spacing-2); /* 8px rounded to 6px - closest Material spacing */
   }
   .reasoning-toggle,
-  .error-toggle { 
+  .error-toggle {
     width: var(--md-spacing-8); /* 32px using Material spacing */
     height: var(--md-spacing-8); /* 32px using Material spacing */
   }
   .reasoning-toggle mat-icon,
   .error-toggle mat-icon { font-size: 18px; width: 18px; height: 18px; }
-  .main-content { 
-    font-size: 15px; 
+  .main-content {
+    font-size: 15px;
     padding-right: var(--md-spacing-2); /* 8px using Material spacing */
   }
   .reasoning-section,
-  .error-section { 
+  .error-section {
     padding: var(--md-spacing-3); /* 12px using Material spacing */
     margin-top: var(--md-spacing-4); /* 16px using Material spacing */
   }

@@ -6,6 +6,13 @@ mat-toolbar {
   right: 0;
   z-index: 2;
   height: var(--md-spacing-16); /* 64px using Material Design spacing */
+  background-color: var(--md-sys-color-surface-container-high) !important;
+  box-shadow: var(--md-sys-elevation-shadow-3dp);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+mat-toolbar span {
+  color: var(--md-sys-color-on-surface);
 }
 
 /* Main content wrapper */
@@ -14,6 +21,7 @@ main {
   padding-right: var(--md-spacing-24); /* Space for navigation rail (96px) */
   height: 100vh;
   box-sizing: border-box;
+  background-color: var(--md-sys-color-surface);
 }
 
 /* Memory panel component */
@@ -33,5 +41,13 @@ app-memory-panel {
 @media (max-width: 600px) {
   main {
     padding-right: 0; /* No rail on mobile */
+  }
+
+  mat-toolbar {
+    height: 56px; /* Standard mobile toolbar height */
+  }
+
+  main {
+    padding-top: 56px;
   }
 }

@@ -26,6 +26,7 @@ mat-sidenav {
   padding: 0; /* Remove default padding */
   box-shadow: -3px 0 5px var(--md-sys-elevation-shadow-3dp);
   margin-right: var(--md-spacing-24); /* Space for navigation rail (96px) */
+  background-color: var(--md-sys-color-surface);
 }
 
 /* Add padding to sidenav content to align with navigation rail */
