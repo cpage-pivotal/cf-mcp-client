@@ -11,70 +11,38 @@
               <div class="user-message-content">{{ messageData.text }}</div>
             } @else {
               <div class="bot-message-container">
-                <div class="message-toggles">
-                  @if (messageData.hasReasoning) {
-                    <button mat-icon-button 
-                            class="reasoning-toggle"
-                            (click)="toggleReasoning(messageData.index)"
-                            [id]="messageData.reasoningToggleId"
-                            [attr.aria-pressed]="messageData.showReasoning"
-                            [attr.aria-label]="messageData.showReasoning ? 'Hide reasoning' : 'Show reasoning'"
-                            [attr.aria-controls]="messageData.reasoningContentId"
-                            [matTooltip]="messageData.showReasoning ? 'Hide reasoning' : 'Show reasoning'"
-                            type="button"
-                            role="button">
-                      <mat-icon [attr.aria-hidden]="true">{{ messageData.showReasoning ? 'lightbulb' : 'lightbulb_outline' }}</mat-icon>
-                    </button>
-                  }
-                  @if (messageData.hasError) {
-                    <button mat-icon-button 
-                            class="error-toggle"
-                            (click)="toggleError(messageData.index)"
-                            [id]="messageData.errorToggleId"
-                            [attr.aria-pressed]="messageData.showError"
-                            [attr.aria-label]="messageData.showError ? 'Hide error details' : 'Show error details'"
-                            [attr.aria-controls]="messageData.errorContentId"
-                            [matTooltip]="messageData.showError ? 'Hide error details' : 'Show error details'"
-                            type="button"
-                            role="button">
-                      <mat-icon [attr.aria-hidden]="true">{{ messageData.showError ? 'error' : 'error_outline' }}</mat-icon>
-                    </button>
-                  }
-                </div>
                 @if (messageData.typing) {
                   <div class="typing__dot"></div><div class="typing__dot"></div><div class="typing__dot"></div>
                 } @else {
                   <div class="main-content">
                     <markdown [data]="messageData.text"></markdown>
                   </div>
-                  @if (messageData.showReasoning && messageData.reasoning) {
-                    <div class="reasoning-section" 
-                         role="region" 
-                         [id]="messageData.reasoningContentId"
-                         [attr.aria-label]="'AI reasoning for this response'"
-                         [attr.aria-expanded]="messageData.showReasoning"
-                         [attr.aria-labelledby]="messageData.reasoningToggleId">
-                      <div class="reasoning-header">
-                        <mat-icon class="reasoning-icon" [attr.aria-hidden]="true">psychology</mat-icon>
-                        <span class="reasoning-label">Reasoning</span>
-                      </div>
-                      <div class="reasoning-content" role="article">
+                  @if (messageData.hasReasoning && messageData.reasoning) {
+                    <mat-expansion-panel class="reasoning-expansion-panel"
+                                       [expanded]="messageData.showReasoning"
+                                       (expandedChange)="toggleReasoning(messageData.index)">
+                      <mat-expansion-panel-header>
+                        <mat-panel-title>
+                          <mat-icon class="reasoning-icon">psychology</mat-icon>
+                          <span class="reasoning-title">Reasoning</span>
+                        </mat-panel-title>
+                      </mat-expansion-panel-header>
+                      <div class="reasoning-content">
                         <markdown [data]="messageData.reasoning"></markdown>
                       </div>
-                    </div>
+                    </mat-expansion-panel>
                   }
-                  @if (messageData.showError && messageData.error) {
-                    <div class="error-section" 
-                         role="region" 
-                         [id]="messageData.errorContentId"
-                         [attr.aria-label]="'Error details for this response'"
-                         [attr.aria-expanded]="messageData.showError"
-                         [attr.aria-labelledby]="messageData.errorToggleId">
-                      <div class="error-header">
-                        <mat-icon class="error-icon" [attr.aria-hidden]="true">bug_report</mat-icon>
-                        <span class="error-label">Error Details</span>
-                      </div>
-                      <div class="error-content" role="article">
+                  @if (messageData.hasError && messageData.error) {
+                    <mat-expansion-panel class="error-expansion-panel"
+                                       [expanded]="messageData.showError"
+                                       (expandedChange)="toggleError(messageData.index)">
+                      <mat-expansion-panel-header>
+                        <mat-panel-title>
+                          <mat-icon class="error-icon">bug_report</mat-icon>
+                          <span class="error-title">Error Details</span>
+                        </mat-panel-title>
+                      </mat-expansion-panel-header>
+                      <div class="error-content">
                         <div class="error-field">
                           <strong>Type:</strong> {{ messageData.error.errorType }}
                         </div>
@@ -88,7 +56,7 @@
                           </div>
                         }
                       </div>
-                    </div>
+                    </mat-expansion-panel>
                   }
                 }
               </div>
