@@ -168,27 +168,43 @@ This document outlines a comprehensive plan to improve the Tanzu Platform Chat a
 - Border removal and background override to achieve filled/elevated appearances
 - Semantic color token usage throughout for theming consistency
 
-#### 3.2 Expandable Content (Reasoning/Error Sections)
-**Current:** Custom toggle buttons floating outside content
-**Proposed:** Material Expansion Panel pattern
+#### 3.2 Expandable Content (Reasoning/Error Sections) ✅ **COMPLETED**
+**Previous:** Custom toggle buttons floating outside content
+**Implemented:** Material Design 3 Expansion Panel pattern
 
-**Implementation:**
+**Implementation Details:**
 ```html
-<!-- Current -->
-<button class="reasoning-toggle">...</button>
-<div class="reasoning-section">...</div>
+<!-- ✅ COMPLETED: Material Design 3 expansion panels -->
+- ❌ Custom floating toggle buttons (reasoning-toggle, error-toggle)
+- ❌ Custom sections with manual show/hide logic (reasoning-section, error-section)
+- ❌ Non-standard expandable content patterns
 
-<!-- Proposed -->
-<mat-expansion-panel>
-  <mat-expansion-panel-header>
-    <mat-panel-title>
-      <mat-icon>psychology</mat-icon>
-      Reasoning
-    </mat-panel-title>
-  </mat-expansion-panel-header>
-  <div class="reasoning-content">...</div>
-</mat-expansion-panel>
++ ✅ Material expansion panels with proper Material Design 3 structure
++ ✅ Built-in accessibility features (keyboard navigation, ARIA support)
++ ✅ Standard expansion panel headers with icons and titles
++ ✅ Proper Material Design 3 styling with semantic color tokens
++ ✅ Smooth Material motion transitions and hover states
 ```
+
+**Implementation Results:**
+- ✅ **Material Design 3 Compliance**: Uses proper `mat-expansion-panel` components with standard behavior
+- ✅ **Semantic Color Integration**: Warning orange for reasoning panels, error red for error panels
+- ✅ **Enhanced Accessibility**: Built-in keyboard navigation, screen reader support, and ARIA attributes
+- ✅ **Consistent Spacing**: 12px gap between icons and titles using Material Design spacing tokens
+- ✅ **Standard Interactions**: Proper hover states, focus indicators, and expansion animations
+- ✅ **Reduced Code Complexity**: Eliminated custom toggle button logic in favor of standard component behavior
+
+**Files Modified:**
+- `src/chatbox/chatbox.component.ts` (Added MatExpansionModule import)
+- `src/chatbox/chatbox.component.html` (Replaced custom sections with expansion panels)
+- `src/chatbox/chatbox.component.css` (Updated styling for Material Design 3 compliance)
+
+**Technical Implementation:**
+- Replaced floating `reasoning-toggle` and `error-toggle` buttons with expansion panel headers
+- Used `mat-expansion-panel-header` and `mat-panel-title` for proper structure
+- Applied semantic color tokens (`--md-sys-color-warning`, `--md-sys-color-error`) for visual consistency
+- Implemented proper Material Design 3 spacing (12px icon-to-title gap) and elevation
+- Maintained existing TypeScript toggle methods for backward compatibility
 
 #### 3.3 File Upload Area
 **Current:** Basic button with file input
@@ -336,8 +352,9 @@ $type-scale: (
 2. ~~Layout grid implementation~~ ✅ **COMPLETED**
 3. ~~Color system migration to M3~~ ✅ **COMPLETED**
 4. ~~Chat message cards implementation~~ ✅ **COMPLETED**
-5. Typography standardization
-6. State layer implementation
+5. ~~Expandable content (reasoning/error sections)~~ ✅ **COMPLETED**
+6. Typography standardization
+7. State layer implementation
 
 ### Medium Priority (Week 3-4)
 1. Component refactoring (lists, chips, remaining components)
@@ -559,7 +576,7 @@ export class MaterialModule { }
 
 This plan provides a roadmap to transform the Tanzu Platform Chat UI into a fully Material Design 3 compliant application. The phased approach allows for incremental improvements while maintaining application stability. 
 
-With **Phase 1 (Navigation & Layout Restructuring)**, **Phase 2 (Color System & Theming)**, and **Phase 3.1 (Chat Message Cards)** now completed, the application has achieved:
+With **Phase 1 (Navigation & Layout Restructuring)**, **Phase 2 (Color System & Theming)**, **Phase 3.1 (Chat Message Cards)**, and **Phase 3.2 (Expandable Content)** now completed, the application has achieved:
 
 ### Phase 1 - Navigation & Layout ✅
 - ✅ **Modern Navigation**: Material Design 3 Navigation Rail replacing custom floating buttons
@@ -582,7 +599,15 @@ With **Phase 1 (Navigation & Layout Restructuring)**, **Phase 2 (Color System & 
 - ✅ **Semantic Color Integration**: All card colors use Material Design 3 semantic tokens
 - ✅ **Interactive Feedback**: Smooth transitions and proper elevation changes on hover
 
-The application now has a comprehensive Material Design 3 foundation with modern navigation, consistent layout, complete color system, and properly implemented chat message cards. Following the remaining phases will result in a fully compliant, accessible, and professional user interface that aligns with modern Material Design standards and user expectations.
+### Phase 3.2 - Expandable Content (Reasoning/Error Sections) ✅
+- ✅ **Material Expansion Panels**: Replaced custom toggle buttons with standard `mat-expansion-panel` components
+- ✅ **Enhanced Accessibility**: Built-in keyboard navigation, ARIA support, and screen reader compatibility
+- ✅ **Semantic Color Integration**: Warning orange for reasoning panels, error red for error panels
+- ✅ **Consistent Spacing**: 12px gap between icons and titles using Material Design spacing tokens
+- ✅ **Standard Interactions**: Proper hover states, focus indicators, and Material motion transitions
+- ✅ **Reduced Complexity**: Eliminated custom expandable content logic in favor of Angular Material components
+
+The application now has a comprehensive Material Design 3 foundation with modern navigation, consistent layout, complete color system, properly implemented chat message cards, and standard expandable content patterns. Following the remaining phases will result in a fully compliant, accessible, and professional user interface that aligns with modern Material Design standards and user expectations.
 
 ## Resources
 
