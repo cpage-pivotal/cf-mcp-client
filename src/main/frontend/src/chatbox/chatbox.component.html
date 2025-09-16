@@ -4,7 +4,8 @@
     @for (messageData of messagesWithReasoningFlags(); track messageData.index) {
       <div class="chat-message {{messageData.persona}}">
         <mat-card appearance="outlined"
-                  [style.background-color]="messageData.persona == 'user' ? 'var(--mat-sys-primary-container)' : 'var(--mat-sys-surface)'">
+                  [attr.data-card-variant]="messageData.persona == 'user' ? 'user' : 'bot'"
+                  class="md3-chat-card">
           <mat-card-content>
             @if (messageData.persona == 'user') {
               <div class="user-message-content">{{ messageData.text }}</div>

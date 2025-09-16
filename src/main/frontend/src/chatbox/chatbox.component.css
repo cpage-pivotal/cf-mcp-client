@@ -74,7 +74,7 @@
   white-space: pre-line;
   font-size: 16px;
   line-height: 1.5;
-  color: var(--mat-sys-on-primary-container);
+  color: var(--md-sys-color-on-primary-container);
 }
 
 .chat-message.bot {
@@ -82,13 +82,62 @@
   text-align: left;
 }
 
-.chat-message mat-card {
-  box-shadow: var(--mat-sys-elevation-level1);
+/* ===== MATERIAL DESIGN 3 CHAT CARDS ===== */
+/* Implementation of MD3 Card specifications with proper variants, elevation, and state layers */
+.md3-chat-card {
+  position: relative;
+  overflow: visible;
   transition: box-shadow var(--motion-duration) var(--motion-easing);
 }
 
-.chat-message:hover mat-card {
-  box-shadow: var(--mat-sys-elevation-level2);
+/* User message cards - implement MD3 FILLED variant */
+.md3-chat-card[data-card-variant="user"] {
+  background-color: var(--md-sys-color-primary-container) !important;
+  border: none !important; /* Remove outlined border for filled variant */
+  box-shadow: none; /* Filled cards use 0dp elevation per MD3 spec */
+}
+
+/* Bot message cards - implement MD3 ELEVATED variant */
+.md3-chat-card[data-card-variant="bot"] {
+  background-color: var(--md-sys-color-surface-container-low) !important;
+  border: none !important; /* Remove outlined border for elevated variant */
+  /* MD3 1dp elevation: key light 0-1px 2px, ambient light 0-1px 3px 1px */
+  box-shadow: 
+    0px 1px 2px var(--md-sys-elevation-shadow-1dp),
+    0px 1px 3px 1px var(--md-sys-elevation-shadow-1dp);
+}
+
+/* State layers for interactive behavior */
+.md3-chat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-duration) var(--motion-easing);
+}
+
+/* Hover state layers */
+.chat-message:hover .md3-chat-card[data-card-variant="user"]::before {
+  background-color: var(--md-sys-color-on-primary-container);
+  opacity: 0.08; /* Material Design 3 hover state opacity */
+}
+
+.chat-message:hover .md3-chat-card[data-card-variant="bot"]::before {
+  background-color: var(--md-sys-color-on-surface);
+  opacity: 0.08; /* Material Design 3 hover state opacity */
+}
+
+/* Elevation changes on hover - elevated cards increase to 3dp per MD3 spec */
+.chat-message:hover .md3-chat-card[data-card-variant="bot"] {
+  /* MD3 3dp elevation: key light 0-1px 3px, ambient light 0-4px 8px 3px */
+  box-shadow: 
+    0px 1px 3px var(--md-sys-elevation-shadow-3dp),
+    0px 4px 8px 3px var(--md-sys-elevation-shadow-3dp);
 }
 
 .chatbox-footer {
@@ -279,7 +328,7 @@ button:active:not(:disabled) {
   padding-right: var(--md-spacing-3); /* 12px using Material spacing */
   font-size: 16px;
   line-height: 1.6;
-  color: var(--mat-sys-on-surface);
+  color: var(--md-sys-color-on-surface);
 }
 
 .main-content markdown {
