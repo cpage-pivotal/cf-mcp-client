@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Inject, Input, Output, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, Output, ViewChild, AfterViewInit, signal } from '@angular/core';
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
@@ -30,10 +30,14 @@ export class DocumentPanelComponent implements AfterViewInit {
   // Add Output event emitter for document IDs changes
   @Output() documentIdsChanged = new EventEmitter<string[]>();
 
-  // Add properties for upload progress
+  // Upload progress properties
   uploadProgress = 0;
   isUploading = false;
   currentFileName = '';
+
+  // Drag and drop signals (modern Angular pattern)
+  isDragOver = signal(false);
+  dragCounter = signal(0);
 
   @ViewChild('sidenav') sidenav!: MatSidenav;
 
@@ -52,6 +56,63 @@ export class DocumentPanelComponent implements AfterViewInit {
 
   toggleSidenav() {
     this.sidenavService.toggle('document');
+  }
+
+  // Drag and drop event handlers
+  onDragEnter(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragCounter.set(this.dragCounter() + 1);
+    if (this.dragCounter() === 1) {
+      this.isDragOver.set(true);
+    }
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dragCounter.set(this.dragCounter() - 1);
+    if (this.dragCounter() === 0) {
+      this.isDragOver.set(false);
+    }
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.isDragOver.set(false);
+    this.dragCounter.set(0);
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+
+      // Validate file type
+      if (this.isValidFileType(file)) {
+        this.uploadFile(file);
+      } else {
+        this.snackBar.open('Please select a PDF file', 'Close', {
+          duration: 3000
+        });
+      }
+    }
+  }
+
+  private isValidFileType(file: File): boolean {
+    return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  }
+
+  getFileTypeIcon(fileName: string): string {
+    if (fileName.toLowerCase().endsWith('.pdf')) {
+      return 'picture_as_pdf';
+    }
+    return 'insert_drive_file';
   }
 
   onFileSelected(event: Event) {
