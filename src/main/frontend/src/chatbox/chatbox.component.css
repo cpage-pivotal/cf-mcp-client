@@ -202,7 +202,7 @@
 
 .chat-input-container {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--md-spacing-3); /* 12px Material spacing */
   width: 100%;
 }
@@ -245,6 +245,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: var(--md-spacing-2); /* Align with input field */
 }
 
 .prompt-button mat-icon {
@@ -258,6 +259,7 @@
   flex-shrink: 0;
   width: 56px;
   height: 56px;
+  margin-top: var(--md-spacing-2); /* Align with input field */
   box-shadow: var(--md-sys-elevation-3dp);
   transition:
     box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized),
