@@ -190,6 +190,7 @@
   box-shadow: var(--md-sys-elevation-3dp);
 }
 
+/* ===== MATERIAL DESIGN 3 CHAT INPUT AREA ===== */
 .chatbox-footer {
   margin-bottom: var(--md-spacing-4); /* 16px using Material spacing */
   padding: var(--md-spacing-4); /* Add padding for visual consistency */
@@ -199,12 +200,140 @@
   border: 1px solid var(--md-sys-color-outline-variant);
 }
 
-.chatbox-footer input {
-  flex-grow: 1;
+.chat-input-container {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--md-spacing-3); /* 12px Material spacing */
+  width: 100%;
 }
 
-.chatbox-footer ng-form .mat-mdc-form-field-subscript-wrapper {
-  display: none;
+.chat-input-field {
+  flex: 1;
+  min-width: 0; /* Prevent flex item from overflowing */
+}
+
+/* Material Design outlined form field styling */
+.chat-input-field .mat-mdc-form-field-wrapper {
+  padding-bottom: 0;
+}
+
+.chat-input-field .mat-mdc-form-field-subscript-wrapper {
+  font-size: var(--md-sys-typescale-body-small-font-size);
+  line-height: var(--md-sys-typescale-body-small-line-height);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Textarea styling for multiline input */
+.chat-input-field textarea {
+  resize: none;
+  font-family: var(--md-sys-typescale-font-family-plain);
+  font-size: var(--md-sys-typescale-body-large-font-size);
+  line-height: var(--md-sys-typescale-body-large-line-height);
+  color: var(--md-sys-color-on-surface);
+}
+
+.chat-input-field textarea::placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.7;
+}
+
+/* Button styling */
+.prompt-button {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prompt-button mat-icon {
+  font-size: var(--md-sys-typescale-title-medium-font-size);
+  width: 24px;
+  height: 24px;
+}
+
+/* Material Design FAB styling */
+.send-fab {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  box-shadow: var(--md-sys-elevation-3dp);
+  transition:
+    box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized),
+    transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-emphasized);
+}
+
+.send-fab:hover:not(:disabled) {
+  box-shadow: var(--md-sys-elevation-4dp);
+  transform: scale(1.05);
+}
+
+.send-fab:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.send-fab mat-icon {
+  font-size: var(--md-sys-typescale-title-large-font-size);
+  width: 24px;
+  height: 24px;
+}
+
+/* Disabled states */
+.send-fab:disabled {
+  background-color: var(--md-sys-color-surface-variant) !important;
+  color: var(--md-sys-color-on-surface-variant) !important;
+  box-shadow: var(--md-sys-elevation-0dp) !important;
+  opacity: 0.6;
+}
+
+.prompt-button:disabled {
+  opacity: 0.5;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Focus and accessibility enhancements */
+.prompt-button:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-primary);
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+.send-fab:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-primary);
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+/* State layers for chat input buttons */
+.prompt-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.prompt-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.prompt-button:hover:not(:disabled)::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.prompt-button:focus-visible:not(:disabled)::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.prompt-button:active:not(:disabled)::before {
+  opacity: var(--md-sys-state-pressed-opacity);
 }
 
 /* Material Design loading rotation for prompt button when busy */
@@ -514,6 +643,31 @@ button:active:not(:disabled) {
   }
   .reasoning-icon,
   .error-icon { font-size: var(--md-sys-typescale-body-large-font-size); width: 16px; height: 16px; }
+
+  /* Mobile chat input optimizations */
+  .chat-input-container {
+    gap: var(--md-spacing-2); /* Reduce gap on mobile */
+  }
+
+  .prompt-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .send-fab {
+    width: 48px;
+    height: 48px;
+  }
+
+  .send-fab mat-icon {
+    font-size: var(--md-sys-typescale-title-medium-font-size);
+    width: 20px;
+    height: 20px;
+  }
+
+  .chat-input-field textarea {
+    font-size: var(--md-sys-typescale-body-medium-font-size);
+  }
 }
 
 /* Accessibility */
