@@ -113,7 +113,19 @@
     <!-- Documents List -->
     <section aria-labelledby="documents-list-heading">
       <div class="documents-list">
-        <h3 id="documents-list-heading">Uploaded Files ({{ documents.length }})</h3>
+        <div class="documents-list-header">
+          <h3 id="documents-list-heading">Uploaded Files ({{ documents.length }})</h3>
+          @if (selectedDocumentId()) {
+            <div class="selection-actions">
+              <button mat-icon-button
+                      (click)="selectedDocumentId.set(null)"
+                      matTooltip="Clear selection"
+                      aria-label="Clear document selection">
+                <mat-icon aria-hidden="true">close</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
 
         @if (documents.length === 0) {
           <div class="empty-state" role="status" aria-label="No documents uploaded">
@@ -123,20 +135,62 @@
           </div>
         }
 
-        <mat-list role="list" [attr.aria-label]="'List of ' + documents.length + ' uploaded documents'">
+        <!-- Material Design 3 List with proper density -->
+        <mat-list role="list"
+                  [attr.aria-label]="'List of ' + documents.length + ' uploaded documents'"
+                  class="document-list-container">
           @for (doc of documents; track doc.id) {
-            <mat-list-item class="document-item" role="listitem">
-              <mat-icon matListItemIcon aria-hidden="true">{{ getFileTypeIcon(doc.name) }}</mat-icon>
-              <div matListItemTitle>{{ doc.name }}</div>
-              <div matListItemLine>{{ doc.size | fileSize }}</div>
-              <button mat-icon-button
-                      matListItemMeta
-                      (click)="deleteDocument(doc.id)"
-                      matTooltip="Delete document"
-                      class="delete-button"
-                      [attr.aria-label]="'Delete document: ' + doc.name">
-                <mat-icon aria-hidden="true">delete</mat-icon>
-              </button>
+            <mat-list-item class="document-item"
+                           role="listitem"
+                           [class.selected]="isDocumentSelected(doc.id)"
+                           [class.swiping]="swipingDocumentId() === doc.id"
+                           [style.transform]="getDocumentItemTransform(doc.id)"
+                           (click)="selectDocument(doc.id)"
+                           (panstart)="onSwipeStart(doc.id, $event)"
+                           (panmove)="onSwipeMove($event)"
+                           (panend)="onSwipeEnd($event)"
+                           [attr.aria-selected]="isDocumentSelected(doc.id)"
+                           [attr.aria-label]="'Document: ' + doc.name + ', uploaded ' + formatDocumentDate(doc.uploadDate) + ', size ' + (doc.size | fileSize) + (isDocumentSelected(doc.id) ? ', selected' : '')"
+                           tabindex="0"
+                           role="option">
+
+              <!-- Leading icon -->
+              <mat-icon matListItemIcon
+                        aria-hidden="true"
+                        [class.selected-icon]="isDocumentSelected(doc.id)">
+                {{ getFileTypeIcon(doc.name) }}
+              </mat-icon>
+
+              <!-- Two-line content layout following Material Design standards -->
+              <div matListItemTitle class="document-title">
+                {{ doc.name }}
+              </div>
+              <div matListItemLine class="document-subtitle">
+                <span class="document-size">{{ doc.size | fileSize }}</span>
+                <span class="document-date">{{ formatDocumentDate(doc.uploadDate) }}</span>
+              </div>
+
+              <!-- Trailing actions -->
+              <div matListItemMeta class="document-actions">
+                <!-- Delete button -->
+                <button mat-icon-button
+                        (click)="deleteDocument(doc.id); $event.stopPropagation()"
+                        matTooltip="Delete document"
+                        class="delete-button"
+                        [attr.aria-label]="'Delete document: ' + doc.name">
+                  <mat-icon aria-hidden="true">delete</mat-icon>
+                </button>
+              </div>
+
+              <!-- Swipe delete indicator (mobile only) -->
+              @if (swipingDocumentId() === doc.id && swipeDistance() <= -40) {
+                <div class="swipe-delete-indicator"
+                     role="status"
+                     aria-label="Swipe to delete">
+                  <mat-icon aria-hidden="true">delete</mat-icon>
+                  <span>Release to delete</span>
+                </div>
+              }
             </mat-list-item>
           }
         </mat-list>

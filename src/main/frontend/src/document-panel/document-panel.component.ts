@@ -11,6 +11,16 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PlatformMetrics } from '../app/app.component';
 import { SidenavService } from '../services/sidenav.service';
+import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class DocumentHammerConfig extends HammerGestureConfig {
+  override overrides = {
+    swipe: { direction: 6 }, // Horizontal swipe only
+    pan: { direction: 6 }
+  };
+}
 
 @Component({
   selector: 'app-document-panel',
@@ -18,6 +28,9 @@ import { SidenavService } from '../services/sidenav.service';
   imports: [
     CommonModule, MatSidenavModule, MatButtonModule, MatIconModule,
     MatListModule, MatSnackBarModule, FileSizePipe, MatProgressBarModule, MatTooltipModule
+  ],
+  providers: [
+    { provide: HAMMER_GESTURE_CONFIG, useClass: DocumentHammerConfig }
   ],
   templateUrl: './document-panel.component.html',
   styleUrl: './document-panel.component.css'
@@ -38,6 +51,11 @@ export class DocumentPanelComponent implements AfterViewInit {
   // Drag and drop signals (modern Angular pattern)
   isDragOver = signal(false);
   dragCounter = signal(0);
+
+  // Document selection and interaction state
+  selectedDocumentId = signal<string | null>(null);
+  swipingDocumentId = signal<string | null>(null);
+  swipeDistance = signal(0);
 
   @ViewChild('sidenav') sidenav!: MatSidenav;
 
@@ -257,6 +275,10 @@ export class DocumentPanelComponent implements AfterViewInit {
           } else {
             this.fetchDocuments(); // Fallback to refetch
           }
+          // Clear selection if deleted document was selected
+          if (this.selectedDocumentId() === documentId) {
+            this.selectedDocumentId.set(null);
+          }
         },
         error: (error) => {
           console.error('Error deleting document:', error);
@@ -265,6 +287,72 @@ export class DocumentPanelComponent implements AfterViewInit {
           });
         }
       });
+  }
+
+  // Document selection methods
+  selectDocument(documentId: string) {
+    if (this.selectedDocumentId() === documentId) {
+      this.selectedDocumentId.set(null); // Deselect if already selected
+    } else {
+      this.selectedDocumentId.set(documentId);
+    }
+  }
+
+  isDocumentSelected(documentId: string): boolean {
+    return this.selectedDocumentId() === documentId;
+  }
+
+  // Mobile swipe gesture handlers
+  onSwipeStart(documentId: string, event: any) {
+    this.swipingDocumentId.set(documentId);
+    this.swipeDistance.set(0);
+  }
+
+  onSwipeMove(event: any) {
+    if (this.swipingDocumentId()) {
+      const deltaX = event.deltaX;
+      // Limit swipe distance to prevent over-swiping
+      const maxSwipe = -80;
+      this.swipeDistance.set(Math.max(deltaX, maxSwipe));
+    }
+  }
+
+  onSwipeEnd(event: any) {
+    const swipeThreshold = -60; // Pixels to trigger delete
+    const currentDistance = this.swipeDistance();
+
+    if (currentDistance <= swipeThreshold && this.swipingDocumentId()) {
+      // Trigger delete action
+      this.deleteDocument(this.swipingDocumentId()!);
+    }
+
+    // Reset swipe state
+    this.swipingDocumentId.set(null);
+    this.swipeDistance.set(0);
+  }
+
+  getDocumentItemTransform(documentId: string): string {
+    if (this.swipingDocumentId() === documentId) {
+      return `translateX(${this.swipeDistance()}px)`;
+    }
+    return 'translateX(0px)';
+  }
+
+  formatDocumentDate(uploadDate: string): string {
+    const date = new Date(uploadDate);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      return 'Today';
+    } else if (diffDays === 2) {
+      return 'Yesterday';
+    } else if (diffDays <= 7) {
+      return `${diffDays - 1} days ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
   }
 }
 

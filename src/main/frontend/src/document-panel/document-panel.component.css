@@ -257,12 +257,31 @@ mat-sidenav .sidenav-header {
   max-height: calc(100vh - 400px);
 }
 
+.documents-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--md-spacing-3);
+}
+
 .documents-list h3 {
-  margin-top: 0;
-  margin-bottom: var(--md-spacing-4);
+  margin: 0;
   font-size: var(--md-sys-typescale-title-medium-font-size);
   font-weight: var(--md-sys-typescale-title-medium-font-weight);
   color: var(--md-sys-color-on-surface);
+}
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-1);
+}
+
+/* Material Design 3 List Container */
+.document-list-container {
+  padding: 0;
+  margin: 0;
+  background-color: var(--md-sys-color-surface);
 }
 
 /* Enhanced Empty State */
@@ -351,17 +370,22 @@ mat-sidenav-content {
   color: var(--md-sys-color-on-surface-variant);
 }
 
-/* Document Item */
-/* ===== DOCUMENT ITEM STATE LAYERS ===== */
+/* ===== MATERIAL DESIGN 3 DOCUMENT ITEM ===== */
 .document-item {
   position: relative;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: var(--md-spacing-1);
   overflow: hidden;
   cursor: pointer;
-  transition: background-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+  min-height: 72px; /* Material Design 3 two-line list item height */
+  padding: var(--md-spacing-2) var(--md-spacing-4);
+  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y; /* Allow vertical scrolling but enable horizontal pan for swipe */
 }
 
+/* State layer implementation */
 .document-item::before {
   content: '';
   position: absolute;
@@ -386,12 +410,104 @@ mat-sidenav-content {
 }
 
 .document-item:focus-visible {
-  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-outline);
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-primary);
   outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
 }
 
 .document-item:active::before {
   opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* Selected state */
+.document-item.selected {
+  background-color: var(--md-sys-color-primary-container);
+}
+
+.document-item.selected::before {
+  background-color: var(--md-sys-color-on-primary-container);
+}
+
+.document-item.selected:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+/* Swiping state */
+.document-item.swiping {
+  transition: transform var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+/* Document content styling */
+.document-title {
+  font-size: var(--md-sys-typescale-body-large-font-size) !important;
+  font-weight: var(--md-sys-typescale-body-large-font-weight) !important;
+  color: var(--md-sys-color-on-surface) !important;
+  line-height: var(--md-sys-typescale-body-large-line-height) !important;
+  margin-bottom: var(--md-spacing-1) !important;
+}
+
+.document-item.selected .document-title {
+  color: var(--md-sys-color-on-primary-container) !important;
+}
+
+.document-subtitle {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--md-spacing-2) !important;
+  font-size: var(--md-sys-typescale-body-medium-font-size) !important;
+  color: var(--md-sys-color-on-surface-variant) !important;
+  line-height: var(--md-sys-typescale-body-medium-line-height) !important;
+}
+
+.document-item.selected .document-subtitle {
+  color: var(--md-sys-color-on-primary-container) !important;
+}
+
+.document-size {
+  font-weight: 500;
+}
+
+.document-date {
+  position: relative;
+}
+
+.document-date::before {
+  content: '•';
+  margin-right: var(--md-spacing-1);
+  color: var(--md-sys-color-outline);
+}
+
+.document-item.selected .document-date::before {
+  color: var(--md-sys-color-on-primary-container);
+}
+
+/* Leading icon styling */
+.document-item mat-icon[matListItemIcon] {
+  color: var(--md-sys-color-on-surface-variant) !important;
+  font-size: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin-right: var(--md-spacing-4) !important;
+}
+
+.document-item.selected mat-icon[matListItemIcon] {
+  color: var(--md-sys-color-on-primary-container) !important;
+}
+
+.selected-icon {
+  color: var(--md-sys-color-primary) !important;
+}
+
+.document-item.selected .selected-icon {
+  color: var(--md-sys-color-on-primary-container) !important;
+}
+
+/* Trailing actions */
+.document-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-spacing-1);
+  margin-left: var(--md-spacing-2);
+  margin-top: var(--md-spacing-1); /* Align with title text baseline */
 }
 
 /* ===== DELETE BUTTON STATE LAYERS ===== */
@@ -402,6 +518,7 @@ mat-sidenav-content {
   color: var(--md-sys-color-on-surface-variant);
   transition: color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
   cursor: pointer;
+  z-index: 2; /* Ensure it's above state layers */
 }
 
 .delete-button::before {
@@ -444,6 +561,86 @@ mat-sidenav-content {
   color: var(--md-sys-color-on-surface);
 }
 
+.document-item.selected .delete-button {
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.document-item.selected .delete-button:hover {
+  color: var(--md-sys-color-error);
+}
+
+/* ===== MOBILE SWIPE-TO-DELETE ===== */
+.swipe-delete-indicator {
+  position: absolute;
+  right: var(--md-spacing-4);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-2);
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  padding: var(--md-spacing-2) var(--md-spacing-3);
+  border-radius: 8px;
+  font-size: var(--md-sys-typescale-label-small-font-size);
+  font-weight: var(--md-sys-typescale-label-small-font-weight);
+  z-index: 3;
+  opacity: 0;
+  animation: swipe-indicator-appear var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-emphasized) forwards;
+}
+
+@keyframes swipe-indicator-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+.swipe-delete-indicator mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+@media (prefers-reduced-motion: reduce) {
+  .document-item {
+    transition: none;
+  }
+
+  .document-item.swiping {
+    transition: none;
+  }
+
+  .swipe-delete-indicator {
+    animation: none;
+    opacity: 1;
+  }
+
+  .document-item:nth-child(1)::after {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .document-item {
+    border: 1px solid currentColor;
+  }
+
+  .document-item.selected {
+    border: 2px solid currentColor;
+  }
+
+  .swipe-delete-indicator {
+    border: 1px solid currentColor;
+  }
+}
+
 /* Material Motion Variables - now using global motion system from _motion.scss */
 
 /* Responsive adjustments using adaptive tokens */
@@ -478,5 +675,52 @@ mat-sidenav-content {
     font-size: var(--md-sys-typescale-display-small-font-size);
     width: 40px;
     height: 40px;
+  }
+
+  /* Mobile-specific list adjustments */
+  .document-item {
+    min-height: 64px; /* Slightly smaller on mobile for better density */
+    padding: var(--md-spacing-3) var(--md-spacing-4);
+  }
+
+  .document-actions {
+    /* Hide delete button on mobile in favor of swipe gesture */
+    .delete-button {
+      display: none;
+    }
+  }
+
+  /* Show swipe hint for mobile users */
+  .document-item:nth-child(1):not(.swiping) {
+    position: relative;
+  }
+
+  .document-item:nth-child(1):not(.swiping)::after {
+    content: 'Swipe left to delete';
+    position: absolute;
+    right: var(--md-spacing-4);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--md-sys-typescale-label-small-font-size);
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.6;
+    pointer-events: none;
+    animation: swipe-hint-fade var(--md-sys-motion-duration-long) var(--md-sys-motion-easing-emphasized) 2s;
+  }
+
+  @keyframes swipe-hint-fade {
+    0%, 70% { opacity: 0.6; }
+    100% { opacity: 0; }
+  }
+}
+
+/* Tablet and desktop - show delete buttons */
+@media (min-width: 600px) {
+  .swipe-delete-indicator {
+    display: none; /* No swipe indicators on desktop */
+  }
+
+  .document-actions .delete-button {
+    display: flex;
   }
 }
