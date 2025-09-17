@@ -39,7 +39,7 @@
   border-radius: 16px; /* Material Design 3 container shape */
   background-color: transparent;
   cursor: pointer;
-  transition: all var(--md-sys-motion-duration-medium, 250ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
   padding: 8px 4px;
   
   /* Focus indicator */
@@ -79,7 +79,7 @@
   width: 24px;
   height: 24px;
   color: var(--md-sys-color-on-surface-variant, var(--mat-sys-on-surface-variant));
-  transition: color var(--md-sys-motion-duration-short, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  transition: color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
 }
 
 .nav-rail-status-indicator {

@@ -2,6 +2,7 @@
 
 /* Import Material Design 3 Systems */
 @use './styles/typography'; /* Typography system - must be first */
+@use './styles/motion'; /* Motion system - animations and transitions */
 @import './styles/material-grid.css';
 @import './styles/m3-color-system.css';
 

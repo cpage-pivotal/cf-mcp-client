@@ -308,7 +308,7 @@
   bottom: 0;
   background: currentColor;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
   pointer-events: none;
   border-radius: inherit;
 }

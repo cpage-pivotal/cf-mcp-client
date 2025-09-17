@@ -107,7 +107,7 @@
 
 .prompt-item {
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
   border-radius: 4px;
   margin: 4px 0;
   min-height: 72px;

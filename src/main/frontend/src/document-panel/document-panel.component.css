@@ -77,7 +77,7 @@ mat-sidenav .sidenav-header {
   border-radius: 12px;
   padding: var(--md-spacing-6);
   text-align: center;
-  transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
+  transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized);
   background-color: var(--md-sys-color-surface-container-lowest);
   cursor: pointer;
   min-height: 140px;
@@ -122,7 +122,7 @@ mat-sidenav .sidenav-header {
   width: 48px;
   height: 48px;
   color: var(--md-sys-color-primary);
-  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-emphasized);
 }
 
 .drop-zone.drag-over .drop-zone-icon {
@@ -157,7 +157,7 @@ mat-sidenav .sidenav-header {
 
 .browse-button {
   margin-top: var(--md-spacing-2);
-  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-emphasized);
 }
 
 .browse-button .mat-icon {
@@ -363,14 +363,7 @@ mat-sidenav-content {
   color: var(--md-sys-color-on-surface);
 }
 
-/* Material Motion Variables */
-:root {
-  --md-sys-motion-duration-short: 100ms;
-  --md-sys-motion-duration-medium: 250ms;
-  --md-sys-motion-duration-long: 350ms;
-  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
-  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
-}
+/* Material Motion Variables - now using global motion system from _motion.scss */
 
 /* Responsive adjustments for navigation rail positioning */
 @media (max-width: 840px) {

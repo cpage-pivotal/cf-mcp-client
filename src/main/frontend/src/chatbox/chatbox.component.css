@@ -7,8 +7,9 @@
   --error-border: var(--md-sys-color-error);
   --error-text: var(--md-sys-color-on-surface);
   --surface-elevation: var(--md-sys-color-surface-container-low);
-  --motion-easing: var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
-  --motion-duration: var(--md-sys-motion-duration-medium, 250ms);
+  /* Use Material Design motion system tokens */
+  --motion-easing: var(--md-sys-motion-easing-standard);
+  --motion-duration: var(--md-sys-motion-duration-medium);
 }
 
 /* Chat CSS using Material Design 3 Grid System */
@@ -62,7 +63,8 @@
   margin-bottom: var(--md-spacing-4); /* 16px using Material spacing */
   position: relative;
   word-wrap: break-word;
-  animation: messageSlideIn var(--motion-duration) var(--motion-easing);
+  /* Use Material Design slide-in animation */
+  animation: md-slide-in-from-bottom var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized-decelerate);
 }
 
 .chat-message.user {
@@ -87,7 +89,7 @@
 .md3-chat-card {
   position: relative;
   overflow: visible;
-  transition: box-shadow var(--motion-duration) var(--motion-easing);
+  transition: box-shadow var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
 }
 
 /* User message cards - implement MD3 FILLED variant */
@@ -118,7 +120,7 @@
   border-radius: inherit;
   pointer-events: none;
   opacity: 0;
-  transition: opacity var(--motion-duration) var(--motion-easing);
+  transition: opacity var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
 }
 
 /* Hover state layers */
@@ -157,14 +159,9 @@
   display: none;
 }
 
-/* Spinning animation for prompt button when busy */
+/* Material Design loading rotation for prompt button when busy */
 .spinning {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  animation: md-loading-rotation var(--md-sys-motion-duration-extra-long4) var(--md-sys-motion-easing-linear) infinite;
 }
 
 /* Disabled state styling */
@@ -181,7 +178,9 @@
 /* Smooth transitions for better UX */
 
 button {
-  transition: opacity 0.2s ease-in-out, transform 0.1s ease-in-out;
+  transition:
+    opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-emphasized);
 }
 
 button:active:not(:disabled) {
@@ -220,7 +219,7 @@ button:active:not(:disabled) {
   padding: var(--md-spacing-4); /* 16px using Material spacing */
   background: var(--md-sys-color-surface);
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
-  transition: background-color var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
+  transition: background-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
 }
 
 .reasoning-expansion-panel .mat-expansion-panel-header:hover,
@@ -344,25 +343,19 @@ button:active:not(:disabled) {
 
 
 
-/* Animations */
-@keyframes slideDownAdvanced {
-  0% { opacity: 0; transform: translateY(-16px) scale(0.95); max-height: 0; }
-  100% { opacity: 1; transform: translateY(0) scale(1); max-height: 1000px; }
-}
+/* Material Design 3 Animations - replaced custom animations with standard patterns */
+/* Custom animations moved to _motion.scss for system-wide consistency */
 
-@keyframes messageSlideIn {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes pulseGlow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; transform: scale(1.05); }
-}
-
-@keyframes loadingFadeEnhanced {
-  0%, 80%, 100% { opacity: 0; transform: scale(0.8); }
-  40% { opacity: 1; transform: scale(1); }
+/* Enhanced loading animation for typing dots with Material Design timing */
+@keyframes md-loading-dots-enhanced {
+  0%, 80%, 100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Dark Mode Support */
@@ -458,9 +451,10 @@ button:active:not(:disabled) {
   background: var(--mat-sys-on-surface-variant);
   border-radius: 50%;
   opacity: 0;
-  animation: loadingFadeEnhanced 1.4s ease-in-out infinite;
+  animation: md-loading-dots-enhanced var(--md-sys-motion-duration-extra-long2) var(--md-sys-motion-easing-emphasized) infinite;
 }
 
+/* Staggered animation delays using Material Design motion tokens */
 .typing__dot:nth-child(1) { animation-delay: 0s; }
-.typing__dot:nth-child(2) { animation-delay: 0.2s; }
-.typing__dot:nth-child(3) { animation-delay: 0.4s; }
+.typing__dot:nth-child(2) { animation-delay: var(--md-sys-motion-duration-short4); /* 200ms */ }
+.typing__dot:nth-child(3) { animation-delay: var(--md-sys-motion-duration-medium4); /* 400ms */ }
