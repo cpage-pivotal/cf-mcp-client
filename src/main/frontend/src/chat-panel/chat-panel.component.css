@@ -56,8 +56,8 @@ mat-sidenav .sidenav-header {
 
 .sidenav-header h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-large-font-size);
+  font-weight: var(--md-sys-typescale-title-large-font-weight);
 }
 
 .status-container {
@@ -74,8 +74,8 @@ mat-sidenav .sidenav-header {
 
 .status-label {
   flex: 0 0 100px;
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+  font-size: var(--md-sys-typescale-label-large-font-size);
 }
 
 .status-indicator {
@@ -85,7 +85,7 @@ mat-sidenav .sidenav-header {
 
 .status-indicator mat-icon {
   margin-right: var(--md-spacing-2); /* 8px using Material spacing */
-  font-size: 18px;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
   height: 18px;
   width: 18px;
 }
@@ -99,7 +99,7 @@ mat-sidenav .sidenav-header {
 }
 
 .status-text {
-  font-size: 14px;
+  font-size: var(--md-sys-typescale-body-medium-font-size);
 }
 
 /* Hide the content area without disabling its functions */

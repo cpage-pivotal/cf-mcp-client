@@ -61,8 +61,8 @@ mat-sidenav .sidenav-header {
 
 .sidenav-header h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-large-font-size);
+  font-weight: var(--md-sys-typescale-title-large-font-weight);
 }
 
 .status-container {
@@ -79,8 +79,8 @@ mat-sidenav .sidenav-header {
 
 .status-label {
   flex: 0 0 100px;
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+  font-size: var(--md-sys-typescale-label-large-font-size);
 }
 
 .status-indicator {
@@ -90,7 +90,7 @@ mat-sidenav .sidenav-header {
 
 .status-indicator mat-icon {
   margin-right: 8px;
-  font-size: 18px;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
   height: 18px;
   width: 18px;
 }
@@ -108,7 +108,7 @@ mat-sidenav .sidenav-header {
 }
 
 .status-text {
-  font-size: 14px;
+  font-size: var(--md-sys-typescale-body-medium-font-size);
 }
 
 .mcp-servers-list {
@@ -118,8 +118,8 @@ mat-sidenav .sidenav-header {
 .mcp-servers-list h3 {
   margin-top: 0;
   margin-bottom: 16px;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
+  font-weight: var(--md-sys-typescale-title-medium-font-weight);
 }
 
 /* Server cards container */
@@ -165,8 +165,8 @@ mat-sidenav .sidenav-header {
 }
 
 .server-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-label-large-font-size);
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
   color: var(--mat-sys-on-surface);
   margin-bottom: 4px;
   overflow: hidden;
@@ -175,7 +175,7 @@ mat-sidenav .sidenav-header {
 }
 
 .server-tools {
-  font-size: 12px;
+  font-size: var(--md-sys-typescale-body-small-font-size);
   color: var(--mat-sys-on-surface-variant);
 }
 
@@ -188,7 +188,7 @@ mat-sidenav .sidenav-header {
 }
 
 .server-protocol mat-chip {
-  font-size: 11px;
+  font-size: var(--md-sys-typescale-label-small-font-size);
   height: 24px;
   line-height: 24px;
   padding: 0 10px;
@@ -201,7 +201,7 @@ mat-sidenav .sidenav-header {
 
 /* Tools icon */
 .tools-icon {
-  font-size: 14px !important;
+  font-size: var(--md-sys-typescale-body-medium-font-size) !important;
   width: 14px !important;
   height: 14px !important;
   margin-right: 4px;
@@ -242,7 +242,7 @@ mat-sidenav .sidenav-header {
 }
 
 .empty-state .empty-icon {
-  font-size: 48px;
+  font-size: var(--md-sys-typescale-display-medium-font-size);
   width: 48px;
   height: 48px;
   color: rgba(0, 0, 0, 0.3);
@@ -250,7 +250,7 @@ mat-sidenav .sidenav-header {
 
 .empty-state p {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--md-sys-typescale-body-medium-font-size);
 }
 
 /* Hide the content area without disabling its functions */
@@ -265,11 +265,11 @@ mat-sidenav-content {
   }
 
   .server-name {
-    font-size: 13px;
+    font-size: var(--md-sys-typescale-body-small-font-size);
   }
 
   .server-tools {
-    font-size: 11px;
+    font-size: var(--md-sys-typescale-label-small-font-size);
   }
 }
 
