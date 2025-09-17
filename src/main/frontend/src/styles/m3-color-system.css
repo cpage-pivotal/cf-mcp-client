@@ -92,7 +92,8 @@
   --md-sys-state-dragged-opacity: 0.15;
   --md-sys-state-selected-opacity: 0.11;
 
-  /* ===== ELEVATION COLORS ===== */
+  /* ===== ELEVATION COLORS (deprecated - use _surface-elevation.scss) ===== */
+  /* Legacy elevation shadows for backwards compatibility */
   --md-sys-elevation-shadow-0dp: transparent;
   --md-sys-elevation-shadow-1dp: rgba(0, 0, 0, 0.05);
   --md-sys-elevation-shadow-3dp: rgba(0, 0, 0, 0.12);
@@ -238,7 +239,8 @@
     --md-sys-color-info-container: #1565c0;
     --md-sys-color-on-info-container: #e3f2fd;
 
-    /* ===== ELEVATION COLORS (DARK) ===== */
+    /* ===== ELEVATION COLORS (DARK - deprecated - use _surface-elevation.scss) ===== */
+    /* Legacy elevation shadows for backwards compatibility */
     --md-sys-elevation-shadow-0dp: transparent;
     --md-sys-elevation-shadow-1dp: rgba(0, 0, 0, 0.15);
     --md-sys-elevation-shadow-3dp: rgba(0, 0, 0, 0.24);

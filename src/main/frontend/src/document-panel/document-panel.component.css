@@ -37,7 +37,7 @@ mat-sidenav {
   pointer-events: auto;
   width: 350px;
   padding: 0; /* Remove default padding */
-  box-shadow: -3px 0 5px var(--md-sys-elevation-shadow-3dp);
+  box-shadow: var(--md-sys-elevation-3dp);
   margin-right: 96px; /* Space for navigation rail */
   background-color: var(--md-sys-color-surface);
 }
@@ -104,14 +104,14 @@ mat-sidenav .sidenav-header {
   border-color: var(--md-sys-color-primary);
   background-color: var(--md-sys-color-surface-container-low);
   transform: translateY(-1px);
-  box-shadow: var(--md-sys-elevation-shadow-1dp);
+  box-shadow: var(--md-sys-elevation-1dp);
 }
 
 .drop-zone.drag-over {
   border-color: var(--md-sys-color-primary);
   background-color: var(--md-sys-color-primary-container);
   transform: scale(1.02);
-  box-shadow: var(--md-sys-elevation-shadow-3dp);
+  box-shadow: var(--md-sys-elevation-3dp);
 }
 
 .drop-zone.disabled {

@@ -39,7 +39,7 @@ mat-sidenav {
   pointer-events: auto;
   width: 320px;
   padding: 0; /* Remove default padding */
-  box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--md-sys-elevation-3dp);
   margin-right: 96px; /* Space for navigation rail */
   background-color: var(--md-sys-color-surface);
 }
@@ -174,7 +174,7 @@ mat-sidenav .sidenav-header {
 }
 
 .server-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--md-sys-elevation-3dp);
   transform: translateY(-1px);
 }
 
@@ -285,7 +285,7 @@ mat-sidenav .sidenav-header {
 }
 
 .server-card.server-unhealthy:hover {
-  box-shadow: 0 1px 4px rgba(244, 67, 54, 0.2);
+  box-shadow: var(--md-sys-elevation-1dp);
 }
 
 /* Empty state */

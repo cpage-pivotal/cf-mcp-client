@@ -116,10 +116,8 @@
 .md3-chat-card[data-card-variant="bot"] {
   background-color: var(--md-sys-color-surface-container-low) !important;
   border: none !important; /* Remove outlined border for elevated variant */
-  /* MD3 1dp elevation: key light 0-1px 2px, ambient light 0-1px 3px 1px */
-  box-shadow: 
-    0px 1px 2px var(--md-sys-elevation-shadow-1dp),
-    0px 1px 3px 1px var(--md-sys-elevation-shadow-1dp);
+  /* MD3 1dp elevation using new elevation system */
+  box-shadow: var(--md-sys-elevation-1dp);
 }
 
 /* ===== MATERIAL DESIGN 3 STATE LAYERS ===== */
@@ -188,10 +186,8 @@
 
 /* Elevation changes on hover - elevated cards increase to 3dp per MD3 spec */
 .chat-message:hover .md3-chat-card[data-card-variant="bot"] {
-  /* MD3 3dp elevation: key light 0-1px 3px, ambient light 0-4px 8px 3px */
-  box-shadow: 
-    0px 1px 3px var(--md-sys-elevation-shadow-3dp),
-    0px 4px 8px 3px var(--md-sys-elevation-shadow-3dp);
+  /* MD3 3dp elevation using new elevation system */
+  box-shadow: var(--md-sys-elevation-3dp);
 }
 
 .chatbox-footer {
@@ -199,7 +195,7 @@
   padding: var(--md-spacing-4); /* Add padding for visual consistency */
   background-color: var(--md-sys-color-surface-container);
   border-radius: var(--md-spacing-3); /* 12px rounded corners */
-  box-shadow: var(--md-sys-elevation-shadow-1dp);
+  box-shadow: var(--md-sys-elevation-1dp);
   border: 1px solid var(--md-sys-color-outline-variant);
 }
 
@@ -450,7 +446,7 @@ button:active:not(:disabled) {
 
   .reasoning-expansion-panel,
   .error-expansion-panel {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--md-sys-elevation-8dp);
   }
 
   .main-content markdown code,

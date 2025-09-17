@@ -37,7 +37,7 @@ mat-sidenav {
   pointer-events: auto;
   width: 300px;
   padding: 0; /* Remove default padding */
-  box-shadow: -3px 0 5px var(--md-sys-elevation-shadow-3dp);
+  box-shadow: var(--md-sys-elevation-3dp);
   margin-right: var(--md-spacing-24); /* Space for navigation rail (96px) */
   background-color: var(--md-sys-color-surface);
 }
