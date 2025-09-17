@@ -5,75 +5,92 @@
 </div>
 
 <mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true">
+  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true" [fixedTopGap]="64" (openedChange)="onSidenavOpenedChange($event)">
     <div class="sidenav-header">
-      <h2>MCP Servers</h2>
-      <button mat-icon-button (click)="sidenav.close()">
-        <mat-icon>close</mat-icon>
+      <h2 id="mcp-servers-panel-heading">MCP Servers</h2>
+      <button mat-icon-button (click)="sidenav.close()" aria-label="Close MCP servers panel">
+        <mat-icon aria-hidden="true">close</mat-icon>
       </button>
     </div>
 
-    <div class="status-container">
-      <div class="status-row">
-        <span class="status-label">Status:</span>
-        <span class="status-indicator" [ngClass]="getOverallStatusClass()">
-          <mat-icon>{{ getOverallStatusIcon() }}</mat-icon>
-          <span class="status-text">{{ getOverallStatusText() }}</span>
-        </span>
-      </div>
-    </div>
-
-    @if (sortedMcpServers.length > 0) {
-      <div class="mcp-servers-list">
-        <h3>Available MCP Servers</h3>
-        <div class="server-cards">
-          @for (mcpServer of sortedMcpServers; track trackByServerName($index, mcpServer)) {
-            <mat-card class="server-card"
-                      [class.server-unhealthy]="!mcpServer.healthy">
-              <mat-card-content>
-                <div class="server-header">
-                  <button mat-icon-button
-                          class="server-status-button"
-                          [ngClass]="{'status-red': !mcpServer.healthy, 'status-green': mcpServer.healthy}"
-                          [disabled]="!mcpServer.healthy"
-                          (click)="showMcpServerTools(mcpServer)"
-                          [matTooltip]="mcpServer.healthy ? 'Click to view tools' : 'MCP Server is unhealthy'"
-                          matTooltipPosition="right">
-                    <mat-icon>{{ mcpServer.healthy ? 'info' : 'close' }}</mat-icon>
-                  </button>
-                  <div class="server-info">
-                    <div class="server-name">
-                      {{ mcpServer.serverName || mcpServer.name }}
-                    </div>
-                    <div class="server-tools">
-                      @if (mcpServer.healthy) {
-                        <mat-icon class="tools-icon">build</mat-icon>
-                        {{ mcpServer.tools.length }} {{ mcpServer.tools.length === 1 ? 'tool' : 'tools' }} available
-                      } @else {
-                        <mat-icon class="tools-icon status-red">error_outline</mat-icon>
-                        Unhealthy
-                      }
-                    </div>
-                  </div>
-                </div>
-                @if (mcpServer.protocol) {
-                  <div class="server-protocol">
-                    <mat-chip [class.protocol-sse]="isSSEProtocol(mcpServer.protocol)"
-                              [class.protocol-streamable]="isStreamableHttpProtocol(mcpServer.protocol)">
-                      {{ getProtocolDisplayName(mcpServer.protocol) }}
-                    </mat-chip>
-                  </div>
-                }
-              </mat-card-content>
-            </mat-card>
-          }
+    <section aria-labelledby="mcp-status-heading">
+      <h3 id="mcp-status-heading" class="sr-only">MCP Servers Status</h3>
+      <div class="status-container">
+        <div class="status-row">
+          <span class="status-label">Status:</span>
+          <mat-chip-set>
+            <mat-chip
+              variant="assist"
+              [class.status-success]="getOverallStatusClass() === 'status-green'"
+              [class.status-warning]="getOverallStatusClass() === 'status-orange'"
+              [class.status-error]="getOverallStatusClass() === 'status-red'"
+              role="status"
+              [attr.aria-label]="'MCP servers status: ' + getOverallStatusText()">
+              <mat-icon matChipAvatar aria-hidden="true">{{ getOverallStatusIcon() }}</mat-icon>
+              {{ getOverallStatusText() }}
+            </mat-chip>
+          </mat-chip-set>
         </div>
       </div>
+    </section>
+
+    @if (sortedMcpServers.length > 0) {
+      <section aria-labelledby="available-servers-heading">
+        <div class="mcp-servers-list">
+          <h3 id="available-servers-heading">Available MCP Servers</h3>
+          <div class="server-cards" role="list" [attr.aria-label]="'List of ' + sortedMcpServers.length + ' MCP servers'">
+            @for (mcpServer of sortedMcpServers; track trackByServerName($index, mcpServer)) {
+              <mat-card class="server-card"
+                        [class.server-unhealthy]="!mcpServer.healthy"
+                        role="listitem"
+                        [attr.aria-label]="'MCP Server: ' + (mcpServer.serverName || mcpServer.name) + ', Status: ' + (mcpServer.healthy ? 'Healthy' : 'Unhealthy')">
+                <mat-card-content>
+                  <div class="server-header">
+                    <button mat-icon-button
+                            class="server-status-button"
+                            [ngClass]="{'status-red': !mcpServer.healthy, 'status-green': mcpServer.healthy}"
+                            [disabled]="!mcpServer.healthy"
+                            (click)="showMcpServerTools(mcpServer)"
+                            [matTooltip]="mcpServer.healthy ? 'Click to view tools' : 'MCP Server is unhealthy'"
+                            matTooltipPosition="right"
+                            [attr.aria-label]="mcpServer.healthy ? 'View tools for ' + (mcpServer.serverName || mcpServer.name) : 'Server ' + (mcpServer.serverName || mcpServer.name) + ' is unhealthy'">
+                      <mat-icon aria-hidden="true">{{ mcpServer.healthy ? 'info' : 'close' }}</mat-icon>
+                    </button>
+                    <div class="server-info">
+                      <div class="server-name">
+                        {{ mcpServer.serverName || mcpServer.name }}
+                      </div>
+                      <div class="server-tools" role="status">
+                        @if (mcpServer.healthy) {
+                          <mat-icon class="tools-icon" aria-hidden="true">build</mat-icon>
+                          {{ mcpServer.tools.length }} {{ mcpServer.tools.length === 1 ? 'tool' : 'tools' }} available
+                        } @else {
+                          <mat-icon class="tools-icon status-red" aria-hidden="true">error_outline</mat-icon>
+                          Unhealthy
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  @if (mcpServer.protocol) {
+                    <div class="server-protocol">
+                      <mat-chip [class.protocol-sse]="isSSEProtocol(mcpServer.protocol)"
+                                [class.protocol-streamable]="isStreamableHttpProtocol(mcpServer.protocol)"
+                                [attr.aria-label]="'Protocol: ' + getProtocolDisplayName(mcpServer.protocol)">
+                        {{ getProtocolDisplayName(mcpServer.protocol) }}
+                      </mat-chip>
+                    </div>
+                  }
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+        </div>
+      </section>
     }
 
     @if (sortedMcpServers.length === 0) {
-      <div class="empty-state">
-        <mat-icon class="empty-icon">cloud_off</mat-icon>
+      <div class="empty-state" role="status" aria-label="No MCP servers configured">
+        <mat-icon class="empty-icon" aria-hidden="true">cloud_off</mat-icon>
         <p>No MCP servers configured</p>
       </div>
     }

@@ -1,20 +1,29 @@
+/* Screen reader only utility class */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 .memory-container {
   position: relative;
 }
 
 .toggle-button {
-  position: fixed;
-  top: 216px;
-  right: 16px;
-  z-index: 1000;
-  background-color: var(--mat-sys-primary-container);
+  display: none; /* Hidden - replaced by navigation rail */
 }
 
 .sidenav-container {
-  height: 100vh;
+  height: calc(100vh - var(--md-toolbar-height));
   width: 100vw;
   position: fixed;
-  top: 0;
+  top: var(--md-toolbar-height);
   left: 0;
   bottom: 0;
   right: 0;
@@ -26,9 +35,23 @@
 /* Enable pointer events on the sidenav itself */
 mat-sidenav {
   pointer-events: auto;
-  width: 300px;
-  padding: 16px;
-  box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
+  width: var(--md-side-panel-width);
+  padding: 0; /* Remove default padding */
+  box-shadow: var(--md-sys-elevation-3dp);
+  margin-right: var(--md-nav-rail-width);
+  background-color: var(--md-sys-color-surface);
+}
+
+/* Add padding to sidenav content to align with navigation rail */
+mat-sidenav .sidenav-header,
+mat-sidenav .conversation-id-container,
+mat-sidenav .status-container {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+mat-sidenav .sidenav-header {
+  padding-top: 16px;
 }
 
 /* Keep backdrop clickable */
@@ -42,13 +65,14 @@ mat-sidenav {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .sidenav-header h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-large-font-size);
+  font-weight: var(--md-sys-typescale-title-large-font-weight);
+  color: var(--md-sys-color-on-surface);
 }
 
 /* Hide the content area without disabling its functions */
@@ -59,7 +83,7 @@ mat-sidenav-content {
 .conversation-id-container {
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .conversation-id-field {
@@ -69,7 +93,7 @@ mat-sidenav-content {
 .status-container {
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .status-row {
@@ -80,34 +104,104 @@ mat-sidenav-content {
 
 .status-label {
   flex: 0 0 100px;
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+  font-size: var(--md-sys-typescale-label-large-font-size);
+  color: var(--md-sys-color-on-surface);
 }
 
-.status-indicator {
+/* Material Design 3 Status Chips */
+mat-chip-set {
+  margin: 0;
   display: flex;
   align-items: center;
 }
 
-.status-indicator mat-icon {
-  margin-right: 8px;
+mat-chip {
+  font-size: var(--md-sys-typescale-label-medium-font-size);
+  font-weight: var(--md-sys-typescale-label-medium-font-weight);
+  height: 32px;
+  border-radius: 8px;
+  transition: var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+/* Material Design 3 Chip States */
+mat-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+  pointer-events: none;
+}
+
+mat-chip:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+mat-chip:focus::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+mat-chip:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* Status Chip Variants */
+mat-chip.status-success {
+  background-color: var(--md-sys-color-success-container);
+  color: var(--md-sys-color-on-success-container);
+  border: 1px solid var(--md-sys-color-success);
+}
+
+mat-chip.status-success mat-icon {
+  color: var(--md-sys-color-success);
+}
+
+mat-chip.status-error {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border: 1px solid var(--md-sys-color-error);
+}
+
+mat-chip.status-error mat-icon {
+  color: var(--md-sys-color-error);
+}
+
+mat-chip.status-warning {
+  background-color: var(--md-sys-color-warning-container);
+  color: var(--md-sys-color-on-warning-container);
+  border: 1px solid var(--md-sys-color-warning);
+}
+
+mat-chip.status-warning mat-icon {
+  color: var(--md-sys-color-warning);
+}
+
+/* Chip avatar icons */
+mat-chip mat-icon[matChipAvatar] {
   font-size: 18px;
   height: 18px;
   width: 18px;
+  margin-right: 8px;
 }
 
-.status-green {
-  color: #4CAF50;
-}
+/* Responsive adjustments using adaptive tokens */
+@media (max-width: 599px) {
+  /* Compact layout - mobile with bottom navigation */
+  .sidenav-container {
+    height: calc(100vh - var(--md-toolbar-height) - var(--md-bottom-nav-height));
+    bottom: var(--md-bottom-nav-height);
+  }
 
-.status-red {
-  color: #F44336;
-}
-
-.status-orange {
-  color: #FF9800;
-}
-
-.status-text {
-  font-size: 14px;
+  mat-sidenav {
+    margin-right: 0; /* No navigation rail on mobile */
+    width: 100vw; /* Full width modal on mobile */
+  }
 }

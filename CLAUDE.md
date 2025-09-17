@@ -52,9 +52,10 @@ The application is structured around several key service layers:
 
 #### Core Services
 - **ChatService** (`src/main/java/org/tanzu/mcpclient/chat/ChatService.java`): Central orchestrator for chat interactions, manages MCP client connections, tool callbacks, and streaming responses
-- **GenAIService** (`src/main/java/org/tanzu/mcpclient/util/GenAIService.java`): Cloud Foundry service binding detector for GenAI services, embedding models, and MCP agents
-- **DocumentService**: Handles PDF document upload, processing, and vector storage integration
-- **MetricsService**: Provides platform metrics including connected models and agents
+- **ModelDiscoveryService** (`src/main/java/org/tanzu/mcpclient/model/ModelDiscoveryService.java`): Service discovery for AI models from multiple sources including Cloud Foundry GenAI services
+- **DocumentService** (`src/main/java/org/tanzu/mcpclient/document/DocumentService.java`): Handles PDF document upload, processing, and vector storage integration
+- **MetricsService** (`src/main/java/org/tanzu/mcpclient/metrics/MetricsService.java`): Provides platform metrics including connected models and agents
+- **McpServerService** (`src/main/java/org/tanzu/mcpclient/mcp/McpServerService.java`): Manages individual MCP server connections with protocol support
 
 #### MCP Integration
 The application dynamically connects to Model Context Protocol servers through:

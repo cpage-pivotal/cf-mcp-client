@@ -16,10 +16,11 @@ import {
 } from '@angular/core';
 import {DOCUMENT} from '@angular/common';
 import {HttpParams} from '@angular/common/http';
-import {MatButton, MatIconButton} from '@angular/material/button';
+import {MatIconButton, MatFabButton} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
 import {MatFormField} from '@angular/material/form-field';
 import {MatInput, MatInputModule} from '@angular/material/input';
+import {TextFieldModule} from '@angular/cdk/text-field';
 import {MatCard, MatCardContent} from '@angular/material/card';
 import {MatIconModule} from '@angular/material/icon';
 import {MatDialog} from '@angular/material/dialog';
@@ -31,6 +32,7 @@ import {
 } from '../prompt-selection-dialog/prompt-selection-dialog.component';
 import {PromptResolutionService} from '../services/prompt-resolution.service';
 import {MatTooltip} from '@angular/material/tooltip';
+import {MatExpansionModule} from '@angular/material/expansion';
 import {ThinkTagParser} from './think-tag-parser';
 
 interface ErrorInfo {
@@ -54,7 +56,7 @@ interface ChatboxMessage {
 @Component({
   selector: 'app-chatbox',
   standalone: true,
-  imports: [MatButton, FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatIconButton, MatTooltip],
+  imports: [FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatIconButton, MatFabButton, TextFieldModule, MatTooltip, MatExpansionModule],
   templateUrl: './chatbox.component.html',
   styleUrl: './chatbox.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -288,6 +290,14 @@ export class ChatboxComponent implements OnDestroy {
 
   updateChatMessage(message: string): void {
     this._chatMessage.set(message);
+  }
+
+  onEnterKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendChatMessage();
+    }
+    // Allow Shift+Enter for new lines
   }
 
   toggleReasoning(messageIndex: number): void {

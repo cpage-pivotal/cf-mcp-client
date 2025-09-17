@@ -52,7 +52,7 @@
 }
 
 .result-count {
-  font-size: 14px;
+  font-size: var(--md-sys-typescale-body-medium-font-size);
   color: rgba(0, 0, 0, 0.7);
 }
 
@@ -64,7 +64,7 @@
 }
 
 .empty-icon {
-  font-size: 64px;
+  font-size: var(--md-sys-typescale-display-large-font-size);
   height: 64px;
   width: 64px;
   margin-bottom: 16px;
@@ -73,13 +73,13 @@
 
 .empty-state p {
   margin: 8px 0;
-  font-size: 16px;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
 }
 
 .empty-state small {
   display: block;
   margin-top: 8px;
-  font-size: 12px;
+  font-size: var(--md-sys-typescale-body-small-font-size);
   color: rgba(0, 0, 0, 0.4);
 }
 
@@ -105,16 +105,47 @@
   padding: 0;
 }
 
+/* ===== PROMPT ITEM STATE LAYERS ===== */
 .prompt-item {
+  position: relative;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  overflow: hidden;
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
   border-radius: 4px;
   margin: 4px 0;
   min-height: 72px;
 }
 
-.prompt-item:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+.prompt-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: var(--md-sys-color-on-surface);
+  opacity: 0;
+  transition: opacity var(--md-sys-state-transition-duration) var(--md-sys-state-transition-easing);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.prompt-item:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.prompt-item:focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.prompt-item:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-outline);
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+.prompt-item:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
 }
 
 .prompt-title {
@@ -127,7 +158,7 @@
 
 .prompt-description {
   color: rgba(0, 0, 0, 0.7);
-  font-size: 13px;
+  font-size: var(--md-sys-typescale-body-small-font-size);
   line-height: 1.4;
   margin-top: 4px;
   word-wrap: break-word;
@@ -136,7 +167,7 @@
 
 .argument-info {
   color: rgba(0, 0, 0, 0.5);
-  font-size: 12px;
+  font-size: var(--md-sys-typescale-body-small-font-size);
   font-style: italic;
   margin-left: 4px;
 }
@@ -156,8 +187,8 @@
 
 .arguments-form h3 {
   margin: 0 0 16px 0;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
+  font-weight: var(--md-sys-typescale-title-medium-font-weight);
   color: var(--mat-sys-primary);
 }
 
@@ -231,7 +262,7 @@
   }
 
   .empty-icon {
-    font-size: 48px;
+    font-size: var(--md-sys-typescale-display-medium-font-size);
     height: 48px;
     width: 48px;
   }

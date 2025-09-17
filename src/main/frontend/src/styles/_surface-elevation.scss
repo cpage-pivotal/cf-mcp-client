@@ -1,0 +1,410 @@
+/**
+ * Material Design 3 Surface & Elevation System
+ *
+ * This file provides a comprehensive implementation of Material Design 3
+ * surface tints, elevation, and shadow system following MD3 specifications.
+ *
+ * Includes:
+ * - Surface tint calculations and mixing
+ * - Elevation shadow tokens (0dp-24dp)
+ * - Surface variant hierarchy
+ * - Component-specific elevation patterns
+ * - Utility classes and SCSS mixins
+ */
+
+/* ===== ELEVATION TOKENS ===== */
+:root {
+  /* Material Design 3 Elevation System - Light Mode */
+  --md-sys-elevation-0dp: 0px 0px 0px 0px transparent;
+  --md-sys-elevation-1dp:
+    0px 1px 2px 0px rgba(0, 0, 0, 0.30),
+    0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-3dp:
+    0px 1px 3px 0px rgba(0, 0, 0, 0.30),
+    0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-6dp:
+    0px 2px 6px 2px rgba(0, 0, 0, 0.15),
+    0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+  --md-sys-elevation-8dp:
+    0px 5px 5px -3px rgba(0, 0, 0, 0.20),
+    0px 8px 10px 1px rgba(0, 0, 0, 0.14),
+    0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+  --md-sys-elevation-12dp:
+    0px 7px 8px -4px rgba(0, 0, 0, 0.20),
+    0px 12px 17px 2px rgba(0, 0, 0, 0.14),
+    0px 5px 22px 4px rgba(0, 0, 0, 0.12);
+  --md-sys-elevation-16dp:
+    0px 8px 10px -5px rgba(0, 0, 0, 0.20),
+    0px 16px 24px 2px rgba(0, 0, 0, 0.14),
+    0px 6px 30px 5px rgba(0, 0, 0, 0.12);
+  --md-sys-elevation-24dp:
+    0px 11px 15px -7px rgba(0, 0, 0, 0.20),
+    0px 24px 38px 3px rgba(0, 0, 0, 0.14),
+    0px 9px 46px 8px rgba(0, 0, 0, 0.12);
+
+  /* Elevation colors for surface tint mixing */
+  --md-sys-elevation-surface-tint-layer-1dp: rgba(103, 80, 164, 0.05); /* 5% primary tint */
+  --md-sys-elevation-surface-tint-layer-3dp: rgba(103, 80, 164, 0.08); /* 8% primary tint */
+  --md-sys-elevation-surface-tint-layer-6dp: rgba(103, 80, 164, 0.11); /* 11% primary tint */
+  --md-sys-elevation-surface-tint-layer-8dp: rgba(103, 80, 164, 0.12); /* 12% primary tint */
+  --md-sys-elevation-surface-tint-layer-12dp: rgba(103, 80, 164, 0.14); /* 14% primary tint */
+  --md-sys-elevation-surface-tint-layer-16dp: rgba(103, 80, 164, 0.16); /* 16% primary tint */
+  --md-sys-elevation-surface-tint-layer-24dp: rgba(103, 80, 164, 0.20); /* 20% primary tint */
+}
+
+/* Dark theme elevation adjustments */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Enhanced shadows for dark theme */
+    --md-sys-elevation-1dp:
+      0px 1px 3px 1px rgba(0, 0, 0, 0.15),
+      0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+    --md-sys-elevation-3dp:
+      0px 4px 8px 3px rgba(0, 0, 0, 0.15),
+      0px 1px 3px 0px rgba(0, 0, 0, 0.30);
+    --md-sys-elevation-6dp:
+      0px 2px 6px 2px rgba(0, 0, 0, 0.20),
+      0px 1px 2px 0px rgba(0, 0, 0, 0.35);
+    --md-sys-elevation-8dp:
+      0px 5px 5px -3px rgba(0, 0, 0, 0.25),
+      0px 8px 10px 1px rgba(0, 0, 0, 0.18),
+      0px 3px 14px 2px rgba(0, 0, 0, 0.15);
+    --md-sys-elevation-12dp:
+      0px 7px 8px -4px rgba(0, 0, 0, 0.25),
+      0px 12px 17px 2px rgba(0, 0, 0, 0.18),
+      0px 5px 22px 4px rgba(0, 0, 0, 0.15);
+    --md-sys-elevation-16dp:
+      0px 8px 10px -5px rgba(0, 0, 0, 0.25),
+      0px 16px 24px 2px rgba(0, 0, 0, 0.18),
+      0px 6px 30px 5px rgba(0, 0, 0, 0.15);
+    --md-sys-elevation-24dp:
+      0px 11px 15px -7px rgba(0, 0, 0, 0.25),
+      0px 24px 38px 3px rgba(0, 0, 0, 0.18),
+      0px 9px 46px 8px rgba(0, 0, 0, 0.15);
+
+    /* Dark theme surface tint layers */
+    --md-sys-elevation-surface-tint-layer-1dp: rgba(161, 211, 162, 0.05);
+    --md-sys-elevation-surface-tint-layer-3dp: rgba(161, 211, 162, 0.08);
+    --md-sys-elevation-surface-tint-layer-6dp: rgba(161, 211, 162, 0.11);
+    --md-sys-elevation-surface-tint-layer-8dp: rgba(161, 211, 162, 0.12);
+    --md-sys-elevation-surface-tint-layer-12dp: rgba(161, 211, 162, 0.14);
+    --md-sys-elevation-surface-tint-layer-16dp: rgba(161, 211, 162, 0.16);
+    --md-sys-elevation-surface-tint-layer-24dp: rgba(161, 211, 162, 0.20);
+  }
+}
+
+/* ===== SURFACE VARIANT SYSTEM ===== */
+:root {
+  /* Enhanced surface tint system with proper mixing */
+  --md-sys-surface-at-0dp: var(--md-sys-color-surface);
+  --md-sys-surface-at-1dp: var(--md-sys-color-surface-container-lowest);
+  --md-sys-surface-at-3dp: var(--md-sys-color-surface-container-low);
+  --md-sys-surface-at-6dp: var(--md-sys-color-surface-container);
+  --md-sys-surface-at-8dp: var(--md-sys-color-surface-container-high);
+  --md-sys-surface-at-12dp: var(--md-sys-color-surface-container-highest);
+  --md-sys-surface-at-16dp: var(--md-sys-color-surface-container-highest);
+  --md-sys-surface-at-24dp: var(--md-sys-color-surface-container-highest);
+}
+
+/* ===== SCSS MIXINS FOR ELEVATION ===== */
+@mixin md-elevation($level) {
+  @if $level == 0 {
+    box-shadow: var(--md-sys-elevation-0dp);
+  } @else if $level == 1 {
+    box-shadow: var(--md-sys-elevation-1dp);
+    background-color: var(--md-sys-surface-at-1dp);
+  } @else if $level == 3 {
+    box-shadow: var(--md-sys-elevation-3dp);
+    background-color: var(--md-sys-surface-at-3dp);
+  } @else if $level == 6 {
+    box-shadow: var(--md-sys-elevation-6dp);
+    background-color: var(--md-sys-surface-at-6dp);
+  } @else if $level == 8 {
+    box-shadow: var(--md-sys-elevation-8dp);
+    background-color: var(--md-sys-surface-at-8dp);
+  } @else if $level == 12 {
+    box-shadow: var(--md-sys-elevation-12dp);
+    background-color: var(--md-sys-surface-at-12dp);
+  } @else if $level == 16 {
+    box-shadow: var(--md-sys-elevation-16dp);
+    background-color: var(--md-sys-surface-at-16dp);
+  } @else if $level == 24 {
+    box-shadow: var(--md-sys-elevation-24dp);
+    background-color: var(--md-sys-surface-at-24dp);
+  }
+}
+
+@mixin md-surface($variant) {
+  @if $variant == 'dim' {
+    background-color: var(--md-sys-color-surface-dim);
+  } @else if $variant == 'bright' {
+    background-color: var(--md-sys-color-surface-bright);
+  } @else if $variant == 'container-lowest' {
+    background-color: var(--md-sys-color-surface-container-lowest);
+  } @else if $variant == 'container-low' {
+    background-color: var(--md-sys-color-surface-container-low);
+  } @else if $variant == 'container' {
+    background-color: var(--md-sys-color-surface-container);
+  } @else if $variant == 'container-high' {
+    background-color: var(--md-sys-color-surface-container-high);
+  } @else if $variant == 'container-highest' {
+    background-color: var(--md-sys-color-surface-container-highest);
+  } @else if $variant == 'variant' {
+    background-color: var(--md-sys-color-surface-variant);
+  } @else {
+    background-color: var(--md-sys-color-surface);
+  }
+}
+
+/* ===== COMPONENT-SPECIFIC ELEVATION PATTERNS ===== */
+
+/* Card elevation patterns */
+@mixin md-card-filled {
+  @include md-elevation(0);
+  background-color: var(--md-sys-color-surface-container-highest);
+  transition: box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+@mixin md-card-elevated {
+  @include md-elevation(1);
+  transition: box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+@mixin md-card-outlined {
+  @include md-elevation(0);
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  transition: box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+/* Interactive elevation changes */
+@mixin md-interactive-elevation {
+  transition: box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-emphasized);
+
+  &:hover {
+    @include md-elevation(3);
+  }
+
+  &:focus, &:focus-within {
+    @include md-elevation(3);
+  }
+
+  &:active {
+    @include md-elevation(1);
+  }
+}
+
+/* Navigation panel elevation */
+@mixin md-navigation-elevation {
+  @include md-elevation(0);
+  background-color: var(--md-sys-color-surface-container);
+}
+
+/* Modal/Dialog elevation */
+@mixin md-dialog-elevation {
+  @include md-elevation(24);
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+/* Fab elevation patterns */
+@mixin md-fab-elevation {
+  @include md-elevation(6);
+
+  &:hover {
+    @include md-elevation(8);
+  }
+
+  &:focus {
+    @include md-elevation(8);
+  }
+
+  &:active {
+    @include md-elevation(6);
+  }
+}
+
+/* Top App Bar elevation */
+@mixin md-top-app-bar-elevation {
+  @include md-elevation(0);
+  background-color: var(--md-sys-color-surface);
+
+  &.elevated {
+    @include md-elevation(3);
+  }
+}
+
+/* Bottom Sheet elevation */
+@mixin md-bottom-sheet-elevation {
+  @include md-elevation(16);
+  background-color: var(--md-sys-color-surface-container-low);
+}
+
+/* Menu/Dropdown elevation */
+@mixin md-menu-elevation {
+  @include md-elevation(3);
+  background-color: var(--md-sys-color-surface-container);
+}
+
+/* Tooltip elevation */
+@mixin md-tooltip-elevation {
+  @include md-elevation(6);
+  background-color: var(--md-sys-color-inverse-surface);
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Elevation utility classes */
+.md-elevation-0 { @include md-elevation(0); }
+.md-elevation-1 { @include md-elevation(1); }
+.md-elevation-3 { @include md-elevation(3); }
+.md-elevation-6 { @include md-elevation(6); }
+.md-elevation-8 { @include md-elevation(8); }
+.md-elevation-12 { @include md-elevation(12); }
+.md-elevation-16 { @include md-elevation(16); }
+.md-elevation-24 { @include md-elevation(24); }
+
+/* Surface variant utility classes */
+.md-surface { @include md-surface(base); }
+.md-surface-dim { @include md-surface(dim); }
+.md-surface-bright { @include md-surface(bright); }
+.md-surface-container-lowest { @include md-surface(container-lowest); }
+.md-surface-container-low { @include md-surface(container-low); }
+.md-surface-container { @include md-surface(container); }
+.md-surface-container-high { @include md-surface(container-high); }
+.md-surface-container-highest { @include md-surface(container-highest); }
+.md-surface-variant { @include md-surface(variant); }
+
+/* Interactive elevation utility classes */
+.md-interactive-elevation { @include md-interactive-elevation; }
+
+/* Component pattern utility classes */
+.md-card-filled { @include md-card-filled; }
+.md-card-elevated { @include md-card-elevated; }
+.md-card-outlined { @include md-card-outlined; }
+
+.md-navigation-elevation { @include md-navigation-elevation; }
+.md-dialog-elevation { @include md-dialog-elevation; }
+.md-fab-elevation { @include md-fab-elevation; }
+.md-top-app-bar-elevation { @include md-top-app-bar-elevation; }
+.md-bottom-sheet-elevation { @include md-bottom-sheet-elevation; }
+.md-menu-elevation { @include md-menu-elevation; }
+.md-tooltip-elevation { @include md-tooltip-elevation; }
+
+/* ===== SPECIALIZED ELEVATION PATTERNS ===== */
+
+/* Panel slide-out shadows */
+.md-panel-shadow {
+  box-shadow:
+    -2px 0px 8px 0px rgba(0, 0, 0, 0.12),
+    -1px 0px 4px 0px rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  .md-panel-shadow {
+    box-shadow:
+      -2px 0px 12px 0px rgba(0, 0, 0, 0.24),
+      -1px 0px 6px 0px rgba(0, 0, 0, 0.16);
+  }
+}
+
+/* Floating element shadows */
+.md-floating-shadow {
+  box-shadow:
+    0px 8px 16px 4px rgba(0, 0, 0, 0.12),
+    0px 4px 6px 0px rgba(0, 0, 0, 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+  .md-floating-shadow {
+    box-shadow:
+      0px 12px 24px 6px rgba(0, 0, 0, 0.24),
+      0px 6px 8px 0px rgba(0, 0, 0, 0.20);
+  }
+}
+
+/* Overlay backdrop shadows */
+.md-overlay-shadow {
+  box-shadow:
+    0px 24px 38px 3px rgba(0, 0, 0, 0.14),
+    0px 9px 46px 8px rgba(0, 0, 0, 0.12),
+    0px 11px 15px -7px rgba(0, 0, 0, 0.20);
+}
+
+/* Surface tint overlay mixins for dynamic elevation */
+.md-surface-tint-overlay {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--md-sys-color-surface-tint);
+    opacity: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    transition: opacity var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+  }
+
+  &.at-1dp::before { opacity: 0.05; }
+  &.at-3dp::before { opacity: 0.08; }
+  &.at-6dp::before { opacity: 0.11; }
+  &.at-8dp::before { opacity: 0.12; }
+  &.at-12dp::before { opacity: 0.14; }
+  &.at-16dp::before { opacity: 0.16; }
+  &.at-24dp::before { opacity: 0.20; }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* Reduced motion preference handling */
+@media (prefers-reduced-motion: reduce) {
+  .md-elevation-0,
+  .md-elevation-1,
+  .md-elevation-3,
+  .md-elevation-6,
+  .md-elevation-8,
+  .md-elevation-12,
+  .md-elevation-16,
+  .md-elevation-24,
+  .md-interactive-elevation,
+  .md-surface-tint-overlay::before {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  :root {
+    --md-sys-elevation-1dp: 0px 0px 0px 1px rgba(0, 0, 0, 0.7);
+    --md-sys-elevation-3dp: 0px 0px 0px 2px rgba(0, 0, 0, 0.8);
+    --md-sys-elevation-6dp: 0px 0px 0px 3px rgba(0, 0, 0, 0.9);
+    --md-sys-elevation-8dp: 0px 0px 0px 4px rgba(0, 0, 0, 1);
+    --md-sys-elevation-12dp: 0px 0px 0px 5px rgba(0, 0, 0, 1);
+    --md-sys-elevation-16dp: 0px 0px 0px 6px rgba(0, 0, 0, 1);
+    --md-sys-elevation-24dp: 0px 0px 0px 8px rgba(0, 0, 0, 1);
+  }
+}
+
+/* Print media - remove all shadows and elevation */
+@media print {
+  .md-elevation-0,
+  .md-elevation-1,
+  .md-elevation-3,
+  .md-elevation-6,
+  .md-elevation-8,
+  .md-elevation-12,
+  .md-elevation-16,
+  .md-elevation-24,
+  .md-panel-shadow,
+  .md-floating-shadow,
+  .md-overlay-shadow {
+    box-shadow: none !important;
+  }
+
+  .md-surface-tint-overlay::before {
+    display: none !important;
+  }
+}

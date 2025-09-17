@@ -4,6 +4,7 @@ import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
 import { PlatformMetrics } from '../app/app.component';
 import { SidenavService } from '../services/sidenav.service';
 
@@ -15,7 +16,8 @@ import { SidenavService } from '../services/sidenav.service';
     MatSidenavModule,
     MatButtonModule,
     MatIconModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatChipsModule
   ],
   templateUrl: './chat-panel.component.html',
   styleUrl: './chat-panel.component.css'
@@ -33,5 +35,12 @@ export class ChatPanelComponent implements AfterViewInit {
 
   toggleSidenav() {
     this.sidenavService.toggle('chat');
+  }
+
+  onSidenavOpenedChange(opened: boolean) {
+    if (!opened) {
+      // Sidenav was closed (e.g., by backdrop click) - update service state
+      this.sidenavService.notifyPanelClosed('chat');
+    }
   }
 }

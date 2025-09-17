@@ -1,0 +1,37 @@
+<nav class="bottom-navigation md-show-compact" role="navigation" aria-label="Bottom navigation">
+  <div class="bottom-nav-container">
+    @for (item of navigationItems; track item.id) {
+      <div class="bottom-nav-item">
+        <button
+          type="button"
+          class="bottom-nav-button"
+          (click)="onNavItemClick(item.id)"
+          [attr.aria-label]="item.tooltip"
+          [attr.data-nav-item]="item.id">
+
+          <div class="bottom-nav-button-content">
+            <!-- Main icon with status color -->
+            <mat-icon
+              class="bottom-nav-icon"
+              [ngClass]="getStatusIndicator(item.id).show ? getStatusIndicator(item.id).color : ''"
+              [attr.aria-hidden]="true">
+              {{ item.icon }}
+            </mat-icon>
+
+            <!-- Label -->
+            <span class="bottom-nav-label">{{ item.label }}</span>
+          </div>
+        </button>
+
+        <!-- Screen reader status -->
+        <span class="sr-only">
+          {{ item.tooltip }}
+          @if (getStatusIndicator(item.id).show) {
+            - Status: {{ getStatusIndicator(item.id).color === 'status-green' ? 'Connected' :
+                        getStatusIndicator(item.id).color === 'status-orange' ? 'Warning' : 'Disconnected' }}
+          }
+        </span>
+      </div>
+    }
+  </div>
+</nav>

@@ -1,0 +1,436 @@
+/**
+ * Material Design 3 Color System
+ * 
+ * This file defines the complete Material Design 3 color token system
+ * with semantic color roles for consistent theming across the application.
+ * 
+ * Color roles are organized by:
+ * - Primary, Secondary, Tertiary (brand colors)
+ * - Error (for error states)
+ * - Neutral, Neutral-variant (surface colors)
+ * - Surface variants (container backgrounds)
+ * - Semantic tokens (success, warning, info)
+ */
+
+:root {
+  /* ===== PRIMARY COLOR ROLES ===== */
+  --md-sys-color-primary: #3c6840;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #bdefbc;
+  --md-sys-color-on-primary-container: #002108;
+
+  /* ===== SECONDARY COLOR ROLES ===== */
+  --md-sys-color-secondary: #516350;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #d3e8d0;
+  --md-sys-color-on-secondary-container: #0f1f10;
+
+  /* ===== TERTIARY COLOR ROLES ===== */
+  --md-sys-color-tertiary: #196778;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #aeecff;
+  --md-sys-color-on-tertiary-container: #001f26;
+
+  /* ===== ERROR COLOR ROLES ===== */
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+
+  /* ===== NEUTRAL COLOR ROLES ===== */
+  --md-sys-color-outline: #757873;
+  --md-sys-color-outline-variant: #c5c7c1;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+
+  /* ===== SURFACE COLOR ROLES ===== */
+  --md-sys-color-surface: #fcfdf7;
+  --md-sys-color-on-surface: #1a1c19;
+  --md-sys-color-surface-variant: #dde5d9;
+  --md-sys-color-on-surface-variant: #424940;
+
+  /* ===== SURFACE TINT SYSTEM ===== */
+  --md-sys-color-surface-tint: var(--md-sys-color-primary);
+  
+  /* Surface containers with proper tint mixing */
+  --md-sys-color-surface-dim: #ddddd8;
+  --md-sys-color-surface-bright: #fcfdf7;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f6f7f1;
+  --md-sys-color-surface-container: #f0f1eb;
+  --md-sys-color-surface-container-high: #eaeae5;
+  --md-sys-color-surface-container-highest: #e4e5df;
+
+  /* ===== INVERSE COLOR ROLES ===== */
+  --md-sys-color-inverse-surface: #2e312d;
+  --md-sys-color-inverse-on-surface: #f0f1eb;
+  --md-sys-color-inverse-primary: #a1d3a2;
+
+  /* ===== SEMANTIC COLOR TOKENS ===== */
+  /* Success colors - using primary green tones */
+  --md-sys-color-success: var(--md-sys-color-tertiary);
+  --md-sys-color-on-success: var(--md-sys-color-on-tertiary);
+  --md-sys-color-success-container: var(--md-sys-color-tertiary-container);
+  --md-sys-color-on-success-container: var(--md-sys-color-on-tertiary-container);
+
+  /* Warning colors - using amber tones */
+  --md-sys-color-warning: #ffc107;
+  --md-sys-color-on-warning: #000000;
+  --md-sys-color-warning-container: #fff8e1;
+  --md-sys-color-on-warning-container: #332800;
+
+  /* Info colors - using blue tones */
+  --md-sys-color-info: #2196f3;
+  --md-sys-color-on-info: #ffffff;
+  --md-sys-color-info-container: #e3f2fd;
+  --md-sys-color-on-info-container: #0d47a1;
+
+  /* ===== STATE LAYER OPACITIES ===== */
+  --md-sys-state-hover-opacity: 0.08;
+  --md-sys-state-focus-opacity: 0.10;
+  --md-sys-state-pressed-opacity: 0.10;
+  --md-sys-state-dragged-opacity: 0.15;
+  --md-sys-state-selected-opacity: 0.11;
+
+  /* ===== ELEVATION COLORS (deprecated - use _surface-elevation.scss) ===== */
+  /* Legacy elevation shadows for backwards compatibility */
+  --md-sys-elevation-shadow-0dp: transparent;
+  --md-sys-elevation-shadow-1dp: rgba(0, 0, 0, 0.05);
+  --md-sys-elevation-shadow-3dp: rgba(0, 0, 0, 0.12);
+  --md-sys-elevation-shadow-6dp: rgba(0, 0, 0, 0.16);
+  --md-sys-elevation-shadow-8dp: rgba(0, 0, 0, 0.18);
+  --md-sys-elevation-shadow-12dp: rgba(0, 0, 0, 0.24);
+
+  /* ===== COMPONENT-SPECIFIC SEMANTIC TOKENS ===== */
+  /* Chat status indicators */
+  --md-sys-color-chat-connected: var(--md-sys-color-success);
+  --md-sys-color-chat-disconnected: var(--md-sys-color-error);
+  --md-sys-color-chat-pending: var(--md-sys-color-warning);
+
+  /* Document status indicators */
+  --md-sys-color-document-uploaded: var(--md-sys-color-success);
+  --md-sys-color-document-failed: var(--md-sys-color-error);
+  --md-sys-color-document-processing: var(--md-sys-color-warning);
+
+  /* Server/Agent status indicators */
+  --md-sys-color-server-healthy: var(--md-sys-color-success);
+  --md-sys-color-server-unhealthy: var(--md-sys-color-error);
+  --md-sys-color-server-warning: var(--md-sys-color-warning);
+
+  /* Reasoning/Error content backgrounds */
+  --md-sys-color-reasoning-background: rgba(var(--md-sys-color-primary-rgb), 0.04);
+  --md-sys-color-error-background: rgba(var(--md-sys-color-error-rgb), 0.04);
+
+  /* ===== RGB VALUES FOR RGBA USAGE ===== */
+  /* Primary colors */
+  --md-sys-color-primary-rgb: 60, 104, 64;
+  --md-sys-color-on-primary-rgb: 255, 255, 255;
+  --md-sys-color-primary-container-rgb: 189, 239, 188;
+  --md-sys-color-on-primary-container-rgb: 0, 33, 8;
+
+  /* Secondary colors */
+  --md-sys-color-secondary-rgb: 81, 99, 80;
+  --md-sys-color-on-secondary-rgb: 255, 255, 255;
+  --md-sys-color-secondary-container-rgb: 211, 232, 208;
+  --md-sys-color-on-secondary-container-rgb: 15, 31, 16;
+
+  /* Tertiary colors */
+  --md-sys-color-tertiary-rgb: 25, 103, 120;
+  --md-sys-color-on-tertiary-rgb: 255, 255, 255;
+  --md-sys-color-tertiary-container-rgb: 174, 236, 255;
+  --md-sys-color-on-tertiary-container-rgb: 0, 31, 38;
+
+  /* Error colors */
+  --md-sys-color-error-rgb: 186, 26, 26;
+  --md-sys-color-on-error-rgb: 255, 255, 255;
+  --md-sys-color-error-container-rgb: 255, 218, 214;
+  --md-sys-color-on-error-container-rgb: 65, 0, 2;
+
+  /* Surface colors */
+  --md-sys-color-surface-rgb: 252, 253, 247;
+  --md-sys-color-on-surface-rgb: 26, 28, 25;
+  --md-sys-color-surface-variant-rgb: 221, 229, 217;
+  --md-sys-color-on-surface-variant-rgb: 66, 73, 64;
+
+  /* Neutral colors */
+  --md-sys-color-outline-rgb: 117, 120, 115;
+  --md-sys-color-outline-variant-rgb: 197, 199, 193;
+  --md-sys-color-shadow-rgb: 0, 0, 0;
+  --md-sys-color-scrim-rgb: 0, 0, 0;
+
+  /* Semantic color RGB values */
+  --md-sys-color-success-rgb: 25, 103, 120;
+  --md-sys-color-warning-rgb: 255, 193, 7;
+  --md-sys-color-info-rgb: 33, 150, 243;
+}
+
+/* ===== DARK THEME ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* ===== PRIMARY COLOR ROLES (DARK) ===== */
+    --md-sys-color-primary: #a1d3a2;
+    --md-sys-color-on-primary: #0a3816;
+    --md-sys-color-primary-container: #24502a;
+    --md-sys-color-on-primary-container: #bdefbc;
+
+    /* ===== SECONDARY COLOR ROLES (DARK) ===== */
+    --md-sys-color-secondary: #b8ccb5;
+    --md-sys-color-on-secondary: #233424;
+    --md-sys-color-secondary-container: #394b39;
+    --md-sys-color-on-secondary-container: #d3e8d0;
+
+    /* ===== TERTIARY COLOR ROLES (DARK) ===== */
+    --md-sys-color-tertiary: #8dd1e4;
+    --md-sys-color-on-tertiary: #003641;
+    --md-sys-color-tertiary-container: #004e5d;
+    --md-sys-color-on-tertiary-container: #aeecff;
+
+    /* ===== ERROR COLOR ROLES (DARK) ===== */
+    --md-sys-color-error: #ffb4ab;
+    --md-sys-color-on-error: #690005;
+    --md-sys-color-error-container: #93000a;
+    --md-sys-color-on-error-container: #ffdad6;
+
+    /* ===== NEUTRAL COLOR ROLES (DARK) ===== */
+    --md-sys-color-outline: #9fa29d;
+    --md-sys-color-outline-variant: #4a514a;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+
+    /* ===== SURFACE COLOR ROLES (DARK) ===== */
+    --md-sys-color-surface: #111411;
+    --md-sys-color-on-surface: #e8e9e3;
+    --md-sys-color-surface-variant: #424940;
+    --md-sys-color-on-surface-variant: #d0d8cc;
+
+    /* ===== SURFACE TINT SYSTEM (DARK) ===== */
+    --md-sys-color-surface-tint: var(--md-sys-color-primary);
+    
+    /* Surface containers with proper tint mixing */
+    --md-sys-color-surface-dim: #111411;
+    --md-sys-color-surface-bright: #373a36;
+    --md-sys-color-surface-container-lowest: #0c0f0c;
+    --md-sys-color-surface-container-low: #1a1c19;
+    --md-sys-color-surface-container: #1e201d;
+    --md-sys-color-surface-container-high: #282b27;
+    --md-sys-color-surface-container-highest: #333532;
+
+    /* ===== INVERSE COLOR ROLES (DARK) ===== */
+    --md-sys-color-inverse-surface: #e2e3dd;
+    --md-sys-color-inverse-on-surface: #2e312d;
+    --md-sys-color-inverse-primary: #3c6840;
+
+    /* ===== SEMANTIC COLOR TOKENS (DARK) ===== */
+    /* Success colors - using primary green tones */
+    --md-sys-color-success: var(--md-sys-color-tertiary);
+    --md-sys-color-on-success: var(--md-sys-color-on-tertiary);
+    --md-sys-color-success-container: var(--md-sys-color-tertiary-container);
+    --md-sys-color-on-success-container: var(--md-sys-color-on-tertiary-container);
+
+    /* Warning colors - using amber tones */
+    --md-sys-color-warning: #ffcc02;
+    --md-sys-color-on-warning: #000000;
+    --md-sys-color-warning-container: #4a3800;
+    --md-sys-color-on-warning-container: #ffea00;
+
+    /* Info colors - using blue tones */
+    --md-sys-color-info: #64b5f6;
+    --md-sys-color-on-info: #ffffff;
+    --md-sys-color-info-container: #1565c0;
+    --md-sys-color-on-info-container: #e3f2fd;
+
+    /* ===== ELEVATION COLORS (DARK - deprecated - use _surface-elevation.scss) ===== */
+    /* Legacy elevation shadows for backwards compatibility */
+    --md-sys-elevation-shadow-0dp: transparent;
+    --md-sys-elevation-shadow-1dp: rgba(0, 0, 0, 0.15);
+    --md-sys-elevation-shadow-3dp: rgba(0, 0, 0, 0.24);
+    --md-sys-elevation-shadow-6dp: rgba(0, 0, 0, 0.32);
+    --md-sys-elevation-shadow-8dp: rgba(0, 0, 0, 0.36);
+    --md-sys-elevation-shadow-12dp: rgba(0, 0, 0, 0.48);
+
+    /* ===== COMPONENT-SPECIFIC SEMANTIC TOKENS (DARK) ===== */
+    /* Reasoning/Error content backgrounds */
+    --md-sys-color-reasoning-background: rgba(var(--md-sys-color-primary-rgb), 0.08);
+    --md-sys-color-error-background: rgba(var(--md-sys-color-error-rgb), 0.08);
+
+    /* ===== RGB VALUES FOR RGBA USAGE (DARK) ===== */
+    /* Primary colors */
+    --md-sys-color-primary-rgb: 161, 211, 162;
+    --md-sys-color-on-primary-rgb: 10, 56, 22;
+    --md-sys-color-primary-container-rgb: 36, 80, 42;
+    --md-sys-color-on-primary-container-rgb: 189, 239, 188;
+
+    /* Secondary colors */
+    --md-sys-color-secondary-rgb: 184, 204, 181;
+    --md-sys-color-on-secondary-rgb: 35, 52, 36;
+    --md-sys-color-secondary-container-rgb: 57, 75, 57;
+    --md-sys-color-on-secondary-container-rgb: 211, 232, 208;
+
+    /* Tertiary colors */
+    --md-sys-color-tertiary-rgb: 141, 209, 228;
+    --md-sys-color-on-tertiary-rgb: 0, 54, 65;
+    --md-sys-color-tertiary-container-rgb: 0, 78, 93;
+    --md-sys-color-on-tertiary-container-rgb: 174, 236, 255;
+
+    /* Error colors */
+    --md-sys-color-error-rgb: 255, 180, 171;
+    --md-sys-color-on-error-rgb: 105, 0, 5;
+    --md-sys-color-error-container-rgb: 147, 0, 10;
+    --md-sys-color-on-error-container-rgb: 255, 218, 214;
+
+    /* Surface colors */
+    --md-sys-color-surface-rgb: 17, 20, 17;
+    --md-sys-color-on-surface-rgb: 232, 233, 227;
+    --md-sys-color-surface-variant-rgb: 66, 73, 64;
+    --md-sys-color-on-surface-variant-rgb: 208, 216, 204;
+
+    /* Neutral colors */
+    --md-sys-color-outline-rgb: 159, 162, 157;
+    --md-sys-color-outline-variant-rgb: 74, 81, 74;
+
+    /* Semantic color RGB values */
+    --md-sys-color-success-rgb: 141, 209, 228;
+    --md-sys-color-warning-rgb: 255, 204, 2;
+    --md-sys-color-info-rgb: 100, 181, 246;
+  }
+}
+
+/* ===== UTILITY CLASSES FOR STATE LAYERS ===== */
+.md-state-layer {
+  position: relative;
+  overflow: hidden;
+}
+
+.md-state-layer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.md-state-layer:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.md-state-layer:focus::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.md-state-layer:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ===== UTILITY CLASSES FOR SEMANTIC COLORS ===== */
+.md-color-success {
+  color: var(--md-sys-color-success) !important;
+}
+
+.md-color-warning {
+  color: var(--md-sys-color-warning) !important;
+}
+
+.md-color-error {
+  color: var(--md-sys-color-error) !important;
+}
+
+.md-color-info {
+  color: var(--md-sys-color-info) !important;
+}
+
+/* Background variants */
+.md-bg-success {
+  background-color: var(--md-sys-color-success-container) !important;
+  color: var(--md-sys-color-on-success-container) !important;
+}
+
+.md-bg-warning {
+  background-color: var(--md-sys-color-warning-container) !important;
+  color: var(--md-sys-color-on-warning-container) !important;
+}
+
+.md-bg-error {
+  background-color: var(--md-sys-color-error-container) !important;
+  color: var(--md-sys-color-on-error-container) !important;
+}
+
+.md-bg-info {
+  background-color: var(--md-sys-color-info-container) !important;
+  color: var(--md-sys-color-on-info-container) !important;
+}
+
+/* ===== DARK MODE READABILITY ENHANCEMENTS ===== */
+@media (prefers-color-scheme: dark) {
+  /* Enhanced contrast for navigation and UI text */
+  .nav-rail-label,
+  .nav-rail-icon,
+  mat-toolbar span,
+  .mat-mdc-button:not(.mat-primary):not(.mat-warn):not(.mat-accent) {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  /* Better contrast for form fields and inputs */
+  .mat-mdc-form-field-label,
+  .mat-mdc-input-element {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  /* Enhanced status indicators visibility */
+  .status-green {
+    color: #4ade80 !important; /* Brighter green for dark mode */
+  }
+
+  .status-red {
+    color: #f87171 !important; /* Brighter red for dark mode */
+  }
+
+  .status-orange {
+    color: #fbbf24 !important; /* Brighter yellow for dark mode */
+  }
+
+  /* Better contrast for Material cards and panels */
+  .mat-mdc-card,
+  .mat-expansion-panel {
+    background-color: var(--md-sys-color-surface-container) !important;
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  /* Enhanced dialog text visibility */
+  .mat-mdc-dialog-title,
+  .mat-mdc-dialog-content {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  /* Better button text contrast */
+  .mat-mdc-button,
+  .mat-mdc-outlined-button,
+  .mat-mdc-raised-button {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  /* Enhanced tooltip visibility in dark mode */
+  .mat-mdc-tooltip {
+    background-color: var(--md-sys-color-inverse-surface) !important;
+    color: var(--md-sys-color-inverse-on-surface) !important;
+    font-weight: 500 !important;
+  }
+
+  /* Better Send button contrast */
+  .mat-mdc-button.mat-flat-button {
+    background-color: var(--md-sys-color-primary) !important;
+    color: var(--md-sys-color-on-primary) !important;
+    font-weight: 500 !important;
+  }
+
+  .mat-mdc-button.mat-flat-button:disabled {
+    background-color: var(--md-sys-color-surface-variant) !important;
+    color: var(--md-sys-color-on-surface-variant) !important;
+    opacity: 0.38 !important;
+  }
+}

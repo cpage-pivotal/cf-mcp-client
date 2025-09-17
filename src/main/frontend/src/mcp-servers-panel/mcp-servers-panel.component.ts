@@ -47,6 +47,13 @@ export class McpServersPanelComponent implements AfterViewInit {
     this.sidenavService.toggle('mcp-servers');
   }
 
+  onSidenavOpenedChange(opened: boolean): void {
+    if (!opened) {
+      // Sidenav was closed (e.g., by backdrop click) - update service state
+      this.sidenavService.notifyPanelClosed('mcp-servers');
+    }
+  }
+
   get sortedMcpServers(): McpServer[] {
     if (!this.metrics || !this.metrics.mcpServers) {
       return [];

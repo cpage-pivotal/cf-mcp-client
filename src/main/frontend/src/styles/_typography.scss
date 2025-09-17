@@ -1,0 +1,366 @@
+// Material Design 3 Typography System
+// Reference: https://m3.material.io/styles/typography/type-scale-tokens
+
+// Font families
+$md-sys-typescale-font-family-brand: 'Roboto', system-ui, -apple-system, sans-serif;
+$md-sys-typescale-font-family-plain: 'Roboto', system-ui, -apple-system, sans-serif;
+$md-sys-typescale-font-family-code: 'Roboto Mono', 'SF Mono', 'Monaco', 'Courier New', monospace;
+
+// Display styles
+$md-sys-typescale-display-large-font-size: 57px;
+$md-sys-typescale-display-large-line-height: 64px;
+$md-sys-typescale-display-large-font-weight: 400;
+$md-sys-typescale-display-large-letter-spacing: -0.25px;
+
+$md-sys-typescale-display-medium-font-size: 45px;
+$md-sys-typescale-display-medium-line-height: 52px;
+$md-sys-typescale-display-medium-font-weight: 400;
+$md-sys-typescale-display-medium-letter-spacing: 0;
+
+$md-sys-typescale-display-small-font-size: 36px;
+$md-sys-typescale-display-small-line-height: 44px;
+$md-sys-typescale-display-small-font-weight: 400;
+$md-sys-typescale-display-small-letter-spacing: 0;
+
+// Headline styles
+$md-sys-typescale-headline-large-font-size: 32px;
+$md-sys-typescale-headline-large-line-height: 40px;
+$md-sys-typescale-headline-large-font-weight: 400;
+$md-sys-typescale-headline-large-letter-spacing: 0;
+
+$md-sys-typescale-headline-medium-font-size: 28px;
+$md-sys-typescale-headline-medium-line-height: 36px;
+$md-sys-typescale-headline-medium-font-weight: 400;
+$md-sys-typescale-headline-medium-letter-spacing: 0;
+
+$md-sys-typescale-headline-small-font-size: 24px;
+$md-sys-typescale-headline-small-line-height: 32px;
+$md-sys-typescale-headline-small-font-weight: 400;
+$md-sys-typescale-headline-small-letter-spacing: 0;
+
+// Title styles
+$md-sys-typescale-title-large-font-size: 22px;
+$md-sys-typescale-title-large-line-height: 28px;
+$md-sys-typescale-title-large-font-weight: 400;
+$md-sys-typescale-title-large-letter-spacing: 0;
+
+$md-sys-typescale-title-medium-font-size: 16px;
+$md-sys-typescale-title-medium-line-height: 24px;
+$md-sys-typescale-title-medium-font-weight: 500;
+$md-sys-typescale-title-medium-letter-spacing: 0.15px;
+
+$md-sys-typescale-title-small-font-size: 14px;
+$md-sys-typescale-title-small-line-height: 20px;
+$md-sys-typescale-title-small-font-weight: 500;
+$md-sys-typescale-title-small-letter-spacing: 0.1px;
+
+// Label styles
+$md-sys-typescale-label-large-font-size: 14px;
+$md-sys-typescale-label-large-line-height: 20px;
+$md-sys-typescale-label-large-font-weight: 500;
+$md-sys-typescale-label-large-letter-spacing: 0.1px;
+
+$md-sys-typescale-label-medium-font-size: 12px;
+$md-sys-typescale-label-medium-line-height: 16px;
+$md-sys-typescale-label-medium-font-weight: 500;
+$md-sys-typescale-label-medium-letter-spacing: 0.5px;
+
+$md-sys-typescale-label-small-font-size: 11px;
+$md-sys-typescale-label-small-line-height: 16px;
+$md-sys-typescale-label-small-font-weight: 500;
+$md-sys-typescale-label-small-letter-spacing: 0.5px;
+
+// Body styles
+$md-sys-typescale-body-large-font-size: 16px;
+$md-sys-typescale-body-large-line-height: 24px;
+$md-sys-typescale-body-large-font-weight: 400;
+$md-sys-typescale-body-large-letter-spacing: 0.5px;
+
+$md-sys-typescale-body-medium-font-size: 14px;
+$md-sys-typescale-body-medium-line-height: 20px;
+$md-sys-typescale-body-medium-font-weight: 400;
+$md-sys-typescale-body-medium-letter-spacing: 0.25px;
+
+$md-sys-typescale-body-small-font-size: 12px;
+$md-sys-typescale-body-small-line-height: 16px;
+$md-sys-typescale-body-small-font-weight: 400;
+$md-sys-typescale-body-small-letter-spacing: 0.4px;
+
+// Typography mixins for easy application
+@mixin md-sys-typescale-display-large {
+  font-family: $md-sys-typescale-font-family-brand;
+  font-size: $md-sys-typescale-display-large-font-size;
+  line-height: $md-sys-typescale-display-large-line-height;
+  font-weight: $md-sys-typescale-display-large-font-weight;
+  letter-spacing: $md-sys-typescale-display-large-letter-spacing;
+}
+
+@mixin md-sys-typescale-display-medium {
+  font-family: $md-sys-typescale-font-family-brand;
+  font-size: $md-sys-typescale-display-medium-font-size;
+  line-height: $md-sys-typescale-display-medium-line-height;
+  font-weight: $md-sys-typescale-display-medium-font-weight;
+  letter-spacing: $md-sys-typescale-display-medium-letter-spacing;
+}
+
+@mixin md-sys-typescale-display-small {
+  font-family: $md-sys-typescale-font-family-brand;
+  font-size: $md-sys-typescale-display-small-font-size;
+  line-height: $md-sys-typescale-display-small-line-height;
+  font-weight: $md-sys-typescale-display-small-font-weight;
+  letter-spacing: $md-sys-typescale-display-small-letter-spacing;
+}
+
+@mixin md-sys-typescale-headline-large {
+  font-family: $md-sys-typescale-font-family-brand;
+  font-size: $md-sys-typescale-headline-large-font-size;
+  line-height: $md-sys-typescale-headline-large-line-height;
+  font-weight: $md-sys-typescale-headline-large-font-weight;
+  letter-spacing: $md-sys-typescale-headline-large-letter-spacing;
+}
+
+@mixin md-sys-typescale-headline-medium {
+  font-family: $md-sys-typescale-font-family-brand;
+  font-size: $md-sys-typescale-headline-medium-font-size;
+  line-height: $md-sys-typescale-headline-medium-line-height;
+  font-weight: $md-sys-typescale-headline-medium-font-weight;
+  letter-spacing: $md-sys-typescale-headline-medium-letter-spacing;
+}
+
+@mixin md-sys-typescale-headline-small {
+  font-family: $md-sys-typescale-font-family-brand;
+  font-size: $md-sys-typescale-headline-small-font-size;
+  line-height: $md-sys-typescale-headline-small-line-height;
+  font-weight: $md-sys-typescale-headline-small-font-weight;
+  letter-spacing: $md-sys-typescale-headline-small-letter-spacing;
+}
+
+@mixin md-sys-typescale-title-large {
+  font-family: $md-sys-typescale-font-family-brand;
+  font-size: $md-sys-typescale-title-large-font-size;
+  line-height: $md-sys-typescale-title-large-line-height;
+  font-weight: $md-sys-typescale-title-large-font-weight;
+  letter-spacing: $md-sys-typescale-title-large-letter-spacing;
+}
+
+@mixin md-sys-typescale-title-medium {
+  font-family: $md-sys-typescale-font-family-plain;
+  font-size: $md-sys-typescale-title-medium-font-size;
+  line-height: $md-sys-typescale-title-medium-line-height;
+  font-weight: $md-sys-typescale-title-medium-font-weight;
+  letter-spacing: $md-sys-typescale-title-medium-letter-spacing;
+}
+
+@mixin md-sys-typescale-title-small {
+  font-family: $md-sys-typescale-font-family-plain;
+  font-size: $md-sys-typescale-title-small-font-size;
+  line-height: $md-sys-typescale-title-small-line-height;
+  font-weight: $md-sys-typescale-title-small-font-weight;
+  letter-spacing: $md-sys-typescale-title-small-letter-spacing;
+}
+
+@mixin md-sys-typescale-label-large {
+  font-family: $md-sys-typescale-font-family-plain;
+  font-size: $md-sys-typescale-label-large-font-size;
+  line-height: $md-sys-typescale-label-large-line-height;
+  font-weight: $md-sys-typescale-label-large-font-weight;
+  letter-spacing: $md-sys-typescale-label-large-letter-spacing;
+}
+
+@mixin md-sys-typescale-label-medium {
+  font-family: $md-sys-typescale-font-family-plain;
+  font-size: $md-sys-typescale-label-medium-font-size;
+  line-height: $md-sys-typescale-label-medium-line-height;
+  font-weight: $md-sys-typescale-label-medium-font-weight;
+  letter-spacing: $md-sys-typescale-label-medium-letter-spacing;
+}
+
+@mixin md-sys-typescale-label-small {
+  font-family: $md-sys-typescale-font-family-plain;
+  font-size: $md-sys-typescale-label-small-font-size;
+  line-height: $md-sys-typescale-label-small-line-height;
+  font-weight: $md-sys-typescale-label-small-font-weight;
+  letter-spacing: $md-sys-typescale-label-small-letter-spacing;
+}
+
+@mixin md-sys-typescale-body-large {
+  font-family: $md-sys-typescale-font-family-plain;
+  font-size: $md-sys-typescale-body-large-font-size;
+  line-height: $md-sys-typescale-body-large-line-height;
+  font-weight: $md-sys-typescale-body-large-font-weight;
+  letter-spacing: $md-sys-typescale-body-large-letter-spacing;
+}
+
+@mixin md-sys-typescale-body-medium {
+  font-family: $md-sys-typescale-font-family-plain;
+  font-size: $md-sys-typescale-body-medium-font-size;
+  line-height: $md-sys-typescale-body-medium-line-height;
+  font-weight: $md-sys-typescale-body-medium-font-weight;
+  letter-spacing: $md-sys-typescale-body-medium-letter-spacing;
+}
+
+@mixin md-sys-typescale-body-small {
+  font-family: $md-sys-typescale-font-family-plain;
+  font-size: $md-sys-typescale-body-small-font-size;
+  line-height: $md-sys-typescale-body-small-line-height;
+  font-weight: $md-sys-typescale-body-small-font-weight;
+  letter-spacing: $md-sys-typescale-body-small-letter-spacing;
+}
+
+// CSS Custom Properties for use in CSS files
+:root {
+  // Font families
+  --md-sys-typescale-font-family-brand: #{$md-sys-typescale-font-family-brand};
+  --md-sys-typescale-font-family-plain: #{$md-sys-typescale-font-family-plain};
+  --md-sys-typescale-font-family-code: #{$md-sys-typescale-font-family-code};
+
+  // Display styles
+  --md-sys-typescale-display-large-font-size: #{$md-sys-typescale-display-large-font-size};
+  --md-sys-typescale-display-large-line-height: #{$md-sys-typescale-display-large-line-height};
+  --md-sys-typescale-display-large-font-weight: #{$md-sys-typescale-display-large-font-weight};
+  --md-sys-typescale-display-large-letter-spacing: #{$md-sys-typescale-display-large-letter-spacing};
+
+  --md-sys-typescale-display-medium-font-size: #{$md-sys-typescale-display-medium-font-size};
+  --md-sys-typescale-display-medium-line-height: #{$md-sys-typescale-display-medium-line-height};
+  --md-sys-typescale-display-medium-font-weight: #{$md-sys-typescale-display-medium-font-weight};
+  --md-sys-typescale-display-medium-letter-spacing: #{$md-sys-typescale-display-medium-letter-spacing};
+
+  --md-sys-typescale-display-small-font-size: #{$md-sys-typescale-display-small-font-size};
+  --md-sys-typescale-display-small-line-height: #{$md-sys-typescale-display-small-line-height};
+  --md-sys-typescale-display-small-font-weight: #{$md-sys-typescale-display-small-font-weight};
+  --md-sys-typescale-display-small-letter-spacing: #{$md-sys-typescale-display-small-letter-spacing};
+
+  // Headline styles
+  --md-sys-typescale-headline-large-font-size: #{$md-sys-typescale-headline-large-font-size};
+  --md-sys-typescale-headline-large-line-height: #{$md-sys-typescale-headline-large-line-height};
+  --md-sys-typescale-headline-large-font-weight: #{$md-sys-typescale-headline-large-font-weight};
+  --md-sys-typescale-headline-large-letter-spacing: #{$md-sys-typescale-headline-large-letter-spacing};
+
+  --md-sys-typescale-headline-medium-font-size: #{$md-sys-typescale-headline-medium-font-size};
+  --md-sys-typescale-headline-medium-line-height: #{$md-sys-typescale-headline-medium-line-height};
+  --md-sys-typescale-headline-medium-font-weight: #{$md-sys-typescale-headline-medium-font-weight};
+  --md-sys-typescale-headline-medium-letter-spacing: #{$md-sys-typescale-headline-medium-letter-spacing};
+
+  --md-sys-typescale-headline-small-font-size: #{$md-sys-typescale-headline-small-font-size};
+  --md-sys-typescale-headline-small-line-height: #{$md-sys-typescale-headline-small-line-height};
+  --md-sys-typescale-headline-small-font-weight: #{$md-sys-typescale-headline-small-font-weight};
+  --md-sys-typescale-headline-small-letter-spacing: #{$md-sys-typescale-headline-small-letter-spacing};
+
+  // Title styles
+  --md-sys-typescale-title-large-font-size: #{$md-sys-typescale-title-large-font-size};
+  --md-sys-typescale-title-large-line-height: #{$md-sys-typescale-title-large-line-height};
+  --md-sys-typescale-title-large-font-weight: #{$md-sys-typescale-title-large-font-weight};
+  --md-sys-typescale-title-large-letter-spacing: #{$md-sys-typescale-title-large-letter-spacing};
+
+  --md-sys-typescale-title-medium-font-size: #{$md-sys-typescale-title-medium-font-size};
+  --md-sys-typescale-title-medium-line-height: #{$md-sys-typescale-title-medium-line-height};
+  --md-sys-typescale-title-medium-font-weight: #{$md-sys-typescale-title-medium-font-weight};
+  --md-sys-typescale-title-medium-letter-spacing: #{$md-sys-typescale-title-medium-letter-spacing};
+
+  --md-sys-typescale-title-small-font-size: #{$md-sys-typescale-title-small-font-size};
+  --md-sys-typescale-title-small-line-height: #{$md-sys-typescale-title-small-line-height};
+  --md-sys-typescale-title-small-font-weight: #{$md-sys-typescale-title-small-font-weight};
+  --md-sys-typescale-title-small-letter-spacing: #{$md-sys-typescale-title-small-letter-spacing};
+
+  // Label styles
+  --md-sys-typescale-label-large-font-size: #{$md-sys-typescale-label-large-font-size};
+  --md-sys-typescale-label-large-line-height: #{$md-sys-typescale-label-large-line-height};
+  --md-sys-typescale-label-large-font-weight: #{$md-sys-typescale-label-large-font-weight};
+  --md-sys-typescale-label-large-letter-spacing: #{$md-sys-typescale-label-large-letter-spacing};
+
+  --md-sys-typescale-label-medium-font-size: #{$md-sys-typescale-label-medium-font-size};
+  --md-sys-typescale-label-medium-line-height: #{$md-sys-typescale-label-medium-line-height};
+  --md-sys-typescale-label-medium-font-weight: #{$md-sys-typescale-label-medium-font-weight};
+  --md-sys-typescale-label-medium-letter-spacing: #{$md-sys-typescale-label-medium-letter-spacing};
+
+  --md-sys-typescale-label-small-font-size: #{$md-sys-typescale-label-small-font-size};
+  --md-sys-typescale-label-small-line-height: #{$md-sys-typescale-label-small-line-height};
+  --md-sys-typescale-label-small-font-weight: #{$md-sys-typescale-label-small-font-weight};
+  --md-sys-typescale-label-small-letter-spacing: #{$md-sys-typescale-label-small-letter-spacing};
+
+  // Body styles
+  --md-sys-typescale-body-large-font-size: #{$md-sys-typescale-body-large-font-size};
+  --md-sys-typescale-body-large-line-height: #{$md-sys-typescale-body-large-line-height};
+  --md-sys-typescale-body-large-font-weight: #{$md-sys-typescale-body-large-font-weight};
+  --md-sys-typescale-body-large-letter-spacing: #{$md-sys-typescale-body-large-letter-spacing};
+
+  --md-sys-typescale-body-medium-font-size: #{$md-sys-typescale-body-medium-font-size};
+  --md-sys-typescale-body-medium-line-height: #{$md-sys-typescale-body-medium-line-height};
+  --md-sys-typescale-body-medium-font-weight: #{$md-sys-typescale-body-medium-font-weight};
+  --md-sys-typescale-body-medium-letter-spacing: #{$md-sys-typescale-body-medium-letter-spacing};
+
+  --md-sys-typescale-body-small-font-size: #{$md-sys-typescale-body-small-font-size};
+  --md-sys-typescale-body-small-line-height: #{$md-sys-typescale-body-small-line-height};
+  --md-sys-typescale-body-small-font-weight: #{$md-sys-typescale-body-small-font-weight};
+  --md-sys-typescale-body-small-letter-spacing: #{$md-sys-typescale-body-small-letter-spacing};
+}
+
+// Utility classes for typography
+.md-typescale-display-large {
+  @include md-sys-typescale-display-large;
+}
+
+.md-typescale-display-medium {
+  @include md-sys-typescale-display-medium;
+}
+
+.md-typescale-display-small {
+  @include md-sys-typescale-display-small;
+}
+
+.md-typescale-headline-large {
+  @include md-sys-typescale-headline-large;
+}
+
+.md-typescale-headline-medium {
+  @include md-sys-typescale-headline-medium;
+}
+
+.md-typescale-headline-small {
+  @include md-sys-typescale-headline-small;
+}
+
+.md-typescale-title-large {
+  @include md-sys-typescale-title-large;
+}
+
+.md-typescale-title-medium {
+  @include md-sys-typescale-title-medium;
+}
+
+.md-typescale-title-small {
+  @include md-sys-typescale-title-small;
+}
+
+.md-typescale-label-large {
+  @include md-sys-typescale-label-large;
+}
+
+.md-typescale-label-medium {
+  @include md-sys-typescale-label-medium;
+}
+
+.md-typescale-label-small {
+  @include md-sys-typescale-label-small;
+}
+
+.md-typescale-body-large {
+  @include md-sys-typescale-body-large;
+}
+
+.md-typescale-body-medium {
+  @include md-sys-typescale-body-medium;
+}
+
+.md-typescale-body-small {
+  @include md-sys-typescale-body-small;
+}
+
+// Code typography
+.md-typescale-code {
+  font-family: $md-sys-typescale-font-family-code;
+  font-size: $md-sys-typescale-body-small-font-size;
+  line-height: $md-sys-typescale-body-small-line-height;
+  font-weight: 400;
+  letter-spacing: 0;
+}

@@ -1,0 +1,304 @@
+// Material Design 3 State Layer System
+// Implements proper state layers with correct opacities for interactive elements
+// Based on Material Design 3 specifications
+
+/* ===== STATE LAYER TOKENS ===== */
+:root {
+  /* Material Design 3 state layer opacities */
+  --md-sys-state-hover-opacity: 0.08;
+  --md-sys-state-focus-opacity: 0.10;
+  --md-sys-state-pressed-opacity: 0.10;
+  --md-sys-state-dragged-opacity: 0.15;
+  --md-sys-state-selected-opacity: 0.11;
+
+  /* Focus ring specifications */
+  --md-sys-state-focus-ring-width: 2px;
+  --md-sys-state-focus-ring-offset: 2px;
+
+  /* Transition durations for state changes */
+  --md-sys-state-transition-duration: var(--md-sys-motion-duration-short);
+  --md-sys-state-transition-easing: var(--md-sys-motion-easing-standard);
+}
+
+/* ===== BASE STATE LAYER MIXIN ===== */
+@mixin md-state-layer-base {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-sys-state-transition-duration) var(--md-sys-state-transition-easing);
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+/* ===== STATE LAYER COLOR MIXINS ===== */
+@mixin md-state-layer-color($color) {
+  &::before {
+    background-color: #{$color};
+  }
+}
+
+/* ===== INTERACTIVE STATE MIXINS ===== */
+@mixin md-state-hover($color: currentColor) {
+  &:hover::before {
+    background-color: #{$color};
+    opacity: var(--md-sys-state-hover-opacity);
+  }
+}
+
+@mixin md-state-focus($color: currentColor) {
+  &:focus-visible::before {
+    background-color: #{$color};
+    opacity: var(--md-sys-state-focus-opacity);
+  }
+}
+
+@mixin md-state-pressed($color: currentColor) {
+  &:active::before {
+    background-color: #{$color};
+    opacity: var(--md-sys-state-pressed-opacity);
+  }
+}
+
+@mixin md-state-dragged($color: currentColor) {
+  &[data-dragged="true"]::before,
+  &.dragged::before {
+    background-color: #{$color};
+    opacity: var(--md-sys-state-dragged-opacity);
+  }
+}
+
+@mixin md-state-selected($color: currentColor) {
+  &[data-selected="true"]::before,
+  &.selected::before,
+  &.active::before {
+    background-color: #{$color};
+    opacity: var(--md-sys-state-selected-opacity);
+  }
+}
+
+/* ===== COMPLETE STATE LAYER MIXIN ===== */
+@mixin md-state-layer($color: currentColor, $hover: true, $focus: true, $pressed: true) {
+  @include md-state-layer-base;
+  @include md-state-layer-color($color);
+
+  @if $hover {
+    @include md-state-hover($color);
+  }
+
+  @if $focus {
+    @include md-state-focus($color);
+  }
+
+  @if $pressed {
+    @include md-state-pressed($color);
+  }
+}
+
+/* ===== MATERIAL DESIGN 3 FOCUS RING ===== */
+@mixin md-focus-ring($color: var(--md-sys-color-outline)) {
+  &:focus-visible {
+    outline: var(--md-sys-state-focus-ring-width) solid #{$color};
+    outline-offset: var(--md-sys-state-focus-ring-offset);
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Base state layer class */
+.md-state-layer {
+  @include md-state-layer-base;
+}
+
+/* Color-specific state layers */
+.md-state-layer-primary {
+  @include md-state-layer(var(--md-sys-color-primary));
+}
+
+.md-state-layer-on-surface {
+  @include md-state-layer(var(--md-sys-color-on-surface));
+}
+
+.md-state-layer-on-surface-variant {
+  @include md-state-layer(var(--md-sys-color-on-surface-variant));
+}
+
+.md-state-layer-on-primary-container {
+  @include md-state-layer(var(--md-sys-color-on-primary-container));
+}
+
+.md-state-layer-secondary {
+  @include md-state-layer(var(--md-sys-color-secondary));
+}
+
+.md-state-layer-tertiary {
+  @include md-state-layer(var(--md-sys-color-tertiary));
+}
+
+/* Interactive state utilities */
+.md-state-hover {
+  @include md-state-layer-base;
+  @include md-state-hover;
+}
+
+.md-state-focus {
+  @include md-state-layer-base;
+  @include md-state-focus;
+}
+
+.md-state-pressed {
+  @include md-state-layer-base;
+  @include md-state-pressed;
+}
+
+.md-state-selected {
+  @include md-state-layer-base;
+  @include md-state-selected;
+}
+
+/* Focus ring utilities */
+.md-focus-ring {
+  @include md-focus-ring;
+}
+
+.md-focus-ring-primary {
+  @include md-focus-ring(var(--md-sys-color-primary));
+}
+
+.md-focus-ring-error {
+  @include md-focus-ring(var(--md-sys-color-error));
+}
+
+/* ===== COMPONENT-SPECIFIC STATE LAYER PATTERNS ===== */
+
+/* Button state layers */
+.md-button-state-layer {
+  @include md-state-layer(var(--md-sys-color-on-surface));
+
+  &.md-button-primary {
+    @include md-state-layer(var(--md-sys-color-on-primary));
+  }
+
+  &.md-button-secondary {
+    @include md-state-layer(var(--md-sys-color-on-secondary));
+  }
+
+  &.md-button-tertiary {
+    @include md-state-layer(var(--md-sys-color-on-tertiary));
+  }
+}
+
+/* Card state layers */
+.md-card-state-layer {
+  @include md-state-layer(var(--md-sys-color-on-surface));
+
+  &.md-card-filled {
+    @include md-state-layer(var(--md-sys-color-on-surface-variant));
+  }
+
+  &.md-card-elevated {
+    @include md-state-layer(var(--md-sys-color-on-surface));
+  }
+
+  &.md-card-outlined {
+    @include md-state-layer(var(--md-sys-color-on-surface));
+  }
+}
+
+/* List item state layers */
+.md-list-item-state-layer {
+  @include md-state-layer(var(--md-sys-color-on-surface));
+
+  &.md-list-item-selected {
+    @include md-state-selected(var(--md-sys-color-on-secondary-container));
+    background-color: var(--md-sys-color-secondary-container);
+  }
+}
+
+/* Navigation state layers */
+.md-nav-state-layer {
+  @include md-state-layer(var(--md-sys-color-on-surface));
+
+  &.md-nav-selected {
+    @include md-state-selected(var(--md-sys-color-on-secondary-container));
+    background-color: var(--md-sys-color-secondary-container);
+  }
+}
+
+/* Icon button state layers */
+.md-icon-button-state-layer {
+  @include md-state-layer(var(--md-sys-color-on-surface-variant));
+  border-radius: 50%;
+
+  &.md-icon-button-primary {
+    @include md-state-layer(var(--md-sys-color-primary));
+  }
+
+  &.md-icon-button-secondary {
+    @include md-state-layer(var(--md-sys-color-secondary));
+  }
+}
+
+/* Chip state layers */
+.md-chip-state-layer {
+  @include md-state-layer(var(--md-sys-color-on-surface));
+
+  &.md-chip-assist {
+    @include md-state-layer(var(--md-sys-color-on-surface));
+  }
+
+  &.md-chip-filter {
+    @include md-state-layer(var(--md-sys-color-on-surface-variant));
+
+    &.md-chip-selected {
+      @include md-state-selected(var(--md-sys-color-on-secondary-container));
+      background-color: var(--md-sys-color-secondary-container);
+    }
+  }
+
+  &.md-chip-input {
+    @include md-state-layer(var(--md-sys-color-on-surface-variant));
+  }
+
+  &.md-chip-suggestion {
+    @include md-state-layer(var(--md-sys-color-on-surface));
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .md-state-layer::before,
+  [class*="md-state-"]::before {
+    transition: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --md-sys-state-hover-opacity: 0.12;
+    --md-sys-state-focus-opacity: 0.15;
+    --md-sys-state-pressed-opacity: 0.15;
+    --md-sys-state-focus-ring-width: 3px;
+  }
+}
+
+/* Dark mode specific adjustments */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-sys-state-hover-opacity: 0.08;
+    --md-sys-state-focus-opacity: 0.10;
+    --md-sys-state-pressed-opacity: 0.10;
+  }
+}

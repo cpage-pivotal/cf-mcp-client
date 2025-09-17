@@ -1,21 +1,31 @@
 /* mcp-servers-panel.component.css */
+
+/* Screen reader only utility class */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 .mcp-servers-container {
   position: relative;
 }
 
 .toggle-button {
-  position: fixed;
-  top: 168px;
-  right: 16px;
-  z-index: 1000;
-  background-color: var(--mat-sys-primary-container);
+  display: none; /* Hidden - replaced by navigation rail */
 }
 
 .sidenav-container {
-  height: 100vh;
+  height: calc(100vh - var(--md-toolbar-height));
   width: 100vw;
   position: fixed;
-  top: 0;
+  top: var(--md-toolbar-height);
   left: 0;
   bottom: 0;
   right: 0;
@@ -27,14 +37,31 @@
 /* Enable pointer events on the sidenav itself */
 mat-sidenav {
   pointer-events: auto;
-  width: 320px;
-  padding: 16px;
-  box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
+  width: var(--md-side-panel-width);
+  padding: 0; /* Remove default padding */
+  box-shadow: var(--md-sys-elevation-3dp);
+  margin-right: var(--md-nav-rail-width);
+  background-color: var(--md-sys-color-surface);
+}
+
+/* Add padding to sidenav content to align with navigation rail */
+mat-sidenav .sidenav-header,
+mat-sidenav .status-container,
+mat-sidenav .mcp-servers-list,
+mat-sidenav .empty-state {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+mat-sidenav .sidenav-header {
+  padding-top: 16px;
 }
 
 /* Keep backdrop clickable */
 ::ng-deep .mat-drawer-backdrop.mat-drawer-shown {
   pointer-events: auto;
+  background-color: rgba(0, 0, 0, 0.32) !important;
+  opacity: 1 !important;
 }
 
 .sidenav-header {
@@ -43,19 +70,20 @@ mat-sidenav {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .sidenav-header h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-large-font-size);
+  font-weight: var(--md-sys-typescale-title-large-font-weight);
+  color: var(--md-sys-color-on-surface);
 }
 
 .status-container {
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .status-row {
@@ -66,36 +94,105 @@ mat-sidenav {
 
 .status-label {
   flex: 0 0 100px;
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+  font-size: var(--md-sys-typescale-label-large-font-size);
+  color: var(--md-sys-color-on-surface);
 }
 
-.status-indicator {
+/* Material Design 3 Status Chips */
+mat-chip-set {
+  margin: 0;
   display: flex;
   align-items: center;
 }
 
-.status-indicator mat-icon {
-  margin-right: 8px;
+mat-chip {
+  font-size: var(--md-sys-typescale-label-medium-font-size);
+  font-weight: var(--md-sys-typescale-label-medium-font-weight);
+  height: 32px;
+  border-radius: 8px;
+  transition: var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+/* Material Design 3 Chip States */
+mat-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+  pointer-events: none;
+}
+
+mat-chip:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+mat-chip:focus::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+mat-chip:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* Status Chip Variants */
+mat-chip.status-success {
+  background-color: var(--md-sys-color-success-container);
+  color: var(--md-sys-color-on-success-container);
+  border: 1px solid var(--md-sys-color-success);
+}
+
+mat-chip.status-success mat-icon {
+  color: var(--md-sys-color-success);
+}
+
+mat-chip.status-error {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border: 1px solid var(--md-sys-color-error);
+}
+
+mat-chip.status-error mat-icon {
+  color: var(--md-sys-color-error);
+}
+
+mat-chip.status-warning {
+  background-color: var(--md-sys-color-warning-container);
+  color: var(--md-sys-color-on-warning-container);
+  border: 1px solid var(--md-sys-color-warning);
+}
+
+mat-chip.status-warning mat-icon {
+  color: var(--md-sys-color-warning);
+}
+
+/* Chip avatar icons */
+mat-chip mat-icon[matChipAvatar] {
   font-size: 18px;
   height: 18px;
   width: 18px;
+  margin-right: 8px;
 }
 
+/* Legacy status styles for individual buttons and icons */
 .status-green {
-  color: #4CAF50;
+  color: var(--md-sys-color-server-healthy);
 }
 
 .status-red {
-  color: #F44336;
+  color: var(--md-sys-color-server-unhealthy);
 }
 
 .status-orange {
-  color: #FF9800;
-}
-
-.status-text {
-  font-size: 14px;
+  color: var(--md-sys-color-server-warning);
 }
 
 .mcp-servers-list {
@@ -105,8 +202,9 @@ mat-sidenav {
 .mcp-servers-list h3 {
   margin-top: 0;
   margin-bottom: 16px;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
+  font-weight: var(--md-sys-typescale-title-medium-font-weight);
+  color: var(--md-sys-color-on-surface);
 }
 
 /* Server cards container */
@@ -116,17 +214,52 @@ mat-sidenav {
   gap: 12px;
 }
 
-/* Individual server card */
+/* ===== SERVER CARD STATE LAYERS ===== */
 .server-card {
+  position: relative;
   padding: 0;
   border-radius: 8px;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.server-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: var(--md-sys-color-on-surface);
+  opacity: 0;
+  transition: opacity var(--md-sys-state-transition-duration) var(--md-sys-state-transition-easing);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .server-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--md-sys-elevation-3dp);
   transform: translateY(-1px);
+}
+
+.server-card:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.server-card:focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.server-card:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-outline);
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+.server-card:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
 }
 
 .server-card mat-card-content {
@@ -152,9 +285,9 @@ mat-sidenav {
 }
 
 .server-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--mat-sys-on-surface);
+  font-size: var(--md-sys-typescale-label-large-font-size);
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+  color: var(--md-sys-color-on-surface);
   margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -162,8 +295,8 @@ mat-sidenav {
 }
 
 .server-tools {
-  font-size: 12px;
-  color: var(--mat-sys-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-small-font-size);
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 /* Protocol section */
@@ -171,11 +304,11 @@ mat-sidenav {
   display: flex;
   align-items: center;
   padding-top: 8px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .server-protocol mat-chip {
-  font-size: 11px;
+  font-size: var(--md-sys-typescale-label-small-font-size);
   height: 24px;
   line-height: 24px;
   padding: 0 10px;
@@ -188,12 +321,12 @@ mat-sidenav {
 
 /* Tools icon */
 .tools-icon {
-  font-size: 14px !important;
+  font-size: var(--md-sys-typescale-body-medium-font-size) !important;
   width: 14px !important;
   height: 14px !important;
   margin-right: 4px;
   vertical-align: middle;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 /* Protocol-specific styles */
@@ -213,8 +346,13 @@ mat-sidenav {
   background-color: rgba(244, 67, 54, 0.04);
 }
 
+/* Unhealthy server card specific state layers */
+.server-card.server-unhealthy::before {
+  background-color: var(--md-sys-color-error);
+}
+
 .server-card.server-unhealthy:hover {
-  box-shadow: 0 1px 4px rgba(244, 67, 54, 0.2);
+  box-shadow: var(--md-sys-elevation-1dp);
 }
 
 /* Empty state */
@@ -229,7 +367,7 @@ mat-sidenav {
 }
 
 .empty-state .empty-icon {
-  font-size: 48px;
+  font-size: var(--md-sys-typescale-display-medium-font-size);
   width: 48px;
   height: 48px;
   color: rgba(0, 0, 0, 0.3);
@@ -237,7 +375,7 @@ mat-sidenav {
 
 .empty-state p {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--md-sys-typescale-body-medium-font-size);
 }
 
 /* Hide the content area without disabling its functions */
@@ -245,18 +383,25 @@ mat-sidenav-content {
   background: transparent;
 }
 
-/* Responsive adjustments for smaller screens */
-@media (max-width: 480px) {
+/* Responsive adjustments using adaptive tokens */
+@media (max-width: 599px) {
+  /* Compact layout - mobile with bottom navigation */
+  .sidenav-container {
+    height: calc(100vh - var(--md-toolbar-height) - var(--md-bottom-nav-height));
+    bottom: var(--md-bottom-nav-height);
+  }
+
   mat-sidenav {
-    width: 280px;
+    margin-right: 0; /* No navigation rail on mobile */
+    width: 100vw; /* Full width modal on mobile */
   }
 
   .server-name {
-    font-size: 13px;
+    font-size: var(--md-sys-typescale-body-small-font-size);
   }
 
   .server-tools {
-    font-size: 11px;
+    font-size: var(--md-sys-typescale-label-small-font-size);
   }
 }
 

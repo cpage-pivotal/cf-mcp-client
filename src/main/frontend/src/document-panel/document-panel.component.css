@@ -1,20 +1,29 @@
+/* Screen reader only utility class */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 .document-container {
   position: relative;
 }
 
 .toggle-button {
-  position: fixed;
-  top: 120px;
-  right: 16px;
-  z-index: 1000;
-  background-color: var(--mat-sys-primary-container);
+  display: none; /* Hidden - replaced by navigation rail */
 }
 
 .sidenav-container {
-  height: 100vh;
+  height: calc(100vh - var(--md-toolbar-height));
   width: 100vw;
   position: fixed;
-  top: 0;
+  top: var(--md-toolbar-height);
   left: 0;
   bottom: 0;
   right: 0;
@@ -26,9 +35,25 @@
 /* Enable pointer events on the sidenav itself */
 mat-sidenav {
   pointer-events: auto;
-  width: 350px;
-  padding: 16px;
-  box-shadow: -3px 0 5px rgba(0, 0, 0, 0.1);
+  width: var(--md-side-panel-width);
+  padding: 0; /* Remove default padding */
+  box-shadow: var(--md-sys-elevation-3dp);
+  margin-right: var(--md-nav-rail-width);
+  background-color: var(--md-sys-color-surface);
+}
+
+/* Add padding to sidenav content to align with navigation rail */
+mat-sidenav .sidenav-header,
+mat-sidenav .upload-container,
+mat-sidenav .documents-list,
+mat-sidenav .clear-files-container,
+mat-sidenav .status-container {
+  padding-left: var(--md-spacing-4);
+  padding-right: var(--md-spacing-4);
+}
+
+mat-sidenav .sidenav-header {
+  padding-top: var(--md-spacing-4);
 }
 
 /* Keep backdrop clickable */
@@ -40,63 +65,253 @@ mat-sidenav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  margin-bottom: var(--md-spacing-4);
+  padding-bottom: var(--md-spacing-2);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .sidenav-header h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-large-font-size);
+  font-weight: var(--md-sys-typescale-title-large-font-weight);
+  color: var(--md-sys-color-on-surface);
 }
 
+/* Material Design Drag & Drop Upload Area */
 .upload-container {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  margin-bottom: var(--md-spacing-4);
+  padding-bottom: var(--md-spacing-4);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
-/* Progress indicator styles */
+.drop-zone {
+  position: relative;
+  border: 2px dashed var(--md-sys-color-outline);
+  border-radius: 12px;
+  padding: var(--md-spacing-6);
+  text-align: center;
+  transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized);
+  background-color: var(--md-sys-color-surface-container-lowest);
+  cursor: pointer;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.drop-zone:hover:not(.disabled) {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-surface-container-low);
+  transform: translateY(-1px);
+  box-shadow: var(--md-sys-elevation-1dp);
+}
+
+.drop-zone.drag-over {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary-container);
+  transform: scale(1.02);
+  box-shadow: var(--md-sys-elevation-3dp);
+}
+
+.drop-zone.disabled {
+  border-color: var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface-variant);
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--md-spacing-3);
+  flex: 1;
+  justify-content: center;
+}
+
+.drop-zone-icon {
+  font-size: var(--md-sys-typescale-display-medium-font-size);
+  width: 48px;
+  height: 48px;
+  color: var(--md-sys-color-primary);
+  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-emphasized);
+}
+
+.drop-zone.drag-over .drop-zone-icon {
+  color: var(--md-sys-color-on-primary-container);
+  transform: scale(1.1);
+}
+
+.drop-zone-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-spacing-1);
+}
+
+.drop-zone-title {
+  font-size: var(--md-sys-typescale-title-medium-font-size);
+  font-weight: var(--md-sys-typescale-title-medium-font-weight);
+  color: var(--md-sys-color-on-surface);
+}
+
+.drop-zone.drag-over .drop-zone-title {
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.drop-zone-subtitle {
+  font-size: var(--md-sys-typescale-body-medium-font-size);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.drop-zone.drag-over .drop-zone-subtitle {
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.browse-button {
+  margin-top: var(--md-spacing-2);
+  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-emphasized);
+}
+
+.browse-button .mat-icon {
+  margin-right: var(--md-spacing-2);
+}
+
+.supported-formats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--md-spacing-1);
+  font-size: var(--md-sys-typescale-body-small-font-size);
+  color: var(--md-sys-color-on-surface-variant);
+  margin-top: auto;
+  padding-top: var(--md-spacing-2);
+}
+
+.format-icon {
+  font-size: var(--md-sys-typescale-body-large-font-size);
+  width: 16px;
+  height: 16px;
+  color: var(--md-sys-color-error);
+}
+
+/* Enhanced Progress indicator styles */
 .upload-progress-container {
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.03);
+  margin-top: var(--md-spacing-4);
+  padding: var(--md-spacing-4);
+  border-radius: 12px;
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.upload-progress-header {
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-3);
+  margin-bottom: var(--md-spacing-3);
+}
+
+.upload-icon {
+  font-size: var(--md-sys-typescale-headline-small-font-size);
+  width: 24px;
+  height: 24px;
+  color: var(--md-sys-color-primary);
+}
+
+.upload-info {
+  flex: 1;
 }
 
 .file-name {
-  font-size: 14px;
-  margin-bottom: 8px;
+  font-size: var(--md-sys-typescale-label-large-font-size);
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+  margin-bottom: var(--md-spacing-1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--md-sys-color-on-surface);
+}
+
+.upload-status {
+  font-size: var(--md-sys-typescale-body-small-font-size);
+  color: var(--md-sys-color-primary);
+  font-weight: 500;
+}
+
+.upload-progress-bar {
+  margin-bottom: var(--md-spacing-2);
+  border-radius: 2px;
+  height: 4px;
 }
 
 .progress-percentage {
   text-align: right;
-  font-size: 12px;
-  margin-top: 4px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.documents-list {
-  overflow-y: auto;
-  max-height: calc(100vh - 200px);
-}
-
-.documents-list h3 {
-  margin-top: 0;
-  margin-bottom: 16px;
-  font-size: 16px;
+  font-size: var(--md-sys-typescale-body-small-font-size);
+  color: var(--md-sys-color-on-surface-variant);
   font-weight: 500;
 }
 
+/* Documents List */
+.documents-list {
+  overflow-y: auto;
+  max-height: calc(100vh - 400px);
+}
+
+.documents-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--md-spacing-3);
+}
+
+.documents-list h3 {
+  margin: 0;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
+  font-weight: var(--md-sys-typescale-title-medium-font-weight);
+  color: var(--md-sys-color-on-surface);
+}
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-1);
+}
+
+/* Material Design 3 List Container */
+.document-list-container {
+  padding: 0;
+  margin: 0;
+  background-color: var(--md-sys-color-surface);
+}
+
+/* Enhanced Empty State */
 .empty-state {
-  color: rgba(0, 0, 0, 0.6);
-  font-style: italic;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: 16px;
+  padding: var(--md-spacing-8) var(--md-spacing-4);
+  gap: var(--md-spacing-2);
+}
+
+.empty-state-icon {
+  font-size: var(--md-sys-typescale-display-medium-font-size);
+  width: 48px;
+  height: 48px;
+  color: var(--md-sys-color-outline);
+  margin-bottom: var(--md-spacing-2);
+}
+
+.empty-state-text {
+  font-size: var(--md-sys-typescale-title-medium-font-size);
+  font-weight: var(--md-sys-typescale-title-medium-font-weight);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.empty-state-subtitle {
+  font-size: var(--md-sys-typescale-body-medium-font-size);
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.7;
 }
 
 /* Hide the content area without disabling its functions */
@@ -105,66 +320,489 @@ mat-sidenav-content {
 }
 
 .clear-files-container {
-  margin-top: 16px;
+  margin-top: var(--md-spacing-4);
   text-align: center;
-  padding-bottom: 16px;
+  padding-bottom: var(--md-spacing-4);
 }
 
+/* Status Container */
 .status-container {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  margin-bottom: var(--md-spacing-4);
+  padding-bottom: var(--md-spacing-4);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .status-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: var(--md-spacing-2);
 }
 
 .status-label {
   flex: 0 0 100px;
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+  font-size: var(--md-sys-typescale-label-large-font-size);
+  color: var(--md-sys-color-on-surface);
 }
 
-.status-indicator {
+/* Material Design 3 Status Chips */
+mat-chip-set {
+  margin: 0;
   display: flex;
   align-items: center;
 }
 
-.status-indicator mat-icon {
-  margin-right: 8px;
+mat-chip {
+  font-size: var(--md-sys-typescale-label-medium-font-size);
+  font-weight: var(--md-sys-typescale-label-medium-font-weight);
+  height: 32px;
+  border-radius: 8px;
+  transition: var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+/* Material Design 3 Chip States */
+mat-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+  pointer-events: none;
+}
+
+mat-chip:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+mat-chip:focus::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+mat-chip:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* Status Chip Variants */
+mat-chip.status-success {
+  background-color: var(--md-sys-color-success-container);
+  color: var(--md-sys-color-on-success-container);
+  border: 1px solid var(--md-sys-color-success);
+}
+
+mat-chip.status-success mat-icon {
+  color: var(--md-sys-color-success);
+}
+
+mat-chip.status-error {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border: 1px solid var(--md-sys-color-error);
+}
+
+mat-chip.status-error mat-icon {
+  color: var(--md-sys-color-error);
+}
+
+/* Chip avatar icons */
+mat-chip mat-icon[matChipAvatar] {
   font-size: 18px;
   height: 18px;
   width: 18px;
+  margin-right: 8px;
 }
 
-.status-green {
-  color: #4CAF50;
-}
-
-.status-red {
-  color: #F44336;
-}
-
-.status-text {
-  font-size: 14px;
-}
-
+/* ===== MATERIAL DESIGN 3 DOCUMENT ITEM ===== */
 .document-item {
+  position: relative;
+  border-radius: 12px;
+  margin-bottom: var(--md-spacing-1);
+  overflow: visible !important; /* Force override Angular Material overflow */
+  cursor: pointer;
+  min-height: 80px !important; /* Force override Angular Material height */
+  height: auto !important; /* Allow height to grow with content */
+  padding: var(--md-spacing-3) var(--md-spacing-4) !important;
+  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y; /* Allow vertical scrolling but enable horizontal pan for swipe */
+}
+
+/* Override Angular Material's internal list item styles */
+.document-item.mat-mdc-list-item {
+  height: auto !important;
+  min-height: 80px !important;
+}
+
+.document-item .mat-mdc-list-item-content {
+  height: auto !important;
+  min-height: 80px !important;
+  overflow: visible !important;
+  padding: var(--md-spacing-3) var(--md-spacing-4) !important;
+}
+
+/* State layer implementation */
+.document-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: var(--md-sys-color-on-surface);
+  opacity: 0;
+  transition: opacity var(--md-sys-state-transition-duration) var(--md-sys-state-transition-easing);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.document-item:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.document-item:focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.document-item:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-primary);
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+.document-item:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* Selected state */
+.document-item.selected {
+  background-color: var(--md-sys-color-primary-container);
+}
+
+.document-item.selected::before {
+  background-color: var(--md-sys-color-on-primary-container);
+}
+
+.document-item.selected:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+/* Swiping state */
+.document-item.swiping {
+  transition: transform var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+/* Document content styling */
+.document-title-container {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin-bottom: var(--md-spacing-1) !important;
+  min-height: var(--md-sys-typescale-body-large-line-height) !important;
+}
+
+.document-title {
+  font-size: var(--md-sys-typescale-body-large-font-size) !important;
+  font-weight: var(--md-sys-typescale-body-large-font-weight) !important;
+  color: var(--md-sys-color-on-surface) !important;
+  line-height: var(--md-sys-typescale-body-large-line-height) !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.document-item.selected .document-title {
+  color: var(--md-sys-color-on-primary-container) !important;
+}
+
+.document-subtitle {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--md-spacing-2) !important;
+  font-size: var(--md-sys-typescale-body-medium-font-size) !important;
+  color: var(--md-sys-color-on-surface-variant) !important;
+  line-height: var(--md-sys-typescale-body-medium-line-height) !important;
+  margin-top: var(--md-spacing-1) !important;
+  padding-right: 48px !important; /* Add padding to avoid overlap with delete button */
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* Override Angular Material's list item line styling */
+.document-item .mat-mdc-list-item-line {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  height: auto !important;
+}
+
+.document-item.selected .document-subtitle {
+  color: var(--md-sys-color-on-primary-container) !important;
+}
+
+.document-size {
+  font-weight: 500;
+}
+
+.document-date {
   position: relative;
 }
 
+.document-date::before {
+  content: '•';
+  margin-right: var(--md-spacing-1);
+  color: var(--md-sys-color-outline);
+}
+
+.document-item.selected .document-date::before {
+  color: var(--md-sys-color-on-primary-container);
+}
+
+/* Leading icon styling */
+.document-item mat-icon[matListItemIcon] {
+  color: var(--md-sys-color-on-surface-variant) !important;
+  font-size: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin-right: var(--md-spacing-4) !important;
+}
+
+.document-item.selected mat-icon[matListItemIcon] {
+  color: var(--md-sys-color-on-primary-container) !important;
+}
+
+.selected-icon {
+  color: var(--md-sys-color-primary) !important;
+}
+
+.document-item.selected .selected-icon {
+  color: var(--md-sys-color-on-primary-container) !important;
+}
+
+/* Delete button in title container */
+.document-title-container .delete-button {
+  flex-shrink: 0;
+  margin-left: var(--md-spacing-2);
+}
+
+/* ===== DELETE BUTTON STATE LAYERS ===== */
 .delete-button {
-  color: rgba(0, 0, 0, 0.54);
-  transition: color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+  color: var(--md-sys-color-on-surface-variant);
+  transition: color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+  cursor: pointer;
+  z-index: 2; /* Ensure it's above state layers */
+}
+
+.delete-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: var(--md-sys-color-error);
+  opacity: 0;
+  transition: opacity var(--md-sys-state-transition-duration) var(--md-sys-state-transition-easing);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .delete-button:hover {
-  color: #f44336;
+  color: var(--md-sys-color-error);
+}
+
+.delete-button:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.delete-button:focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.delete-button:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-error);
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+.delete-button:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
 }
 
 .document-item:hover .delete-button {
-  color: rgba(0, 0, 0, 0.87);
+  color: var(--md-sys-color-on-surface);
+}
+
+.document-item.selected .delete-button {
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.document-item.selected .delete-button:hover {
+  color: var(--md-sys-color-error);
+}
+
+/* ===== MOBILE SWIPE-TO-DELETE ===== */
+.swipe-delete-indicator {
+  position: absolute;
+  right: var(--md-spacing-4);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-2);
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  padding: var(--md-spacing-2) var(--md-spacing-3);
+  border-radius: 8px;
+  font-size: var(--md-sys-typescale-label-small-font-size);
+  font-weight: var(--md-sys-typescale-label-small-font-weight);
+  z-index: 3;
+  opacity: 0;
+  animation: swipe-indicator-appear var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-emphasized) forwards;
+}
+
+@keyframes swipe-indicator-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+.swipe-delete-indicator mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+@media (prefers-reduced-motion: reduce) {
+  .document-item {
+    transition: none;
+  }
+
+  .document-item.swiping {
+    transition: none;
+  }
+
+  .swipe-delete-indicator {
+    animation: none;
+    opacity: 1;
+  }
+
+  .document-item:nth-child(1)::after {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .document-item {
+    border: 1px solid currentColor;
+  }
+
+  .document-item.selected {
+    border: 2px solid currentColor;
+  }
+
+  .swipe-delete-indicator {
+    border: 1px solid currentColor;
+  }
+}
+
+/* Material Motion Variables - now using global motion system from _motion.scss */
+
+/* Responsive adjustments using adaptive tokens */
+@media (max-width: 599px) {
+  /* Compact layout - mobile with bottom navigation */
+  .sidenav-container {
+    height: calc(100vh - var(--md-toolbar-height) - var(--md-bottom-nav-height));
+    bottom: var(--md-bottom-nav-height);
+  }
+
+  mat-sidenav {
+    margin-right: 0; /* No navigation rail on mobile */
+    width: 100vw; /* Full width modal on mobile */
+  }
+
+  .drop-zone {
+    padding: var(--md-spacing-4);
+    min-height: 120px;
+  }
+
+  .drop-zone-icon {
+    font-size: var(--md-sys-typescale-display-small-font-size);
+    width: 40px;
+    height: 40px;
+  }
+
+  .empty-state {
+    padding: var(--md-spacing-6) var(--md-spacing-2);
+  }
+
+  .empty-state-icon {
+    font-size: var(--md-sys-typescale-display-small-font-size);
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Mobile-specific list adjustments */
+  .document-item {
+    min-height: 64px; /* Slightly smaller on mobile for better density */
+    padding: var(--md-spacing-3) var(--md-spacing-4);
+  }
+
+  /* Hide delete button on mobile in favor of swipe gesture */
+  .document-title-container .delete-button {
+    display: none;
+  }
+
+  /* Show swipe hint for mobile users */
+  .document-item:nth-child(1):not(.swiping) {
+    position: relative;
+  }
+
+  .document-item:nth-child(1):not(.swiping)::after {
+    content: 'Swipe left to delete';
+    position: absolute;
+    right: var(--md-spacing-4);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--md-sys-typescale-label-small-font-size);
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.6;
+    pointer-events: none;
+    animation: swipe-hint-fade var(--md-sys-motion-duration-long) var(--md-sys-motion-easing-emphasized) 2s;
+  }
+
+  @keyframes swipe-hint-fade {
+    0%, 70% { opacity: 0.6; }
+    100% { opacity: 0; }
+  }
+}
+
+/* Tablet and desktop - show delete buttons */
+@media (min-width: 600px) {
+  .swipe-delete-indicator {
+    display: none; /* No swipe indicators on desktop */
+  }
+
+  .document-title-container .delete-button {
+    display: flex;
+  }
 }

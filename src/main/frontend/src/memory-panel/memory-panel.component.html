@@ -5,51 +5,73 @@
 </div>
 
 <mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true">
+  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true" [fixedTopGap]="64" (openedChange)="onSidenavOpenedChange($event)">
     <div class="sidenav-header">
-      <h2>Memory</h2>
-      <button mat-icon-button (click)="sidenav.close()">
-        <mat-icon>close</mat-icon>
+      <h2 id="memory-panel-heading">Memory</h2>
+      <button mat-icon-button (click)="sidenav.close()" aria-label="Close memory panel">
+        <mat-icon aria-hidden="true">close</mat-icon>
       </button>
     </div>
 
-    <div class="status-container">
-      <div class="status-row">
-        <span class="status-label">Vector Store:</span>
-        <span class="status-indicator"
-              [ngClass]="{'status-green': metrics.vectorStoreName !== '', 'status-red': metrics.vectorStoreName === ''}">
-          <mat-icon>{{ metrics.vectorStoreName !== '' ? 'check_circle' : 'error' }}</mat-icon>
-          <span
-            class="status-text">{{ metrics.vectorStoreName !== '' ? metrics.vectorStoreName : 'Not Available' }}</span>
-        </span>
+    <section aria-labelledby="memory-status-heading">
+      <h3 id="memory-status-heading" class="sr-only">Memory Status</h3>
+      <div class="status-container">
+        <div class="status-row">
+          <span class="status-label">Vector Store:</span>
+          <mat-chip-set>
+            <mat-chip
+              variant="assist"
+              [class.status-success]="metrics.vectorStoreName !== ''"
+              [class.status-error]="metrics.vectorStoreName === ''"
+              role="status"
+              [attr.aria-label]="'Vector store status: ' + (metrics.vectorStoreName !== '' ? metrics.vectorStoreName : 'Not available')">
+              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.vectorStoreName !== '' ? 'check_circle' : 'error' }}</mat-icon>
+              {{ metrics.vectorStoreName !== '' ? metrics.vectorStoreName : 'Not Available' }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Embed Model:</span>
+          <mat-chip-set>
+            <mat-chip
+              variant="assist"
+              [class.status-success]="metrics.embeddingModel !== ''"
+              [class.status-error]="metrics.embeddingModel === ''"
+              role="status"
+              [attr.aria-label]="'Embedding model status: ' + (metrics.embeddingModel !== '' ? metrics.embeddingModel : 'Not available')">
+              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.embeddingModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
+              {{ metrics.embeddingModel !== '' ? metrics.embeddingModel : 'Not Available' }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
       </div>
-      <div class="status-row">
-        <span class="status-label">Embed Model:</span>
-        <span class="status-indicator"
-              [ngClass]="{'status-green': metrics.embeddingModel !== '', 'status-red': metrics.embeddingModel === ''}">
-          <mat-icon>{{ metrics.embeddingModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
-          <span
-            class="status-text">{{ metrics.embeddingModel !== '' ? metrics.embeddingModel : 'Not Available' }}</span>
-        </span>
-      </div>
-    </div>
+    </section>
 
-    <div class="conversation-id-container">
-      <mat-form-field appearance="outline" class="conversation-id-field">
-        <mat-label>Conversation ID</mat-label>
-        <input matInput [value]="conversationId" placeholder="Conversation ID" readonly>
-      </mat-form-field>
-    </div>
-    <div class="status-container">
-      <div class="status-row">
-        <span class="status-label">Memory:</span>
-        <span class="status-indicator"
-              [ngClass]="{'status-green': metrics.vectorStoreName !== '' && metrics.embeddingModel !== '', 'status-orange': metrics.vectorStoreName === '' || metrics.embeddingModel === ''}">
-      <mat-icon>{{ metrics.vectorStoreName !== '' && metrics.embeddingModel !== '' ? 'storage' : 'memory' }}</mat-icon>
-      <span class="status-text">{{ metrics.vectorStoreName !== '' && metrics.embeddingModel !== '' ? 'Persistent' : 'Transient' }}</span>
-    </span>
+    <section aria-labelledby="conversation-heading">
+      <h3 id="conversation-heading" class="sr-only">Conversation Information</h3>
+      <div class="conversation-id-container">
+        <mat-form-field appearance="outline" class="conversation-id-field">
+          <mat-label>Conversation ID</mat-label>
+          <input matInput [value]="conversationId" placeholder="Conversation ID" readonly aria-label="Current conversation ID">
+        </mat-form-field>
       </div>
-    </div>
+      <div class="status-container">
+        <div class="status-row">
+          <span class="status-label">Memory:</span>
+          <mat-chip-set>
+            <mat-chip
+              variant="assist"
+              [class.status-success]="metrics.vectorStoreName !== '' && metrics.embeddingModel !== ''"
+              [class.status-warning]="metrics.vectorStoreName === '' || metrics.embeddingModel === ''"
+              role="status"
+              [attr.aria-label]="'Memory type: ' + (metrics.vectorStoreName !== '' && metrics.embeddingModel !== '' ? 'Persistent' : 'Transient')">
+              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.vectorStoreName !== '' && metrics.embeddingModel !== '' ? 'storage' : 'memory' }}</mat-icon>
+              {{ metrics.vectorStoreName !== '' && metrics.embeddingModel !== '' ? 'Persistent' : 'Transient' }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+      </div>
+    </section>
   </mat-sidenav>
 
   <mat-sidenav-content>

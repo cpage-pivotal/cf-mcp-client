@@ -1,83 +1,211 @@
-<div class="document-container">
-  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="Documents" matTooltipPosition="left">
-    <mat-icon>description</mat-icon>
-  </button>
-</div>
-
 <mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true">
+  <mat-sidenav #sidenav mode="over" position="end" (openedChange)="onSidenavOpenedChange($event)">
     <div class="sidenav-header">
-      <h2>Documents</h2>
-      <button mat-icon-button (click)="sidenav.close()">
-        <mat-icon>close</mat-icon>
+      <h2 id="documents-panel-heading">Documents</h2>
+      <button mat-icon-button (click)="toggleSidenav()" aria-label="Close documents panel">
+        <mat-icon aria-hidden="true">close</mat-icon>
       </button>
     </div>
 
-    <div class="status-container">
-      <div class="status-row">
-        <span class="status-label">Vector Store:</span>
-        <span class="status-indicator" [ngClass]="{'status-green': metrics.vectorStoreName !== '', 'status-red': metrics.vectorStoreName === ''}">
-          <mat-icon>{{ metrics.vectorStoreName !== '' ? 'check_circle' : 'error' }}</mat-icon>
-          <span class="status-text">{{ metrics.vectorStoreName !== '' ? metrics.vectorStoreName : 'Not Available' }}</span>
-        </span>
-      </div>
-      <div class="status-row">
-        <span class="status-label">Embed Model:</span>
-        <span class="status-indicator" [ngClass]="{'status-green': metrics.embeddingModel !== '', 'status-red': metrics.embeddingModel === ''}">
-          <mat-icon>{{ metrics.embeddingModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
-          <span class="status-text">{{ metrics.embeddingModel !== '' ? metrics.embeddingModel : 'Not Available' }}</span>
-        </span>
-      </div>
-    </div>
-
-    <div class="upload-container">
-      <button mat-raised-button color="primary" (click)="fileInput.click()" [disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === ''">
-        <mat-icon>upload</mat-icon> Upload File
-      </button>
-      <input hidden (change)="onFileSelected($event)" #fileInput type="file" accept=".pdf,application/pdf">
-
-      <!-- Upload progress indicator -->
-      @if (isUploading) {
-        <div class="upload-progress-container">
-          <div class="file-name">Uploading: {{ currentFileName }}</div>
-          <mat-progress-bar mode="determinate" [value]="uploadProgress"></mat-progress-bar>
-          <div class="progress-percentage">{{ uploadProgress }}%</div>
+    <!-- Status indicators -->
+    <section aria-labelledby="document-status-heading">
+      <h3 id="document-status-heading" class="sr-only">Document Storage Status</h3>
+      <div class="status-container">
+        <div class="status-row">
+          <span class="status-label">Vector Store:</span>
+          <mat-chip-set>
+            <mat-chip
+              variant="assist"
+              [class.status-success]="metrics.vectorStoreName !== ''"
+              [class.status-error]="metrics.vectorStoreName === ''"
+              role="status"
+              [attr.aria-label]="'Vector store status: ' + (metrics.vectorStoreName !== '' ? metrics.vectorStoreName : 'Not available')">
+              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.vectorStoreName !== '' ? 'check_circle' : 'error' }}</mat-icon>
+              {{ metrics.vectorStoreName !== '' ? metrics.vectorStoreName : 'Not Available' }}
+            </mat-chip>
+          </mat-chip-set>
         </div>
-      }
-    </div>
-
-    <div class="documents-list">
-      <h3>Uploaded Files ({{ documents.length }})</h3>
-
-      @if (documents.length === 0) {
-        <div class="empty-state">
-          No documents uploaded yet
+        <div class="status-row">
+          <span class="status-label">Embed Model:</span>
+          <mat-chip-set>
+            <mat-chip
+              variant="assist"
+              [class.status-success]="metrics.embeddingModel !== ''"
+              [class.status-error]="metrics.embeddingModel === ''"
+              role="status"
+              [attr.aria-label]="'Embedding model status: ' + (metrics.embeddingModel !== '' ? metrics.embeddingModel : 'Not available')">
+              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.embeddingModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
+              {{ metrics.embeddingModel !== '' ? metrics.embeddingModel : 'Not Available' }}
+            </mat-chip>
+          </mat-chip-set>
         </div>
-      }
+      </div>
+    </section>
 
-      <mat-list>
-        @for (doc of documents; track doc.id) {
-          <mat-list-item class="document-item">
-            <mat-icon matListItemIcon>insert_drive_file</mat-icon>
-            <div matListItemTitle>{{ doc.name }}</div>
-            <div matListItemLine>{{ doc.size | fileSize }}</div>
-            <button mat-icon-button 
-                    matListItemMeta 
-                    (click)="deleteDocument(doc.id)" 
-                    matTooltip="Delete document"
-                    class="delete-button">
-              <mat-icon>delete</mat-icon>
+    <!-- Material Design Drag & Drop Upload Area -->
+    <section aria-labelledby="upload-heading">
+      <h3 id="upload-heading" class="sr-only">Upload Documents</h3>
+      <div class="upload-container">
+        <!-- Drag and Drop Zone -->
+        <div class="drop-zone"
+             [class.drag-over]="isDragOver()"
+             [class.disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === ''"
+             (dragenter)="onDragEnter($event)"
+             (dragleave)="onDragLeave($event)"
+             (dragover)="onDragOver($event)"
+             (drop)="onDrop($event)"
+             role="button"
+             tabindex="0"
+             (click)="fileInput.click()"
+             [attr.aria-label]="isDragOver() ? 'Drop your PDF here to upload' : 'Click to upload PDF or drag and drop'"
+             [attr.aria-disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === ''">
+
+          <!-- Drop Zone Content -->
+          <div class="drop-zone-content">
+            <mat-icon class="drop-zone-icon" aria-hidden="true">{{ isDragOver() ? 'file_download' : 'cloud_upload' }}</mat-icon>
+
+            <div class="drop-zone-text">
+              @if (isDragOver()) {
+                <div class="drop-zone-title">Drop your PDF here</div>
+                <div class="drop-zone-subtitle">Release to upload</div>
+              } @else {
+                <div class="drop-zone-title">Drag & drop your PDF</div>
+                <div class="drop-zone-subtitle">or click to browse files</div>
+              }
+            </div>
+
+            <!-- Hidden file input -->
+            <input hidden
+                   (change)="onFileSelected($event)"
+                   #fileInput
+                   type="file"
+                   accept=".pdf,application/pdf"
+                   aria-label="Select PDF file to upload">
+
+            <!-- Browse button -->
+            <button mat-raised-button
+                    color="primary"
+                    (click)="fileInput.click(); $event.stopPropagation()"
+                    [disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === ''"
+                    class="browse-button"
+                    aria-label="Browse for PDF files">
+              <mat-icon aria-hidden="true">folder_open</mat-icon>
+              Browse Files
             </button>
-          </mat-list-item>
+          </div>
+
+          <!-- Supported formats info -->
+          <div class="supported-formats" aria-label="Supported file formats">
+            <mat-icon class="format-icon" aria-hidden="true">picture_as_pdf</mat-icon>
+            <span>PDF files only • Max 50MB</span>
+          </div>
+        </div>
+
+        <!-- Upload progress indicator -->
+        @if (isUploading) {
+          <div class="upload-progress-container" role="status" aria-live="polite" aria-label="File upload progress">
+            <div class="upload-progress-header">
+              <mat-icon class="upload-icon" aria-hidden="true">{{ getFileTypeIcon(currentFileName) }}</mat-icon>
+              <div class="upload-info">
+                <div class="file-name">{{ currentFileName }}</div>
+                <div class="upload-status">Uploading...</div>
+              </div>
+            </div>
+            <mat-progress-bar mode="determinate" [value]="uploadProgress" class="upload-progress-bar" [attr.aria-valuenow]="uploadProgress" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Upload progress: ' + uploadProgress + ' percent'"></mat-progress-bar>
+            <div class="progress-percentage">{{ uploadProgress }}%</div>
+          </div>
         }
-      </mat-list>
-    </div>
+      </div>
+    </section>
+
+    <!-- Documents List -->
+    <section aria-labelledby="documents-list-heading">
+      <div class="documents-list">
+        <div class="documents-list-header">
+          <h3 id="documents-list-heading">Uploaded Files ({{ documents.length }})</h3>
+          @if (selectedDocumentId()) {
+            <div class="selection-actions">
+              <button mat-icon-button
+                      (click)="selectedDocumentId.set(null)"
+                      matTooltip="Clear selection"
+                      aria-label="Clear document selection">
+                <mat-icon aria-hidden="true">close</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
+
+        @if (documents.length === 0) {
+          <div class="empty-state" role="status" aria-label="No documents uploaded">
+            <mat-icon class="empty-state-icon" aria-hidden="true">folder_open</mat-icon>
+            <div class="empty-state-text">No documents uploaded yet</div>
+            <div class="empty-state-subtitle">Upload your first PDF to get started</div>
+          </div>
+        }
+
+        <!-- Material Design 3 List with proper density -->
+        <mat-list role="list"
+                  [attr.aria-label]="'List of ' + documents.length + ' uploaded documents'"
+                  class="document-list-container">
+          @for (doc of documents; track doc.id) {
+            <mat-list-item class="document-item"
+                           role="listitem"
+                           [class.selected]="isDocumentSelected(doc.id)"
+                           [class.swiping]="swipingDocumentId() === doc.id"
+                           [style.transform]="getDocumentItemTransform(doc.id)"
+                           (click)="selectDocument(doc.id)"
+                           (panstart)="onSwipeStart(doc.id, $event)"
+                           (panmove)="onSwipeMove($event)"
+                           (panend)="onSwipeEnd($event)"
+                           [attr.aria-selected]="isDocumentSelected(doc.id)"
+                           [attr.aria-label]="'Document: ' + doc.name + ', uploaded ' + formatDocumentDate(doc.uploadDate) + ', size ' + (doc.size | fileSize) + (isDocumentSelected(doc.id) ? ', selected' : '')"
+                           tabindex="0"
+                           role="option">
+
+              <!-- Leading icon -->
+              <mat-icon matListItemIcon
+                        aria-hidden="true"
+                        [class.selected-icon]="isDocumentSelected(doc.id)">
+                {{ getFileTypeIcon(doc.name) }}
+              </mat-icon>
+
+              <!-- Two-line content layout following Material Design standards -->
+              <div matListItemTitle class="document-title-container">
+                <span class="document-title">{{ doc.name }}</span>
+                <!-- Delete button positioned inline with title -->
+                <button mat-icon-button
+                        (click)="deleteDocument(doc.id); $event.stopPropagation()"
+                        matTooltip="Delete document"
+                        class="delete-button"
+                        [attr.aria-label]="'Delete document: ' + doc.name">
+                  <mat-icon aria-hidden="true">delete</mat-icon>
+                </button>
+              </div>
+              <div matListItemLine class="document-subtitle">
+                <span class="document-size">{{ doc.size | fileSize }}</span>
+                <span class="document-date">{{ formatDocumentDate(doc.uploadDate) }}</span>
+              </div>
+
+              <!-- Swipe delete indicator (mobile only) -->
+              @if (swipingDocumentId() === doc.id && swipeDistance() <= -40) {
+                <div class="swipe-delete-indicator"
+                     role="status"
+                     aria-label="Swipe to delete">
+                  <mat-icon aria-hidden="true">delete</mat-icon>
+                  <span>Release to delete</span>
+                </div>
+              }
+            </mat-list-item>
+          }
+        </mat-list>
+      </div>
+    </section>
 
     <!-- Clear Files button -->
     @if (documents.length > 0) {
       <div class="clear-files-container">
-        <button mat-raised-button color="warn" (click)="deleteAllDocuments()">
-          <mat-icon>delete_sweep</mat-icon> Clear Files
+        <button mat-raised-button color="warn" (click)="deleteAllDocuments()" aria-label="Delete all uploaded documents">
+          <mat-icon aria-hidden="true">delete_sweep</mat-icon> Clear All Files
         </button>
       </div>
     }

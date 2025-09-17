@@ -1,0 +1,320 @@
+/* ===== MATERIAL DESIGN 3 RESPONSIVE SYSTEM ===== */
+
+@use 'sass:map';
+
+/* Material Design 3 Breakpoints */
+$md-breakpoints: (
+  compact: 0px,         // 0-599dp (Mobile)
+  medium: 600px,        // 600-839dp (Tablet)
+  expanded: 840px,      // 840-1239dp (Desktop)
+  large: 1240px,        // 1240-1439dp (Large Desktop)
+  extra-large: 1440px   // 1440dp+ (Extra Large)
+);
+
+/* ===== BREAKPOINT MIXINS ===== */
+
+/* Compact layout (0-599dp) - Mobile phones */
+@mixin compact {
+  @media (max-width: #{map.get($md-breakpoints, medium) - 1px}) {
+    @content;
+  }
+}
+
+/* Medium layout (600-839dp) - Tablets */
+@mixin medium {
+  @media (min-width: #{map.get($md-breakpoints, medium)}) and (max-width: #{map.get($md-breakpoints, expanded) - 1px}) {
+    @content;
+  }
+}
+
+/* Expanded layout (840-1239dp) - Desktop */
+@mixin expanded {
+  @media (min-width: #{map.get($md-breakpoints, expanded)}) and (max-width: #{map.get($md-breakpoints, large) - 1px}) {
+    @content;
+  }
+}
+
+/* Large layout (1240-1439dp) - Large Desktop */
+@mixin large {
+  @media (min-width: #{map.get($md-breakpoints, large)}) and (max-width: #{map.get($md-breakpoints, extra-large) - 1px}) {
+    @content;
+  }
+}
+
+/* Extra Large layout (1440dp+) - Extra Large Desktop */
+@mixin extra-large {
+  @media (min-width: #{map.get($md-breakpoints, extra-large)}) {
+    @content;
+  }
+}
+
+/* ===== ADAPTIVE LAYOUT MIXINS ===== */
+
+/* Mobile-first breakpoints */
+@mixin mobile-up {
+  @media (min-width: #{map.get($md-breakpoints, medium)}) {
+    @content;
+  }
+}
+
+@mixin tablet-up {
+  @media (min-width: #{map.get($md-breakpoints, expanded)}) {
+    @content;
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: #{map.get($md-breakpoints, large)}) {
+    @content;
+  }
+}
+
+/* Desktop-first breakpoints */
+@mixin tablet-down {
+  @media (max-width: #{map.get($md-breakpoints, expanded) - 1px}) {
+    @content;
+  }
+}
+
+@mixin mobile-down {
+  @media (max-width: #{map.get($md-breakpoints, medium) - 1px}) {
+    @content;
+  }
+}
+
+/* ===== ADAPTIVE LAYOUT TOKENS ===== */
+
+:root {
+  /* ===== LAYOUT DIMENSIONS ===== */
+
+  /* Navigation Rail Widths */
+  --md-nav-rail-width-standard: 96px;
+  --md-nav-rail-width-compact: 80px;
+  --md-nav-rail-width-mobile: 0px;
+
+  /* Bottom Navigation Height */
+  --md-bottom-nav-height: 80px;
+
+  /* Toolbar Heights */
+  --md-toolbar-height-desktop: 64px;
+  --md-toolbar-height-mobile: 56px;
+
+  /* Side Panel Widths */
+  --md-side-panel-width-desktop: 320px;
+  --md-side-panel-width-tablet: 280px;
+  --md-side-panel-width-mobile: 280px;
+
+  /* Content Margins */
+  --md-content-margin-compact: 16px;
+  --md-content-margin-medium: 24px;
+  --md-content-margin-expanded: 24px;
+  --md-content-margin-large: 32px;
+  --md-content-margin-extra-large: 32px;
+
+  /* ===== ADAPTIVE LAYOUT PATTERNS ===== */
+
+  /* Current active layout tokens (updated by media queries) */
+  --md-layout-type: 'compact';
+  --md-nav-rail-width: var(--md-nav-rail-width-mobile);
+  --md-toolbar-height: var(--md-toolbar-height-mobile);
+  --md-content-margin: var(--md-content-margin-compact);
+  --md-side-panel-width: var(--md-side-panel-width-mobile);
+
+  /* Navigation pattern flags */
+  --md-show-nav-rail: 0;
+  --md-show-bottom-nav: 1;
+  --md-show-side-panels-persistent: 0;
+  --md-show-side-panels-modal: 1;
+}
+
+/* ===== RESPONSIVE LAYOUT UPDATES ===== */
+
+/* Medium layout (600-839dp) - Tablets */
+@include mobile-up {
+  :root {
+    --md-layout-type: 'medium';
+    --md-nav-rail-width: var(--md-nav-rail-width-compact);
+    --md-toolbar-height: var(--md-toolbar-height-desktop);
+    --md-content-margin: var(--md-content-margin-medium);
+    --md-side-panel-width: var(--md-side-panel-width-tablet);
+
+    /* Show navigation rail, hide bottom nav */
+    --md-show-nav-rail: 1;
+    --md-show-bottom-nav: 0;
+    --md-show-side-panels-persistent: 0;
+    --md-show-side-panels-modal: 1;
+  }
+}
+
+/* Expanded layout (840-1239dp) - Desktop */
+@include tablet-up {
+  :root {
+    --md-layout-type: 'expanded';
+    --md-nav-rail-width: var(--md-nav-rail-width-standard);
+    --md-content-margin: var(--md-content-margin-expanded);
+    --md-side-panel-width: var(--md-side-panel-width-desktop);
+
+    /* Navigation rail + side sheets */
+    --md-show-side-panels-persistent: 0;
+    --md-show-side-panels-modal: 1;
+  }
+}
+
+/* Large layout (1240-1439dp) - Large Desktop */
+@include desktop-up {
+  :root {
+    --md-layout-type: 'large';
+    --md-content-margin: var(--md-content-margin-large);
+
+    /* Navigation rail + persistent side panels */
+    --md-show-side-panels-persistent: 1;
+    --md-show-side-panels-modal: 0;
+  }
+}
+
+/* Extra Large layout (1440dp+) - Extra Large Desktop */
+@include extra-large {
+  :root {
+    --md-layout-type: 'extra-large';
+    --md-content-margin: var(--md-content-margin-extra-large);
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Layout containers */
+.md-layout-compact { @include compact { display: block; } @include mobile-up { display: none; } }
+.md-layout-medium { @include mobile-down { display: none; } @include medium { display: block; } @include tablet-up { display: none; } }
+.md-layout-expanded { @include tablet-down { display: none; } @include expanded { display: block; } @include desktop-up { display: none; } }
+.md-layout-large { @include desktop-up { display: block; } @include extra-large { display: none; } }
+.md-layout-extra-large { @include extra-large { display: block; } }
+
+/* Responsive visibility utilities */
+.md-hide-compact { @include compact { display: none !important; } }
+.md-hide-medium { @include medium { display: none !important; } }
+.md-hide-expanded { @include expanded { display: none !important; } }
+.md-hide-large { @include large { display: none !important; } }
+.md-hide-extra-large { @include extra-large { display: none !important; } }
+
+.md-show-compact { @include mobile-up { display: none !important; } }
+.md-show-medium { @include compact { display: none !important; } @include tablet-up { display: none !important; } }
+.md-show-expanded { @include tablet-down { display: none !important; } @include desktop-up { display: none !important; } }
+.md-show-large { @include desktop-up { display: none !important; } }
+.md-show-extra-large { @include extra-large { display: none !important; } }
+
+/* Responsive spacing utilities */
+.md-margin-responsive {
+  margin: var(--md-content-margin);
+}
+
+.md-padding-responsive {
+  padding: var(--md-content-margin);
+}
+
+/* ===== COMPONENT-SPECIFIC RESPONSIVE MIXINS ===== */
+
+/* Navigation Rail responsive behavior */
+@mixin nav-rail-responsive {
+  @include compact {
+    display: none;
+  }
+
+  @include mobile-up {
+    display: flex;
+    width: var(--md-nav-rail-width);
+  }
+}
+
+/* Bottom Navigation responsive behavior */
+@mixin bottom-nav-responsive {
+  @include compact {
+    display: flex;
+    height: var(--md-bottom-nav-height);
+  }
+
+  @include mobile-up {
+    display: none;
+  }
+}
+
+/* Side Panel responsive behavior */
+@mixin side-panel-responsive {
+  @include compact {
+    width: 100vw;
+    height: calc(100vh - var(--md-toolbar-height) - var(--md-bottom-nav-height));
+  }
+
+  @include mobile-up {
+    width: var(--md-side-panel-width);
+    height: calc(100vh - var(--md-toolbar-height));
+  }
+
+  @include desktop-up {
+    /* Large screens can show persistent panels */
+    position: relative;
+  }
+}
+
+/* Content area responsive behavior */
+@mixin content-area-responsive {
+  @include compact {
+    padding-top: var(--md-toolbar-height);
+    padding-bottom: var(--md-bottom-nav-height);
+    padding-left: var(--md-content-margin);
+    padding-right: var(--md-content-margin);
+  }
+
+  @include mobile-up {
+    padding-top: var(--md-toolbar-height);
+    padding-right: calc(var(--md-nav-rail-width) + var(--md-content-margin));
+    padding-left: var(--md-content-margin);
+    padding-bottom: var(--md-content-margin);
+  }
+
+  @include desktop-up {
+    /* Account for persistent side panels if any */
+    padding-right: calc(var(--md-nav-rail-width) + var(--md-content-margin));
+  }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  :root {
+    --md-nav-rail-width-standard: 100px;
+    --md-nav-rail-width-compact: 84px;
+    --md-side-panel-width-desktop: 340px;
+    --md-side-panel-width-tablet: 300px;
+  }
+}
+
+/* Reduced motion adjustments */
+@media (prefers-reduced-motion: reduce) {
+  .md-layout-compact,
+  .md-layout-medium,
+  .md-layout-expanded,
+  .md-layout-large,
+  .md-layout-extra-large {
+    transition: none !important;
+  }
+}
+
+/* Print adjustments */
+@media print {
+  :root {
+    --md-nav-rail-width: 0px;
+    --md-bottom-nav-height: 0px;
+    --md-side-panel-width-desktop: 0px;
+    --md-side-panel-width-tablet: 0px;
+    --md-side-panel-width-mobile: 0px;
+  }
+
+  .md-hide-compact,
+  .md-hide-medium,
+  .md-hide-expanded,
+  .md-hide-large,
+  .md-hide-extra-large {
+    display: none !important;
+  }
+}

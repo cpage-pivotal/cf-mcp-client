@@ -38,7 +38,7 @@
 }
 
 .no-tools-icon {
-  font-size: 48px;
+  font-size: var(--md-sys-typescale-display-medium-font-size);
   height: 48px;
   width: 48px;
   margin-bottom: 16px;
@@ -61,8 +61,8 @@
 }
 
 .tool-name {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
+  font-weight: var(--md-sys-typescale-title-medium-font-weight);
   color: var(--mat-sys-primary);
   word-wrap: break-word;
   overflow-wrap: break-word;
