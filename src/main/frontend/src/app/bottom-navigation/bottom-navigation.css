@@ -108,32 +108,12 @@
   z-index: 2;
 }
 
-.bottom-nav-icon-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .bottom-nav-icon {
   font-size: var(--md-sys-typescale-title-medium-font-size);
   width: 24px;
   height: 24px;
   color: var(--md-sys-color-on-surface-variant, var(--mat-sys-on-surface-variant));
   transition: color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
-}
-
-.bottom-nav-status-indicator {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  font-size: var(--md-sys-typescale-label-small-font-size) !important;
-  width: 14px !important;
-  height: 14px !important;
-  background-color: var(--md-sys-color-surface, var(--mat-sys-surface));
-  border-radius: 50%;
-  padding: 2px;
-  box-shadow: 0 0 0 2px var(--md-sys-color-surface, var(--mat-sys-surface));
 }
 
 .bottom-nav-label {
@@ -224,12 +204,6 @@
     line-height: 10px;
   }
 
-  .bottom-nav-status-indicator {
-    width: 12px !important;
-    height: 12px !important;
-    top: -4px;
-    right: -4px;
-  }
 }
 
 /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
@@ -256,9 +230,6 @@
     box-shadow: 0 0 0 3px var(--md-sys-color-primary, var(--mat-sys-primary));
   }
 
-  .bottom-nav-status-indicator {
-    box-shadow: 0 0 0 3px var(--md-sys-color-surface, var(--mat-sys-surface));
-  }
 }
 
 /* Reduced motion support */

@@ -492,11 +492,12 @@ button:active:not(:disabled) {
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 599px) {
   .chatbox {
     width: 95%;
     padding: var(--md-spacing-3); /* 12px using Material spacing */
-    top: 56px;
+    top: var(--md-toolbar-height);
+    bottom: var(--md-bottom-nav-height);
   }
   .chat-message {
     max-width: 90%;

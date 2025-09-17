@@ -10,25 +10,13 @@
           [attr.data-nav-item]="item.id">
 
           <div class="bottom-nav-button-content">
-            <!-- Main icon with status indicator -->
-            <div class="bottom-nav-icon-container">
-              <mat-icon
-                class="bottom-nav-icon"
-                [ngClass]="getStatusIndicator(item.id).show ? getStatusIndicator(item.id).color : ''"
-                [attr.aria-hidden]="true">
-                {{ item.icon }}
-              </mat-icon>
-
-              <!-- Status indicator badge -->
-              @if (getStatusIndicator(item.id).show) {
-                <mat-icon
-                  class="bottom-nav-status-indicator"
-                  [ngClass]="getStatusIndicator(item.id).color"
-                  [attr.aria-hidden]="true">
-                  {{ getStatusIndicator(item.id).icon }}
-                </mat-icon>
-              }
-            </div>
+            <!-- Main icon with status color -->
+            <mat-icon
+              class="bottom-nav-icon"
+              [ngClass]="getStatusIndicator(item.id).show ? getStatusIndicator(item.id).color : ''"
+              [attr.aria-hidden]="true">
+              {{ item.icon }}
+            </mat-icon>
 
             <!-- Label -->
             <span class="bottom-nav-label">{{ item.label }}</span>

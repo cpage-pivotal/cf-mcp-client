@@ -1,5 +1,7 @@
 /* ===== MATERIAL DESIGN 3 RESPONSIVE SYSTEM ===== */
 
+@use 'sass:map';
+
 /* Material Design 3 Breakpoints */
 $md-breakpoints: (
   compact: 0px,         // 0-599dp (Mobile)
@@ -13,35 +15,35 @@ $md-breakpoints: (
 
 /* Compact layout (0-599dp) - Mobile phones */
 @mixin compact {
-  @media (max-width: #{map-get($md-breakpoints, medium) - 1px}) {
+  @media (max-width: #{map.get($md-breakpoints, medium) - 1px}) {
     @content;
   }
 }
 
 /* Medium layout (600-839dp) - Tablets */
 @mixin medium {
-  @media (min-width: #{map-get($md-breakpoints, medium)}) and (max-width: #{map-get($md-breakpoints, expanded) - 1px}) {
+  @media (min-width: #{map.get($md-breakpoints, medium)}) and (max-width: #{map.get($md-breakpoints, expanded) - 1px}) {
     @content;
   }
 }
 
 /* Expanded layout (840-1239dp) - Desktop */
 @mixin expanded {
-  @media (min-width: #{map-get($md-breakpoints, expanded)}) and (max-width: #{map-get($md-breakpoints, large) - 1px}) {
+  @media (min-width: #{map.get($md-breakpoints, expanded)}) and (max-width: #{map.get($md-breakpoints, large) - 1px}) {
     @content;
   }
 }
 
 /* Large layout (1240-1439dp) - Large Desktop */
 @mixin large {
-  @media (min-width: #{map-get($md-breakpoints, large)}) and (max-width: #{map-get($md-breakpoints, extra-large) - 1px}) {
+  @media (min-width: #{map.get($md-breakpoints, large)}) and (max-width: #{map.get($md-breakpoints, extra-large) - 1px}) {
     @content;
   }
 }
 
 /* Extra Large layout (1440dp+) - Extra Large Desktop */
 @mixin extra-large {
-  @media (min-width: #{map-get($md-breakpoints, extra-large)}) {
+  @media (min-width: #{map.get($md-breakpoints, extra-large)}) {
     @content;
   }
 }
@@ -50,32 +52,32 @@ $md-breakpoints: (
 
 /* Mobile-first breakpoints */
 @mixin mobile-up {
-  @media (min-width: #{map-get($md-breakpoints, medium)}) {
+  @media (min-width: #{map.get($md-breakpoints, medium)}) {
     @content;
   }
 }
 
 @mixin tablet-up {
-  @media (min-width: #{map-get($md-breakpoints, expanded)}) {
+  @media (min-width: #{map.get($md-breakpoints, expanded)}) {
     @content;
   }
 }
 
 @mixin desktop-up {
-  @media (min-width: #{map-get($md-breakpoints, large)}) {
+  @media (min-width: #{map.get($md-breakpoints, large)}) {
     @content;
   }
 }
 
 /* Desktop-first breakpoints */
 @mixin tablet-down {
-  @media (max-width: #{map-get($md-breakpoints, expanded) - 1px}) {
+  @media (max-width: #{map.get($md-breakpoints, expanded) - 1px}) {
     @content;
   }
 }
 
 @mixin mobile-down {
-  @media (max-width: #{map-get($md-breakpoints, medium) - 1px}) {
+  @media (max-width: #{map.get($md-breakpoints, medium) - 1px}) {
     @content;
   }
 }
