@@ -191,16 +191,16 @@
     --md-sys-color-on-error-container: #ffdad6;
 
     /* ===== NEUTRAL COLOR ROLES (DARK) ===== */
-    --md-sys-color-outline: #8f918c;
-    --md-sys-color-outline-variant: #424940;
+    --md-sys-color-outline: #9fa29d;
+    --md-sys-color-outline-variant: #4a514a;
     --md-sys-color-shadow: #000000;
     --md-sys-color-scrim: #000000;
 
     /* ===== SURFACE COLOR ROLES (DARK) ===== */
     --md-sys-color-surface: #111411;
-    --md-sys-color-on-surface: #e2e3dd;
+    --md-sys-color-on-surface: #e8e9e3;
     --md-sys-color-surface-variant: #424940;
-    --md-sys-color-on-surface-variant: #c1c9bd;
+    --md-sys-color-on-surface-variant: #d0d8cc;
 
     /* ===== SURFACE TINT SYSTEM (DARK) ===== */
     --md-sys-color-surface-tint: var(--md-sys-color-primary);
@@ -278,13 +278,13 @@
 
     /* Surface colors */
     --md-sys-color-surface-rgb: 17, 20, 17;
-    --md-sys-color-on-surface-rgb: 226, 227, 221;
+    --md-sys-color-on-surface-rgb: 232, 233, 227;
     --md-sys-color-surface-variant-rgb: 66, 73, 64;
-    --md-sys-color-on-surface-variant-rgb: 193, 201, 189;
+    --md-sys-color-on-surface-variant-rgb: 208, 216, 204;
 
     /* Neutral colors */
-    --md-sys-color-outline-rgb: 143, 145, 140;
-    --md-sys-color-outline-variant-rgb: 66, 73, 64;
+    --md-sys-color-outline-rgb: 159, 162, 157;
+    --md-sys-color-outline-variant-rgb: 74, 81, 74;
 
     /* Semantic color RGB values */
     --md-sys-color-success-rgb: 141, 209, 228;
@@ -361,4 +361,74 @@
 .md-bg-info {
   background-color: var(--md-sys-color-info-container) !important;
   color: var(--md-sys-color-on-info-container) !important;
+}
+
+/* ===== DARK MODE READABILITY ENHANCEMENTS ===== */
+@media (prefers-color-scheme: dark) {
+  /* Enhanced contrast for navigation and UI text */
+  .nav-rail-label,
+  .nav-rail-icon,
+  mat-toolbar span,
+  .mat-mdc-button:not(.mat-primary):not(.mat-warn):not(.mat-accent) {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  /* Better contrast for form fields and inputs */
+  .mat-mdc-form-field-label,
+  .mat-mdc-input-element {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  /* Enhanced status indicators visibility */
+  .status-green {
+    color: #4ade80 !important; /* Brighter green for dark mode */
+  }
+
+  .status-red {
+    color: #f87171 !important; /* Brighter red for dark mode */
+  }
+
+  .status-orange {
+    color: #fbbf24 !important; /* Brighter yellow for dark mode */
+  }
+
+  /* Better contrast for Material cards and panels */
+  .mat-mdc-card,
+  .mat-expansion-panel {
+    background-color: var(--md-sys-color-surface-container) !important;
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  /* Enhanced dialog text visibility */
+  .mat-mdc-dialog-title,
+  .mat-mdc-dialog-content {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  /* Better button text contrast */
+  .mat-mdc-button,
+  .mat-mdc-outlined-button,
+  .mat-mdc-raised-button {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+
+  /* Enhanced tooltip visibility in dark mode */
+  .mat-mdc-tooltip {
+    background-color: var(--md-sys-color-inverse-surface) !important;
+    color: var(--md-sys-color-inverse-on-surface) !important;
+    font-weight: 500 !important;
+  }
+
+  /* Better Send button contrast */
+  .mat-mdc-button.mat-flat-button {
+    background-color: var(--md-sys-color-primary) !important;
+    color: var(--md-sys-color-on-primary) !important;
+    font-weight: 500 !important;
+  }
+
+  .mat-mdc-button.mat-flat-button:disabled {
+    background-color: var(--md-sys-color-surface-variant) !important;
+    color: var(--md-sys-color-on-surface-variant) !important;
+    opacity: 0.38 !important;
+  }
 }

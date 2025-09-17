@@ -13,6 +13,7 @@ mat-toolbar {
 
 mat-toolbar span {
   color: var(--md-sys-color-on-surface);
+  font-weight: 500;
 }
 
 /* Main content wrapper */

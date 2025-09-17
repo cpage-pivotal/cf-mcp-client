@@ -384,6 +384,19 @@ button:active:not(:disabled) {
     background: rgba(255, 255, 255, 0.1);
   }
 
+  /* Enhanced Send button visibility */
+  .chatbox-footer button[mat-flat-button] {
+    background-color: var(--md-sys-color-primary) !important;
+    color: var(--md-sys-color-on-primary) !important;
+    font-weight: 500 !important;
+  }
+
+  .chatbox-footer button[mat-flat-button]:disabled {
+    background-color: var(--md-sys-color-surface-variant) !important;
+    color: var(--md-sys-color-on-surface-variant) !important;
+    opacity: 0.5 !important;
+  }
+
 }
 
 /* Responsive Design using Material Design 3 breakpoints */

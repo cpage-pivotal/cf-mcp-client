@@ -173,12 +173,27 @@
   }
 }
 
+/* Dark mode enhancements for better contrast */
+@media (prefers-color-scheme: dark) {
+  .nav-rail-label {
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .nav-rail-icon {
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .navigation-rail {
+    border-left-color: var(--md-sys-color-outline);
+  }
+}
+
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .navigation-rail {
     border-left-width: 2px;
   }
-  
+
   .nav-rail-button:focus-visible {
     box-shadow: 0 0 0 3px var(--md-sys-color-primary, var(--mat-sys-primary));
   }

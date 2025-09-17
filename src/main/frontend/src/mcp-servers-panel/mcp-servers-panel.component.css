@@ -56,19 +56,20 @@ mat-sidenav .sidenav-header {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .sidenav-header h2 {
   margin: 0;
   font-size: var(--md-sys-typescale-title-large-font-size);
   font-weight: var(--md-sys-typescale-title-large-font-weight);
+  color: var(--md-sys-color-on-surface);
 }
 
 .status-container {
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .status-row {
@@ -81,6 +82,7 @@ mat-sidenav .sidenav-header {
   flex: 0 0 100px;
   font-weight: var(--md-sys-typescale-label-large-font-weight);
   font-size: var(--md-sys-typescale-label-large-font-size);
+  color: var(--md-sys-color-on-surface);
 }
 
 .status-indicator {
@@ -109,6 +111,7 @@ mat-sidenav .sidenav-header {
 
 .status-text {
   font-size: var(--md-sys-typescale-body-medium-font-size);
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 .mcp-servers-list {
@@ -120,6 +123,7 @@ mat-sidenav .sidenav-header {
   margin-bottom: 16px;
   font-size: var(--md-sys-typescale-title-medium-font-size);
   font-weight: var(--md-sys-typescale-title-medium-font-weight);
+  color: var(--md-sys-color-on-surface);
 }
 
 /* Server cards container */
@@ -134,7 +138,7 @@ mat-sidenav .sidenav-header {
   padding: 0;
   border-radius: 8px;
   transition: all 0.2s ease;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .server-card:hover {
@@ -167,7 +171,7 @@ mat-sidenav .sidenav-header {
 .server-name {
   font-size: var(--md-sys-typescale-label-large-font-size);
   font-weight: var(--md-sys-typescale-label-large-font-weight);
-  color: var(--mat-sys-on-surface);
+  color: var(--md-sys-color-on-surface);
   margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -176,7 +180,7 @@ mat-sidenav .sidenav-header {
 
 .server-tools {
   font-size: var(--md-sys-typescale-body-small-font-size);
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 /* Protocol section */
@@ -184,7 +188,7 @@ mat-sidenav .sidenav-header {
   display: flex;
   align-items: center;
   padding-top: 8px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .server-protocol mat-chip {
@@ -206,7 +210,7 @@ mat-sidenav .sidenav-header {
   height: 14px !important;
   margin-right: 4px;
   vertical-align: middle;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 /* Protocol-specific styles */
