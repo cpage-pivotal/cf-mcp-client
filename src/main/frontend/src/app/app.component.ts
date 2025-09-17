@@ -6,6 +6,7 @@ import { DocumentPanelComponent } from '../document-panel/document-panel.compone
 import { McpServersPanelComponent } from '../mcp-servers-panel/mcp-servers-panel.component';
 import { ChatboxComponent } from '../chatbox/chatbox.component';
 import { NavigationRailComponent } from '../navigation-rail/navigation-rail.component';
+import { BottomNavigationComponent } from './bottom-navigation/bottom-navigation';
 import { HttpClient } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
 import { interval } from 'rxjs';
@@ -14,7 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, ChatboxComponent, NavigationRailComponent],
+  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, ChatboxComponent, NavigationRailComponent, BottomNavigationComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

@@ -20,10 +20,10 @@
 }
 
 .sidenav-container {
-  height: calc(100vh - 64px); /* Account for toolbar height */
+  height: calc(100vh - var(--md-toolbar-height));
   width: 100vw;
   position: fixed;
-  top: 64px; /* Align with navigation rail */
+  top: var(--md-toolbar-height);
   left: 0;
   bottom: 0;
   right: 0;
@@ -35,10 +35,10 @@
 /* Enable pointer events on the sidenav itself */
 mat-sidenav {
   pointer-events: auto;
-  width: 300px;
+  width: var(--md-side-panel-width);
   padding: 0; /* Remove default padding */
   box-shadow: var(--md-sys-elevation-3dp);
-  margin-right: var(--md-spacing-24); /* Space for navigation rail (96px) */
+  margin-right: var(--md-nav-rail-width);
   background-color: var(--md-sys-color-surface);
 }
 
@@ -123,15 +123,16 @@ mat-sidenav-content {
   background: transparent;
 }
 
-/* Responsive adjustments for navigation rail positioning using Material Design breakpoints */
-@media (max-width: 840px) {
-  mat-sidenav {
-    margin-right: var(--md-spacing-20); /* Compact rail width (80px) */
+/* Responsive adjustments using adaptive tokens */
+@media (max-width: 599px) {
+  /* Compact layout - mobile with bottom navigation */
+  .sidenav-container {
+    height: calc(100vh - var(--md-toolbar-height) - var(--md-bottom-nav-height));
+    bottom: var(--md-bottom-nav-height);
   }
-}
 
-@media (max-width: 600px) {
   mat-sidenav {
-    margin-right: 0; /* No rail on mobile */
+    margin-right: 0; /* No navigation rail on mobile */
+    width: 100vw; /* Full width modal on mobile */
   }
 }

@@ -1,59 +1,62 @@
-/* Navigation Rail Component - Material Design 3 */
-.navigation-rail {
+/* Bottom Navigation Component - Material Design 3 */
+
+.bottom-navigation {
   position: fixed;
-  top: 64px; /* Below toolbar */
-  right: 0;
   bottom: 0;
-  width: var(--md-nav-rail-width); /* Responsive width */
+  left: 0;
+  right: 0;
+  height: var(--md-bottom-nav-height, 80px);
   z-index: 1000;
   background-color: var(--md-sys-color-surface-container, var(--mat-sys-surface-container));
-  border-left: 1px solid var(--md-sys-color-outline-variant, var(--mat-sys-outline-variant));
+  border-top: 1px solid var(--md-sys-color-outline-variant, var(--mat-sys-outline-variant));
   display: flex;
   flex-direction: column;
+  box-shadow: var(--md-sys-elevation-3dp);
 }
 
-.nav-rail-container {
+.bottom-nav-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 8px 0;
-  gap: 4px; /* Material Design 3 spacing */
+  justify-content: space-around;
+  height: 100%;
+  padding: var(--md-spacing-2) var(--md-spacing-4);
+  gap: var(--md-spacing-1);
 }
 
-.nav-rail-item {
-  width: 100%;
+.bottom-nav-item {
+  flex: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
+  max-width: 120px;
 }
 
-.nav-rail-button {
+.bottom-nav-button {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 80px; /* Increased for better label space */
-  height: 64px; /* Increased height for better text layout */
+  width: 100%;
   min-height: 64px;
   border: none;
-  border-radius: 16px; /* Material Design 3 container shape */
+  border-radius: var(--md-spacing-4); /* 16px Material Design 3 container shape */
   background-color: transparent;
   cursor: pointer;
   transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
-  padding: 8px 4px;
-  
+  padding: var(--md-spacing-2) var(--md-spacing-1);
+
   /* Focus indicator */
   outline: none;
-  
+
   /* State layer container */
   overflow: hidden;
 }
 
 /* ===== MATERIAL DESIGN 3 STATE LAYERS ===== */
-/* Navigation rail buttons with proper state layer implementation */
 
 /* State layer base setup */
-.nav-rail-button::before {
+.bottom-nav-button::before {
   content: '';
   position: absolute;
   top: 0;
@@ -69,167 +72,200 @@
 }
 
 /* Hover state layer */
-.nav-rail-button:hover::before {
+.bottom-nav-button:hover::before {
   opacity: var(--md-sys-state-hover-opacity);
 }
 
 /* Focus state layer and ring */
-.nav-rail-button:focus-visible::before {
+.bottom-nav-button:focus-visible::before {
   opacity: var(--md-sys-state-focus-opacity);
 }
 
-.nav-rail-button:focus-visible {
+.bottom-nav-button:focus-visible {
   outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-primary, var(--mat-sys-primary));
   outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
 }
 
 /* Pressed state layer */
-.nav-rail-button:active::before {
+.bottom-nav-button:active::before {
   opacity: var(--md-sys-state-pressed-opacity);
 }
 
 /* Selected/Active state layer */
-.nav-rail-button[aria-expanded="true"]::before,
-.nav-rail-button.active::before {
+.bottom-nav-button[aria-expanded="true"]::before,
+.bottom-nav-button.active::before {
   background-color: var(--md-sys-color-on-secondary-container, var(--mat-sys-on-secondary-container));
   opacity: var(--md-sys-state-selected-opacity);
 }
 
-.nav-rail-button-content {
+.bottom-nav-button-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--md-spacing-1);
+  z-index: 2;
+}
+
+.bottom-nav-icon-container {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.nav-rail-icon {
-  font-size: var(--md-sys-typescale-headline-small-font-size);
+.bottom-nav-icon {
+  font-size: var(--md-sys-typescale-title-medium-font-size);
   width: 24px;
   height: 24px;
   color: var(--md-sys-color-on-surface-variant, var(--mat-sys-on-surface-variant));
   transition: color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
 }
 
-.nav-rail-status-indicator {
+.bottom-nav-status-indicator {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  font-size: var(--md-sys-typescale-body-small-font-size) !important;
-  width: 12px !important;
-  height: 12px !important;
+  top: -6px;
+  right: -6px;
+  font-size: var(--md-sys-typescale-label-small-font-size) !important;
+  width: 14px !important;
+  height: 14px !important;
   background-color: var(--md-sys-color-surface, var(--mat-sys-surface));
   border-radius: 50%;
   padding: 2px;
-  box-shadow: 0 0 0 1px var(--md-sys-color-surface, var(--mat-sys-surface));
+  box-shadow: 0 0 0 2px var(--md-sys-color-surface, var(--mat-sys-surface));
 }
 
-.nav-rail-label {
+.bottom-nav-label {
   font-family: var(--md-sys-typescale-font-family-plain);
   font-size: var(--md-sys-typescale-label-small-font-size);
   font-weight: var(--md-sys-typescale-label-small-font-weight);
   line-height: var(--md-sys-typescale-label-small-line-height);
   letter-spacing: var(--md-sys-typescale-label-small-letter-spacing);
   color: var(--md-sys-color-on-surface-variant, var(--mat-sys-on-surface-variant));
-  margin-top: 2px;
   text-align: center;
   width: 100%;
-  max-width: 88px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 0 2px;
-  box-sizing: border-box;
 }
 
 /* Status indicator colors - using semantic tokens */
 .status-green {
-  color: var(--md-sys-color-chat-connected);
+  color: var(--md-sys-color-chat-connected, #4ade80);
 }
 
 .status-red {
-  color: var(--md-sys-color-chat-disconnected);
+  color: var(--md-sys-color-chat-disconnected, #f87171);
 }
 
 .status-orange {
-  color: var(--md-sys-color-chat-pending);
+  color: var(--md-sys-color-chat-pending, #fbbf24);
 }
 
 /* Selected/Active state (when sidenav is open) */
-.nav-rail-button[aria-expanded="true"],
-.nav-rail-button.active {
+.bottom-nav-button[aria-expanded="true"],
+.bottom-nav-button.active {
   background-color: var(--md-sys-color-secondary-container, var(--mat-sys-secondary-container));
 }
 
-.nav-rail-button[aria-expanded="true"] .nav-rail-icon,
-.nav-rail-button.active .nav-rail-icon {
+.bottom-nav-button[aria-expanded="true"] .bottom-nav-icon,
+.bottom-nav-button.active .bottom-nav-icon {
   color: var(--md-sys-color-on-secondary-container, var(--mat-sys-on-secondary-container));
 }
 
-.nav-rail-button[aria-expanded="true"] .nav-rail-label,
-.nav-rail-button.active .nav-rail-label {
+.bottom-nav-button[aria-expanded="true"] .bottom-nav-label,
+.bottom-nav-button.active .bottom-nav-label {
   color: var(--md-sys-color-on-secondary-container, var(--mat-sys-on-secondary-container));
 }
 
-/* Responsive breakpoints using Material Design 3 adaptive tokens */
-
-/* Medium screens (600-839px) - Compact rail */
-@media (min-width: 600px) and (max-width: 839px) {
-  .nav-rail-button {
-    width: 64px;
-    height: 56px;
-    border-radius: 12px;
-  }
-
-  .nav-rail-icon {
-    font-size: var(--md-sys-typescale-title-large-font-size);
-    width: 20px;
-    height: 20px;
-  }
-
-  .nav-rail-label {
-    font-size: var(--md-sys-typescale-label-small-font-size);
-    line-height: 11px;
-    max-width: 72px;
-  }
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-/* Hide on compact screens (mobile) - use bottom navigation instead */
-@media (max-width: 599px) {
-  .navigation-rail {
+/* ===== RESPONSIVE BEHAVIOR ===== */
+
+/* Hide on medium screens and up (show navigation rail instead) */
+@media (min-width: 600px) {
+  .bottom-navigation {
     display: none;
   }
 }
 
-/* Dark mode enhancements for better contrast */
+/* Compact mobile layout adjustments */
+@media (max-width: 480px) {
+  .bottom-nav-container {
+    padding: var(--md-spacing-1) var(--md-spacing-2);
+    gap: var(--md-spacing-half);
+  }
+
+  .bottom-nav-button {
+    min-height: 56px;
+    padding: var(--md-spacing-1);
+  }
+
+  .bottom-nav-icon {
+    width: 20px;
+    height: 20px;
+    font-size: var(--md-sys-typescale-title-small-font-size);
+  }
+
+  .bottom-nav-label {
+    font-size: var(--md-sys-typescale-label-small-font-size);
+    line-height: 10px;
+  }
+
+  .bottom-nav-status-indicator {
+    width: 12px !important;
+    height: 12px !important;
+    top: -4px;
+    right: -4px;
+  }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* Dark mode enhancements */
 @media (prefers-color-scheme: dark) {
-  .nav-rail-label {
+  .bottom-nav-label,
+  .bottom-nav-icon {
     color: var(--md-sys-color-on-surface);
   }
 
-  .nav-rail-icon {
-    color: var(--md-sys-color-on-surface);
-  }
-
-  .navigation-rail {
-    border-left-color: var(--md-sys-color-outline);
+  .bottom-navigation {
+    border-top-color: var(--md-sys-color-outline);
   }
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  .navigation-rail {
-    border-left-width: 2px;
+  .bottom-navigation {
+    border-top-width: 2px;
   }
 
-  .nav-rail-button:focus-visible {
+  .bottom-nav-button:focus-visible {
     box-shadow: 0 0 0 3px var(--md-sys-color-primary, var(--mat-sys-primary));
+  }
+
+  .bottom-nav-status-indicator {
+    box-shadow: 0 0 0 3px var(--md-sys-color-surface, var(--mat-sys-surface));
   }
 }
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-  .nav-rail-button,
-  .nav-rail-icon {
+  .bottom-nav-button,
+  .bottom-nav-icon,
+  .bottom-nav-button::before {
     transition: none;
   }
 }

@@ -5,6 +5,7 @@
 @use './styles/motion'; /* Motion system - animations and transitions */
 @use './styles/state-layers'; /* State layer system - interactive states */
 @use './styles/surface-elevation'; /* Surface and elevation system */
+@use './styles/responsive'; /* Responsive system - adaptive layouts */
 @import './styles/material-grid.css';
 @import './styles/m3-color-system.css';
 

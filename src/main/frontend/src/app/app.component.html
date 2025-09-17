@@ -6,10 +6,17 @@
     </mat-toolbar>
   </header>
 
-  <!-- Navigation Rail replacing individual floating buttons -->
+  <!-- Navigation Rail for medium screens and up -->
   <app-navigation-rail
+    class="md-hide-compact"
     [metrics]="metrics()">
   </app-navigation-rail>
+
+  <!-- Bottom Navigation for mobile -->
+  <app-bottom-navigation
+    class="md-show-compact"
+    [metrics]="metrics()">
+  </app-bottom-navigation>
 
   <!-- Side panels as complementary content -->
   <aside role="complementary" aria-label="Application panels">

@@ -34,10 +34,8 @@ aside[role="complementary"] {
   /* This wrapper contains all panel components which handle their own positioning */
 }
 
-/* Main content wrapper */
+/* Main content wrapper using responsive system */
 main[role="main"] {
-  padding-top: var(--md-spacing-16); /* Same as toolbar height */
-  padding-right: var(--md-spacing-24); /* Space for navigation rail (96px) */
   height: 100vh;
   box-sizing: border-box;
   background-color: var(--md-sys-color-surface);
@@ -50,20 +48,31 @@ app-memory-panel {
   z-index: 10;
 }
 
-/* Responsive breakpoints for navigation rail using Material Design breakpoints */
-@media (max-width: 840px) {
+/* Responsive layout using adaptive tokens */
+@media (max-width: 599px) {
+  /* Compact layout - mobile */
   main[role="main"] {
-    padding-right: var(--md-spacing-20); /* Compact rail width (80px) */
-  }
-}
-
-@media (max-width: 600px) {
-  main[role="main"] {
-    padding-right: 0; /* No rail on mobile */
-    padding-top: 56px;
+    padding-top: var(--md-toolbar-height);
+    padding-bottom: var(--md-bottom-nav-height);
+    padding-left: var(--md-content-margin);
+    padding-right: var(--md-content-margin);
   }
 
   mat-toolbar {
-    height: 56px; /* Standard mobile toolbar height */
+    height: var(--md-toolbar-height);
+  }
+}
+
+@media (min-width: 600px) {
+  /* Medium layout and up - tablet/desktop */
+  main[role="main"] {
+    padding-top: var(--md-toolbar-height);
+    padding-right: calc(var(--md-nav-rail-width) + var(--md-content-margin));
+    padding-left: var(--md-content-margin);
+    padding-bottom: var(--md-content-margin);
+  }
+
+  mat-toolbar {
+    height: var(--md-toolbar-height);
   }
 }
