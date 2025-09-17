@@ -587,6 +587,66 @@ button:active:not(:disabled) {
     background: rgba(255, 255, 255, 0.1);
   }
 
+  /* Enhanced chatbox footer contrast */
+  .chatbox-footer {
+    background-color: var(--md-sys-color-surface-container-high) !important;
+    border-color: var(--md-sys-color-outline) !important;
+  }
+
+  /* Better hint text visibility */
+  .chat-input-field .mat-mdc-form-field-subscript-wrapper,
+  .chat-input-field mat-hint {
+    color: var(--md-sys-color-on-surface) !important;
+    opacity: 0.87 !important;
+  }
+
+  /* Enhanced form field label and input text - comprehensive targeting */
+  .chat-input-field .mat-mdc-form-field-label,
+  .chat-input-field .mat-mdc-floating-label,
+  .chat-input-field .mdc-floating-label,
+  .chat-input-field .mat-mdc-form-field-label-wrapper .mat-mdc-form-field-label,
+  .chat-input-field .mdc-text-field__input,
+  .chat-input-field .mdc-text-field__label,
+  .chat-input-field mat-label,
+  .chat-input-field label,
+  .chat-input-field textarea {
+    color: var(--md-sys-color-on-surface) !important;
+    opacity: 0.9 !important;
+  }
+
+  /* Force better visibility for all label elements */
+  .chat-input-field .mat-mdc-form-field .mat-mdc-form-field-label,
+  .chat-input-field .mat-mdc-form-field .mdc-floating-label {
+    color: var(--md-sys-color-on-surface) !important;
+    opacity: 0.85 !important;
+    font-weight: 400 !important;
+  }
+
+  /* When field has focus or value, use primary color for label */
+  .chat-input-field .mat-mdc-form-field.mat-focused .mat-mdc-form-field-label,
+  .chat-input-field .mat-mdc-form-field.mat-form-field-has-label .mat-mdc-floating-label,
+  .chat-input-field .mat-mdc-form-field.mat-focused .mdc-floating-label {
+    color: var(--md-sys-color-primary) !important;
+    opacity: 1 !important;
+  }
+
+  /* Better placeholder text visibility */
+  .chat-input-field textarea::placeholder {
+    color: var(--md-sys-color-on-surface-variant) !important;
+    opacity: 0.7 !important;
+  }
+
+  /* Enhanced button visibility in chatbox footer */
+  .prompt-button {
+    color: var(--md-sys-color-on-surface) !important;
+    background-color: var(--md-sys-color-surface-container) !important;
+  }
+
+  .prompt-button:disabled {
+    color: var(--md-sys-color-on-surface-variant) !important;
+    opacity: 0.5 !important;
+  }
+
   /* Enhanced Send button visibility */
   .chatbox-footer button[mat-flat-button] {
     background-color: var(--md-sys-color-primary) !important;
@@ -598,6 +658,17 @@ button:active:not(:disabled) {
     background-color: var(--md-sys-color-surface-variant) !important;
     color: var(--md-sys-color-on-surface-variant) !important;
     opacity: 0.5 !important;
+  }
+
+  /* Enhanced FAB send button */
+  .send-fab {
+    background-color: var(--md-sys-color-primary) !important;
+    color: var(--md-sys-color-on-primary) !important;
+  }
+
+  .send-fab:disabled {
+    background-color: var(--md-sys-color-surface-variant) !important;
+    color: var(--md-sys-color-on-surface-variant) !important;
   }
 
 }
