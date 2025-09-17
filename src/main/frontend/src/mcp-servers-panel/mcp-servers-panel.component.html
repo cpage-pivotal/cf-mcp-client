@@ -18,13 +18,18 @@
       <div class="status-container">
         <div class="status-row">
           <span class="status-label">Status:</span>
-          <span class="status-indicator"
-                [ngClass]="getOverallStatusClass()"
-                role="status"
-                [attr.aria-label]="'MCP servers status: ' + getOverallStatusText()">
-            <mat-icon aria-hidden="true">{{ getOverallStatusIcon() }}</mat-icon>
-            <span class="status-text">{{ getOverallStatusText() }}</span>
-          </span>
+          <mat-chip-set>
+            <mat-chip
+              variant="assist"
+              [class.status-success]="getOverallStatusClass() === 'status-green'"
+              [class.status-warning]="getOverallStatusClass() === 'status-orange'"
+              [class.status-error]="getOverallStatusClass() === 'status-red'"
+              role="status"
+              [attr.aria-label]="'MCP servers status: ' + getOverallStatusText()">
+              <mat-icon matChipAvatar aria-hidden="true">{{ getOverallStatusIcon() }}</mat-icon>
+              {{ getOverallStatusText() }}
+            </mat-chip>
+          </mat-chip-set>
         </div>
       </div>
     </section>

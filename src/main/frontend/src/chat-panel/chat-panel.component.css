@@ -93,29 +93,77 @@ mat-sidenav .sidenav-header {
   color: var(--md-sys-color-on-surface);
 }
 
-.status-indicator {
+/* Material Design 3 Status Chips */
+mat-chip-set {
+  margin: 0;
   display: flex;
   align-items: center;
 }
 
-.status-indicator mat-icon {
-  margin-right: var(--md-spacing-2); /* 8px using Material spacing */
-  font-size: var(--md-sys-typescale-title-medium-font-size);
+mat-chip {
+  font-size: var(--md-sys-typescale-label-medium-font-size);
+  font-weight: var(--md-sys-typescale-label-medium-font-weight);
+  height: 32px;
+  border-radius: 16px;
+  transition: var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+/* Material Design 3 Chip States */
+mat-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+  pointer-events: none;
+}
+
+mat-chip:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+mat-chip:focus::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+mat-chip:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* Status Chip Variants */
+mat-chip.status-success {
+  background-color: var(--md-sys-color-success-container);
+  color: var(--md-sys-color-on-success-container);
+  border: 1px solid var(--md-sys-color-success);
+}
+
+mat-chip.status-success mat-icon {
+  color: var(--md-sys-color-success);
+}
+
+mat-chip.status-error {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border: 1px solid var(--md-sys-color-error);
+}
+
+mat-chip.status-error mat-icon {
+  color: var(--md-sys-color-error);
+}
+
+/* Chip avatar icons */
+mat-chip mat-icon[matChipAvatar] {
+  font-size: 18px;
   height: 18px;
   width: 18px;
-}
-
-.status-green {
-  color: var(--md-sys-color-chat-connected);
-}
-
-.status-red {
-  color: var(--md-sys-color-chat-disconnected);
-}
-
-.status-text {
-  font-size: var(--md-sys-typescale-body-medium-font-size);
-  color: var(--md-sys-color-on-surface-variant);
+  margin-right: 8px;
 }
 
 /* Hide the content area without disabling its functions */

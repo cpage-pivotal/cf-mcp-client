@@ -18,13 +18,17 @@
       <div class="status-container">
         <div class="status-row">
           <span class="status-label">Chat Model:</span>
-          <span class="status-indicator"
-                [ngClass]="{'status-green': metrics.chatModel !== '', 'status-red': metrics.chatModel === ''}"
-                role="status"
-                [attr.aria-label]="'Chat model status: ' + (metrics.chatModel !== '' ? metrics.chatModel : 'Not available')">
-            <mat-icon aria-hidden="true">{{ metrics.chatModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
-            <span class="status-text">{{ metrics.chatModel !== '' ? metrics.chatModel : 'Not Available' }}</span>
-          </span>
+          <mat-chip-set>
+            <mat-chip
+              variant="assist"
+              [class.status-success]="metrics.chatModel !== ''"
+              [class.status-error]="metrics.chatModel === ''"
+              role="status"
+              [attr.aria-label]="'Chat model status: ' + (metrics.chatModel !== '' ? metrics.chatModel : 'Not available')">
+              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.chatModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
+              {{ metrics.chatModel !== '' ? metrics.chatModel : 'Not Available' }}
+            </mat-chip>
+          </mat-chip-set>
         </div>
       </div>
     </section>

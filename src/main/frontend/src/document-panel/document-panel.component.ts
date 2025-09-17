@@ -9,6 +9,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FileSizePipe } from '../pipes/file-size.pipe';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
 import { PlatformMetrics } from '../app/app.component';
 import { SidenavService } from '../services/sidenav.service';
 import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
@@ -27,7 +28,7 @@ export class DocumentHammerConfig extends HammerGestureConfig {
   standalone: true,
   imports: [
     CommonModule, MatSidenavModule, MatButtonModule, MatIconModule,
-    MatListModule, MatSnackBarModule, FileSizePipe, MatProgressBarModule, MatTooltipModule
+    MatListModule, MatSnackBarModule, FileSizePipe, MatProgressBarModule, MatTooltipModule, MatChipsModule
   ],
   providers: [
     { provide: HAMMER_GESTURE_CONFIG, useClass: DocumentHammerConfig }

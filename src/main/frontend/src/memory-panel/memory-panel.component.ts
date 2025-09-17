@@ -7,6 +7,7 @@ import {FormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {MatChipsModule} from '@angular/material/chips';
 import {PlatformMetrics} from '../app/app.component';
 import {SidenavService} from '../services/sidenav.service';
 
@@ -21,7 +22,8 @@ import {SidenavService} from '../services/sidenav.service';
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatChipsModule
   ],
   templateUrl: './memory-panel.component.html',
   styleUrl: './memory-panel.component.css'
