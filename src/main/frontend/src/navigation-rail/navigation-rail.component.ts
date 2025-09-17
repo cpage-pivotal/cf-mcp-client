@@ -61,6 +61,11 @@ export class NavigationRailComponent {
     this.sidenavService.toggle(itemId);
   }
 
+  // Helper method to get tooltip text (empty when panel is open)
+  getTooltipText(item: any): string {
+    return this.sidenavService.getActivePanel() ? '' : item.tooltip;
+  }
+
   // Helper method to get status indicator for each nav item
   getStatusIndicator(itemId: string): { show: boolean; color: string; icon: string } {
     switch (itemId) {

@@ -6,7 +6,7 @@
           type="button"
           class="nav-rail-button"
           (click)="onNavItemClick(item.id)"
-          [matTooltip]="item.tooltip"
+          [matTooltip]="getTooltipText(item)"
           matTooltipPosition="left"
           [attr.aria-label]="item.tooltip"
           [attr.data-nav-item]="item.id">
