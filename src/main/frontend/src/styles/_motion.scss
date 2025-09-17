@@ -1,0 +1,387 @@
+/**
+ * Material Design 3 Motion System
+ *
+ * Implements Material Design motion principles with proper duration tokens,
+ * easing curves, and animation patterns for consistent motion across the application.
+ *
+ * Based on Material Design 3 specifications:
+ * - Duration tokens for consistent timing
+ * - Easing curves for natural motion
+ * - Animation patterns for common interactions
+ * - Accessibility considerations with prefers-reduced-motion
+ */
+
+// Duration Tokens
+// Short durations for simple transitions and micro-interactions
+:root {
+  --md-sys-motion-duration-short1: 50ms;
+  --md-sys-motion-duration-short2: 100ms;
+  --md-sys-motion-duration-short3: 150ms;
+  --md-sys-motion-duration-short4: 200ms;
+
+  // Medium durations for standard UI transitions
+  --md-sys-motion-duration-medium1: 250ms;
+  --md-sys-motion-duration-medium2: 300ms;
+  --md-sys-motion-duration-medium3: 350ms;
+  --md-sys-motion-duration-medium4: 400ms;
+
+  // Long durations for complex animations and layout changes
+  --md-sys-motion-duration-long1: 450ms;
+  --md-sys-motion-duration-long2: 500ms;
+  --md-sys-motion-duration-long3: 550ms;
+  --md-sys-motion-duration-long4: 600ms;
+
+  // Extra long durations for dramatic transformations
+  --md-sys-motion-duration-extra-long1: 700ms;
+  --md-sys-motion-duration-extra-long2: 800ms;
+  --md-sys-motion-duration-extra-long3: 900ms;
+  --md-sys-motion-duration-extra-long4: 1000ms;
+
+  // Semantic duration aliases for common use cases
+  --md-sys-motion-duration-short: var(--md-sys-motion-duration-short2); // 100ms
+  --md-sys-motion-duration-medium: var(--md-sys-motion-duration-medium1); // 250ms
+  --md-sys-motion-duration-long: var(--md-sys-motion-duration-long1); // 450ms
+  --md-sys-motion-duration-extra-long: var(--md-sys-motion-duration-extra-long1); // 700ms
+}
+
+// Easing Curves
+// Material Design 3 easing curves for natural motion
+:root {
+  // Standard easing for general transitions
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --md-sys-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+
+  // Emphasized easing for important transitions
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+
+  // Legacy easing for compatibility
+  --md-sys-motion-easing-legacy: cubic-bezier(0.4, 0, 0.2, 1);
+  --md-sys-motion-easing-legacy-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --md-sys-motion-easing-legacy-decelerate: cubic-bezier(0, 0, 0.2, 1);
+
+  // Linear easing for mechanical motion
+  --md-sys-motion-easing-linear: cubic-bezier(0, 0, 1, 1);
+}
+
+// Animation Mixins
+// Reusable mixins for common animation patterns
+
+@mixin fade-in($duration: var(--md-sys-motion-duration-medium), $easing: var(--md-sys-motion-easing-standard)) {
+  animation: md-fade-in $duration $easing both;
+}
+
+@mixin fade-out($duration: var(--md-sys-motion-duration-medium), $easing: var(--md-sys-motion-easing-standard)) {
+  animation: md-fade-out $duration $easing both;
+}
+
+@mixin slide-in-from-bottom($duration: var(--md-sys-motion-duration-medium), $easing: var(--md-sys-motion-easing-emphasized-decelerate)) {
+  animation: md-slide-in-from-bottom $duration $easing both;
+}
+
+@mixin slide-in-from-top($duration: var(--md-sys-motion-duration-medium), $easing: var(--md-sys-motion-easing-emphasized-decelerate)) {
+  animation: md-slide-in-from-top $duration $easing both;
+}
+
+@mixin scale-in($duration: var(--md-sys-motion-duration-medium), $easing: var(--md-sys-motion-easing-emphasized-decelerate)) {
+  animation: md-scale-in $duration $easing both;
+}
+
+@mixin container-transform($duration: var(--md-sys-motion-duration-long), $easing: var(--md-sys-motion-easing-emphasized)) {
+  transition: all $duration $easing;
+}
+
+@mixin shared-axis-x($duration: var(--md-sys-motion-duration-medium), $easing: var(--md-sys-motion-easing-emphasized)) {
+  animation: md-shared-axis-x $duration $easing both;
+}
+
+@mixin shared-axis-y($duration: var(--md-sys-motion-duration-medium), $easing: var(--md-sys-motion-easing-emphasized)) {
+  animation: md-shared-axis-y $duration $easing both;
+}
+
+@mixin loading-rotation($duration: var(--md-sys-motion-duration-extra-long4)) {
+  animation: md-loading-rotation $duration var(--md-sys-motion-easing-linear) infinite;
+}
+
+// Standard Transitions
+// Common transition patterns using Material Design motion tokens
+
+@mixin transition-standard($property: all, $duration: var(--md-sys-motion-duration-medium), $easing: var(--md-sys-motion-easing-standard)) {
+  transition: $property $duration $easing;
+}
+
+@mixin transition-emphasized($property: all, $duration: var(--md-sys-motion-duration-medium), $easing: var(--md-sys-motion-easing-emphasized)) {
+  transition: $property $duration $easing;
+}
+
+@mixin transition-decelerated($property: all, $duration: var(--md-sys-motion-duration-medium), $easing: var(--md-sys-motion-easing-standard-decelerate)) {
+  transition: $property $duration $easing;
+}
+
+// Keyframe Animations
+// Material Design compliant animations replacing custom animations
+
+@keyframes md-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes md-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes md-slide-in-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes md-slide-in-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes md-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes md-shared-axis-x {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  25% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes md-shared-axis-y {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  25% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes md-loading-rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Container Transform Animation
+// Material Design container transform for element transitions
+@keyframes md-container-transform-expand {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+    border-radius: 28px;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    border-radius: 12px;
+  }
+}
+
+@keyframes md-container-transform-collapse {
+  from {
+    opacity: 1;
+    transform: scale(1);
+    border-radius: 12px;
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+    border-radius: 28px;
+  }
+}
+
+// Loading Animations
+// Sophisticated loading animations following Material Design principles
+
+@keyframes md-loading-fade-sequence {
+  0%, 80%, 100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes md-loading-dots {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+// Emphasis Animations
+// Subtle animations for drawing attention following Material Design guidelines
+
+@keyframes md-emphasis-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes md-emphasis-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 var(--md-sys-color-primary-container);
+  }
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 0 0 4px var(--md-sys-color-primary-container);
+  }
+}
+
+// Accessibility
+// Respect user preference for reduced motion
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Utility Classes
+// Direct application classes for common motion patterns
+
+.md-fade-in {
+  @include fade-in();
+}
+
+.md-fade-out {
+  @include fade-out();
+}
+
+.md-slide-in-bottom {
+  @include slide-in-from-bottom();
+}
+
+.md-slide-in-top {
+  @include slide-in-from-top();
+}
+
+.md-scale-in {
+  @include scale-in();
+}
+
+.md-transition-standard {
+  @include transition-standard();
+}
+
+.md-transition-emphasized {
+  @include transition-emphasized();
+}
+
+.md-loading-rotation {
+  @include loading-rotation();
+}
+
+// Component-Specific Motion Patterns
+// Predefined motion for common UI components
+
+.md-card-hover {
+  @include transition-emphasized(box-shadow, var(--md-sys-motion-duration-short));
+}
+
+.md-button-hover {
+  @include transition-standard(background-color, var(--md-sys-motion-duration-short));
+}
+
+.md-panel-enter {
+  @include slide-in-from-bottom(var(--md-sys-motion-duration-long));
+}
+
+.md-panel-exit {
+  @include fade-out(var(--md-sys-motion-duration-medium));
+}
+
+.md-navigation-transition {
+  @include shared-axis-x(var(--md-sys-motion-duration-medium));
+}
+
+.md-modal-enter {
+  @include scale-in(var(--md-sys-motion-duration-long));
+}
+
+.md-modal-backdrop {
+  @include fade-in(var(--md-sys-motion-duration-medium));
+}
+
+// Advanced Motion Patterns
+// Complex motion for sophisticated interactions
+
+.md-stagger-children > * {
+  animation-delay: calc(var(--stagger-index, 0) * 50ms);
+}
+
+.md-parallax-scroll {
+  transition: transform var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-linear);
+}
+
+.md-morph-shape {
+  transition:
+    border-radius var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized),
+    width var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized),
+    height var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized);
+}

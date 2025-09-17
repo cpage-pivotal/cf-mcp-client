@@ -1,30 +1,37 @@
-<main xmlns="http://www.w3.org/1999/html">
-  <mat-toolbar>
-    <span>Tanzu Platform Chat</span>
-    <span style="flex:1 1 auto"></span>
-  </mat-toolbar>
+<div class="app-container" role="application" aria-label="Tanzu Platform Chat Application">
+  <header role="banner">
+    <mat-toolbar>
+      <h1 class="app-title">Tanzu Platform Chat</h1>
+      <span style="flex:1 1 auto"></span>
+    </mat-toolbar>
+  </header>
 
   <!-- Navigation Rail replacing individual floating buttons -->
   <app-navigation-rail
     [metrics]="metrics()">
   </app-navigation-rail>
 
-  <app-chat-panel
-    [metrics]="metrics()">
-  </app-chat-panel>
-  <app-document-panel
-    [metrics]="metrics()"
-    (documentIdsChanged)="onDocumentIdsChanged($event)">
-  </app-document-panel>
-  <app-mcp-servers-panel
-    [metrics]="metrics()">
-  </app-mcp-servers-panel>
-  <app-memory-panel
-    [metrics]="metrics()">
-  </app-memory-panel>
+  <!-- Side panels as complementary content -->
+  <aside role="complementary" aria-label="Application panels">
+    <app-chat-panel
+      [metrics]="metrics()">
+    </app-chat-panel>
+    <app-document-panel
+      [metrics]="metrics()"
+      (documentIdsChanged)="onDocumentIdsChanged($event)">
+    </app-document-panel>
+    <app-mcp-servers-panel
+      [metrics]="metrics()">
+    </app-mcp-servers-panel>
+    <app-memory-panel
+      [metrics]="metrics()">
+    </app-memory-panel>
+  </aside>
 
-  <app-chatbox
-    [metrics]="metrics()"
-    [documentIds]="currentDocumentIds()">
-  </app-chatbox>
-</main>
+  <main role="main" aria-label="Chat conversation">
+    <app-chatbox
+      [metrics]="metrics()"
+      [documentIds]="currentDocumentIds()">
+    </app-chatbox>
+  </main>
+</div>

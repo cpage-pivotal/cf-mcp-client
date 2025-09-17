@@ -7,21 +7,27 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true" [fixedTopGap]="64">
     <div class="sidenav-header">
-      <h2>Chat</h2>
-      <button mat-icon-button (click)="sidenav.close()">
-        <mat-icon>close</mat-icon>
+      <h2 id="chat-panel-heading">Chat</h2>
+      <button mat-icon-button (click)="sidenav.close()" aria-label="Close chat panel">
+        <mat-icon aria-hidden="true">close</mat-icon>
       </button>
     </div>
 
-    <div class="status-container">
-      <div class="status-row">
-        <span class="status-label">Chat Model:</span>
-        <span class="status-indicator" [ngClass]="{'status-green': metrics.chatModel !== '', 'status-red': metrics.chatModel === ''}">
-          <mat-icon>{{ metrics.chatModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
-          <span class="status-text">{{ metrics.chatModel !== '' ? metrics.chatModel : 'Not Available' }}</span>
-        </span>
+    <section aria-labelledby="chat-status-heading">
+      <h3 id="chat-status-heading" class="sr-only">Chat Model Status</h3>
+      <div class="status-container">
+        <div class="status-row">
+          <span class="status-label">Chat Model:</span>
+          <span class="status-indicator"
+                [ngClass]="{'status-green': metrics.chatModel !== '', 'status-red': metrics.chatModel === ''}"
+                role="status"
+                [attr.aria-label]="'Chat model status: ' + (metrics.chatModel !== '' ? metrics.chatModel : 'Not available')">
+            <mat-icon aria-hidden="true">{{ metrics.chatModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
+            <span class="status-text">{{ metrics.chatModel !== '' ? metrics.chatModel : 'Not Available' }}</span>
+          </span>
+        </div>
       </div>
-    </div>
+    </section>
   </mat-sidenav>
 
   <mat-sidenav-content>

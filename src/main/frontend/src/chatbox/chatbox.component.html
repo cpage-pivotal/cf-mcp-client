@@ -1,33 +1,44 @@
-<div class="chatbox" id="chatbox">
-  <div #chatboxMessages class="chatbox-messages">
+<div class="chatbox" id="chatbox" role="log" aria-label="Chat conversation">
+  <!-- Live region for screen reader announcements -->
+  <div aria-live="polite" aria-atomic="false" class="sr-only" id="chat-status-live-region">
+    <!-- Dynamic status messages will be announced here -->
+  </div>
+
+  <div #chatboxMessages class="chatbox-messages" role="log" aria-label="Chat messages">
     <!-- Chat messages will be dynamically inserted here -->
     @for (messageData of messagesWithReasoningFlags(); track messageData.index) {
-      <div class="chat-message {{messageData.persona}}">
+      <div class="chat-message {{messageData.persona}}"
+           role="article"
+           [attr.aria-label]="messageData.persona === 'user' ? 'Your message' : 'Assistant response'">
         <mat-card appearance="outlined"
                   [attr.data-card-variant]="messageData.persona == 'user' ? 'user' : 'bot'"
                   class="md3-chat-card">
           <mat-card-content>
             @if (messageData.persona == 'user') {
-              <div class="user-message-content">{{ messageData.text }}</div>
+              <div class="user-message-content" role="text">{{ messageData.text }}</div>
             } @else {
               <div class="bot-message-container">
                 @if (messageData.typing) {
-                  <div class="typing__dot"></div><div class="typing__dot"></div><div class="typing__dot"></div>
+                  <div class="typing__dot" role="status" aria-label="Assistant is typing">
+                    <div class="typing__dot"></div><div class="typing__dot"></div><div class="typing__dot"></div>
+                    <span class="sr-only">Assistant is thinking...</span>
+                  </div>
                 } @else {
-                  <div class="main-content">
+                  <div class="main-content" role="text">
                     <markdown [data]="messageData.text"></markdown>
                   </div>
                   @if (messageData.hasReasoning && messageData.reasoning) {
                     <mat-expansion-panel class="reasoning-expansion-panel"
                                        [expanded]="messageData.showReasoning"
-                                       (expandedChange)="toggleReasoning(messageData.index)">
+                                       (expandedChange)="toggleReasoning(messageData.index)"
+                                       aria-label="Reasoning details">
                       <mat-expansion-panel-header>
                         <mat-panel-title>
-                          <mat-icon class="reasoning-icon">psychology</mat-icon>
+                          <mat-icon class="reasoning-icon" aria-hidden="true">psychology</mat-icon>
                           <span class="reasoning-title">Reasoning</span>
                         </mat-panel-title>
                       </mat-expansion-panel-header>
-                      <div class="reasoning-content">
+                      <div class="reasoning-content" role="text">
                         <markdown [data]="messageData.reasoning"></markdown>
                       </div>
                     </mat-expansion-panel>
@@ -35,14 +46,15 @@
                   @if (messageData.hasError && messageData.error) {
                     <mat-expansion-panel class="error-expansion-panel"
                                        [expanded]="messageData.showError"
-                                       (expandedChange)="toggleError(messageData.index)">
+                                       (expandedChange)="toggleError(messageData.index)"
+                                       aria-label="Error details">
                       <mat-expansion-panel-header>
                         <mat-panel-title>
-                          <mat-icon class="error-icon">bug_report</mat-icon>
+                          <mat-icon class="error-icon" aria-hidden="true">bug_report</mat-icon>
                           <span class="error-title">Error Details</span>
                         </mat-panel-title>
                       </mat-expansion-panel-header>
-                      <div class="error-content">
+                      <div class="error-content" role="text">
                         <div class="error-field">
                           <strong>Type:</strong> {{ messageData.error.errorType }}
                         </div>
@@ -66,15 +78,17 @@
       </div>
     }
   </div>
-  <div class="chatbox-footer">
+  <div class="chatbox-footer" role="form" aria-label="Send message">
     <ng-form style="display: flex; align-items: center; gap: 8px;">
       <button mat-icon-button type="button"
               (click)="openPromptSelection()"
               [disabled]="!hasAvailablePrompts() || isBusy()"
-              [matTooltip]="hasAvailablePrompts() ? 'Select a prompt' : 'No prompts available'">
-        <mat-icon [class.spinning]="isBusy()">psychology</mat-icon>
+              [matTooltip]="hasAvailablePrompts() ? 'Select a prompt' : 'No prompts available'"
+              [attr.aria-label]="hasAvailablePrompts() ? 'Select a prompt' : 'No prompts available'">
+        <mat-icon [class.spinning]="isBusy()" aria-hidden="true">psychology</mat-icon>
       </button>
       <mat-form-field style="flex-grow: 1">
+        <mat-label>Message</mat-label>
         <input name="chatbox-input"
                placeholder="Type a message..."
                matInput
@@ -82,13 +96,17 @@
                (ngModelChange)="updateChatMessage($event)"
                [disabled]="isBusy()"
                type="text"
-               (keydown.enter)="sendChatMessage()">
+               (keydown.enter)="sendChatMessage()"
+               aria-label="Type your message"
+               aria-describedby="chat-input-help">
+        <mat-hint id="chat-input-help">Press Enter to send</mat-hint>
       </mat-form-field>
       <button mat-flat-button
               type="button"
               (click)="sendChatMessage()"
               [disabled]="!canSendMessage()"
-              [matTooltip]="sendButtonTooltip()">
+              [matTooltip]="sendButtonTooltip()"
+              [attr.aria-label]="sendButtonTooltip()">
         {{ sendButtonText() }}
       </button>
     </ng-form>

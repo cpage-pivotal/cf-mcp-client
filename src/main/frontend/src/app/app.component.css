@@ -1,23 +1,41 @@
-/* Toolbar CSS */
-mat-toolbar {
+/* App container */
+.app-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header CSS */
+header[role="banner"] {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 2;
+}
+
+mat-toolbar {
   height: var(--md-spacing-16); /* 64px using Material Design spacing */
   background-color: var(--md-sys-color-surface-container-high) !important;
   box-shadow: var(--md-sys-elevation-shadow-3dp);
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
-mat-toolbar span {
+.app-title {
   color: var(--md-sys-color-on-surface);
   font-weight: 500;
+  margin: 0;
+  font-size: var(--md-sys-typescale-title-large-font-size);
+  line-height: var(--md-sys-typescale-title-large-line-height);
+}
+
+/* Side panels as complementary content */
+aside[role="complementary"] {
+  /* This wrapper contains all panel components which handle their own positioning */
 }
 
 /* Main content wrapper */
-main {
+main[role="main"] {
   padding-top: var(--md-spacing-16); /* Same as toolbar height */
   padding-right: var(--md-spacing-24); /* Space for navigation rail (96px) */
   height: 100vh;
@@ -34,21 +52,18 @@ app-memory-panel {
 
 /* Responsive breakpoints for navigation rail using Material Design breakpoints */
 @media (max-width: 840px) {
-  main {
+  main[role="main"] {
     padding-right: var(--md-spacing-20); /* Compact rail width (80px) */
   }
 }
 
 @media (max-width: 600px) {
-  main {
+  main[role="main"] {
     padding-right: 0; /* No rail on mobile */
+    padding-top: 56px;
   }
 
   mat-toolbar {
     height: 56px; /* Standard mobile toolbar height */
-  }
-
-  main {
-    padding-top: 56px;
   }
 }
