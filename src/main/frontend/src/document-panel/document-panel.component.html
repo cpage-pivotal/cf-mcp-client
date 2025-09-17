@@ -1,5 +1,5 @@
 <mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #sidenav mode="over" position="end">
+  <mat-sidenav #sidenav mode="over" position="end" (openedChange)="onSidenavOpenedChange($event)">
     <div class="sidenav-header">
       <h2 id="documents-panel-heading">Documents</h2>
       <button mat-icon-button (click)="toggleSidenav()" matTooltip="Close panel" aria-label="Close documents panel">

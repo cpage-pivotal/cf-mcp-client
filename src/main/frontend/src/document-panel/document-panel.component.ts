@@ -77,6 +77,13 @@ export class DocumentPanelComponent implements AfterViewInit {
     this.sidenavService.toggle('document');
   }
 
+  onSidenavOpenedChange(opened: boolean) {
+    if (!opened) {
+      // Sidenav was closed (e.g., by backdrop click) - update service state
+      this.sidenavService.notifyPanelClosed('document');
+    }
+  }
+
   // Drag and drop event handlers
   onDragEnter(event: DragEvent) {
     event.preventDefault();

@@ -126,4 +126,13 @@ export class SidenavService {
   getActivePanel(): string | null {
     return this.activePanelSubject.value;
   }
+
+  /**
+   * Notify that a panel was closed externally (e.g., by backdrop click)
+   */
+  notifyPanelClosed(id: string): void {
+    if (this.activePanelSubject.value === id) {
+      this.activePanelSubject.next(null);
+    }
+  }
 }

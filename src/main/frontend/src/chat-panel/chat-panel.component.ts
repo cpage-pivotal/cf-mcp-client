@@ -36,4 +36,11 @@ export class ChatPanelComponent implements AfterViewInit {
   toggleSidenav() {
     this.sidenavService.toggle('chat');
   }
+
+  onSidenavOpenedChange(opened: boolean) {
+    if (!opened) {
+      // Sidenav was closed (e.g., by backdrop click) - update service state
+      this.sidenavService.notifyPanelClosed('chat');
+    }
+  }
 }

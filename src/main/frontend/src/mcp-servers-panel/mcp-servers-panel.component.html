@@ -5,7 +5,7 @@
 </div>
 
 <mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true" [fixedTopGap]="64">
+  <mat-sidenav #sidenav mode="over" position="end" fixedInViewport="true" [fixedTopGap]="64" (openedChange)="onSidenavOpenedChange($event)">
     <div class="sidenav-header">
       <h2 id="mcp-servers-panel-heading">MCP Servers</h2>
       <button mat-icon-button (click)="sidenav.close()" aria-label="Close MCP servers panel">
