@@ -59,8 +59,8 @@ mat-sidenav .sidenav-header {
 
 .sidenav-header h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-large-font-size);
+  font-weight: var(--md-sys-typescale-title-large-font-weight);
   color: var(--md-sys-color-on-surface);
 }
 
@@ -118,7 +118,7 @@ mat-sidenav .sidenav-header {
 }
 
 .drop-zone-icon {
-  font-size: 48px;
+  font-size: var(--md-sys-typescale-display-medium-font-size);
   width: 48px;
   height: 48px;
   color: var(--md-sys-color-primary);
@@ -137,8 +137,8 @@ mat-sidenav .sidenav-header {
 }
 
 .drop-zone-title {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
+  font-weight: var(--md-sys-typescale-title-medium-font-weight);
   color: var(--md-sys-color-on-surface);
 }
 
@@ -147,7 +147,7 @@ mat-sidenav .sidenav-header {
 }
 
 .drop-zone-subtitle {
-  font-size: 14px;
+  font-size: var(--md-sys-typescale-body-medium-font-size);
   color: var(--md-sys-color-on-surface-variant);
 }
 
@@ -169,14 +169,14 @@ mat-sidenav .sidenav-header {
   align-items: center;
   justify-content: center;
   gap: var(--md-spacing-1);
-  font-size: 12px;
+  font-size: var(--md-sys-typescale-body-small-font-size);
   color: var(--md-sys-color-on-surface-variant);
   margin-top: auto;
   padding-top: var(--md-spacing-2);
 }
 
 .format-icon {
-  font-size: 16px;
+  font-size: var(--md-sys-typescale-body-large-font-size);
   width: 16px;
   height: 16px;
   color: var(--md-sys-color-error);
@@ -199,7 +199,7 @@ mat-sidenav .sidenav-header {
 }
 
 .upload-icon {
-  font-size: 24px;
+  font-size: var(--md-sys-typescale-headline-small-font-size);
   width: 24px;
   height: 24px;
   color: var(--md-sys-color-primary);
@@ -210,8 +210,8 @@ mat-sidenav .sidenav-header {
 }
 
 .file-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-label-large-font-size);
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
   margin-bottom: var(--md-spacing-1);
   white-space: nowrap;
   overflow: hidden;
@@ -220,7 +220,7 @@ mat-sidenav .sidenav-header {
 }
 
 .upload-status {
-  font-size: 12px;
+  font-size: var(--md-sys-typescale-body-small-font-size);
   color: var(--md-sys-color-primary);
   font-weight: 500;
 }
@@ -233,7 +233,7 @@ mat-sidenav .sidenav-header {
 
 .progress-percentage {
   text-align: right;
-  font-size: 12px;
+  font-size: var(--md-sys-typescale-body-small-font-size);
   color: var(--md-sys-color-on-surface-variant);
   font-weight: 500;
 }
@@ -263,7 +263,7 @@ mat-sidenav .sidenav-header {
 }
 
 .empty-state-icon {
-  font-size: 48px;
+  font-size: var(--md-sys-typescale-display-medium-font-size);
   width: 48px;
   height: 48px;
   color: var(--md-sys-color-outline);
@@ -271,13 +271,13 @@ mat-sidenav .sidenav-header {
 }
 
 .empty-state-text {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
+  font-weight: var(--md-sys-typescale-title-medium-font-weight);
   color: var(--md-sys-color-on-surface-variant);
 }
 
 .empty-state-subtitle {
-  font-size: 14px;
+  font-size: var(--md-sys-typescale-body-medium-font-size);
   color: var(--md-sys-color-on-surface-variant);
   opacity: 0.7;
 }
@@ -308,8 +308,8 @@ mat-sidenav-content {
 
 .status-label {
   flex: 0 0 100px;
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+  font-size: var(--md-sys-typescale-label-large-font-size);
   color: var(--md-sys-color-on-surface);
 }
 
@@ -320,7 +320,7 @@ mat-sidenav-content {
 
 .status-indicator mat-icon {
   margin-right: var(--md-spacing-2);
-  font-size: 18px;
+  font-size: var(--md-sys-typescale-title-medium-font-size);
   height: 18px;
   width: 18px;
 }
@@ -334,7 +334,7 @@ mat-sidenav-content {
 }
 
 .status-text {
-  font-size: 14px;
+  font-size: var(--md-sys-typescale-body-medium-font-size);
   color: var(--md-sys-color-on-surface-variant);
 }
 
@@ -391,7 +391,7 @@ mat-sidenav-content {
   }
 
   .drop-zone-icon {
-    font-size: 40px;
+    font-size: var(--md-sys-typescale-display-small-font-size);
     width: 40px;
     height: 40px;
   }
@@ -401,7 +401,7 @@ mat-sidenav-content {
   }
 
   .empty-state-icon {
-    font-size: 40px;
+    font-size: var(--md-sys-typescale-display-small-font-size);
     width: 40px;
     height: 40px;
   }

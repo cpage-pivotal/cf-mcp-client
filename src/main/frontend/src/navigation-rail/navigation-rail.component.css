@@ -75,7 +75,7 @@
 }
 
 .nav-rail-icon {
-  font-size: 24px;
+  font-size: var(--md-sys-typescale-headline-small-font-size);
   width: 24px;
   height: 24px;
   color: var(--md-sys-color-on-surface-variant, var(--mat-sys-on-surface-variant));
@@ -86,7 +86,7 @@
   position: absolute;
   top: -4px;
   right: -4px;
-  font-size: 12px !important;
+  font-size: var(--md-sys-typescale-body-small-font-size) !important;
   width: 12px !important;
   height: 12px !important;
   background-color: var(--md-sys-color-surface, var(--mat-sys-surface));
@@ -96,11 +96,11 @@
 }
 
 .nav-rail-label {
-  font-family: var(--md-sys-typescale-label-medium-font, var(--mat-sys-label-medium-font));
-  font-size: var(--md-sys-typescale-label-medium-size, 11px);
-  font-weight: var(--md-sys-typescale-label-medium-weight, 500);
-  line-height: var(--md-sys-typescale-label-medium-line-height, 12px);
-  letter-spacing: var(--md-sys-typescale-label-medium-tracking, 0.5px);
+  font-family: var(--md-sys-typescale-font-family-plain);
+  font-size: var(--md-sys-typescale-label-small-font-size);
+  font-weight: var(--md-sys-typescale-label-small-font-weight);
+  line-height: var(--md-sys-typescale-label-small-line-height);
+  letter-spacing: var(--md-sys-typescale-label-small-letter-spacing);
   color: var(--md-sys-color-on-surface-variant, var(--mat-sys-on-surface-variant));
   margin-top: 2px;
   text-align: center;
@@ -155,13 +155,13 @@
   }
   
   .nav-rail-icon {
-    font-size: 20px;
+    font-size: var(--md-sys-typescale-title-large-font-size);
     width: 20px;
     height: 20px;
   }
   
   .nav-rail-label {
-    font-size: 10px;
+    font-size: var(--md-sys-typescale-label-small-font-size);
     line-height: 11px;
     max-width: 72px;
   }
