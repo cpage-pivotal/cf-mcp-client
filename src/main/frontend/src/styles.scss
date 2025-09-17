@@ -3,6 +3,7 @@
 /* Import Material Design 3 Systems */
 @use './styles/typography'; /* Typography system - must be first */
 @use './styles/motion'; /* Motion system - animations and transitions */
+@use './styles/state-layers'; /* State layer system - interactive states */
 @import './styles/material-grid.css';
 @import './styles/m3-color-system.css';
 

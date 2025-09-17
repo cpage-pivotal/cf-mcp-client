@@ -339,24 +339,92 @@ mat-sidenav-content {
 }
 
 /* Document Item */
+/* ===== DOCUMENT ITEM STATE LAYERS ===== */
 .document-item {
   position: relative;
   border-radius: 8px;
   margin-bottom: var(--md-spacing-1);
+  overflow: hidden;
+  cursor: pointer;
   transition: background-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
 }
 
-.document-item:hover {
-  background-color: var(--md-sys-color-surface-container-lowest);
+.document-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: var(--md-sys-color-on-surface);
+  opacity: 0;
+  transition: opacity var(--md-sys-state-transition-duration) var(--md-sys-state-transition-easing);
+  pointer-events: none;
+  z-index: 1;
 }
 
+.document-item:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.document-item:focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.document-item:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-outline);
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+.document-item:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ===== DELETE BUTTON STATE LAYERS ===== */
 .delete-button {
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
   color: var(--md-sys-color-on-surface-variant);
   transition: color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+  cursor: pointer;
+}
+
+.delete-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: var(--md-sys-color-error);
+  opacity: 0;
+  transition: opacity var(--md-sys-state-transition-duration) var(--md-sys-state-transition-easing);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .delete-button:hover {
   color: var(--md-sys-color-error);
+}
+
+.delete-button:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.delete-button:focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.delete-button:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-error);
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+.delete-button:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
 }
 
 .document-item:hover .delete-button {

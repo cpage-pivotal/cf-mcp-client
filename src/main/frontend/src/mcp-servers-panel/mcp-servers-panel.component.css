@@ -133,17 +133,52 @@ mat-sidenav .sidenav-header {
   gap: 12px;
 }
 
-/* Individual server card */
+/* ===== SERVER CARD STATE LAYERS ===== */
 .server-card {
+  position: relative;
   padding: 0;
   border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
   transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
   border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.server-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: var(--md-sys-color-on-surface);
+  opacity: 0;
+  transition: opacity var(--md-sys-state-transition-duration) var(--md-sys-state-transition-easing);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .server-card:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
+}
+
+.server-card:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.server-card:focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.server-card:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-outline);
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+.server-card:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
 }
 
 .server-card mat-card-content {
@@ -228,6 +263,11 @@ mat-sidenav .sidenav-header {
 .server-card.server-unhealthy {
   opacity: 0.8;
   background-color: rgba(244, 67, 54, 0.04);
+}
+
+/* Unhealthy server card specific state layers */
+.server-card.server-unhealthy::before {
+  background-color: var(--md-sys-color-error);
 }
 
 .server-card.server-unhealthy:hover {

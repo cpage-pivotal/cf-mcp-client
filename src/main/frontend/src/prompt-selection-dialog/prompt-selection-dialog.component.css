@@ -105,16 +105,47 @@
   padding: 0;
 }
 
+/* ===== PROMPT ITEM STATE LAYERS ===== */
 .prompt-item {
+  position: relative;
   cursor: pointer;
+  overflow: hidden;
   transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
   border-radius: 4px;
   margin: 4px 0;
   min-height: 72px;
 }
 
-.prompt-item:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+.prompt-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: var(--md-sys-color-on-surface);
+  opacity: 0;
+  transition: opacity var(--md-sys-state-transition-duration) var(--md-sys-state-transition-easing);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.prompt-item:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.prompt-item:focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.prompt-item:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-outline);
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+.prompt-item:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
 }
 
 .prompt-title {

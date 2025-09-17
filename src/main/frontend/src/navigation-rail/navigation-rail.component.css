@@ -49,22 +49,50 @@
   overflow: hidden;
 }
 
-/* Focus ring - Material Design 3 */
-.nav-rail-button:focus-visible {
-  box-shadow: 0 0 0 2px var(--md-sys-color-primary, var(--mat-sys-primary));
-  outline: 2px solid transparent;
-  outline-offset: 2px;
+/* ===== MATERIAL DESIGN 3 STATE LAYERS ===== */
+/* Navigation rail buttons with proper state layer implementation */
+
+/* State layer base setup */
+.nav-rail-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background-color: var(--md-sys-color-on-surface, var(--mat-sys-on-surface));
+  opacity: 0;
+  transition: opacity var(--md-sys-state-transition-duration) var(--md-sys-state-transition-easing);
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Hover state layer */
-.nav-rail-button:hover {
-  background-color: var(--md-sys-color-on-surface, var(--mat-sys-on-surface));
-  background-color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--mat-sys-on-surface)) 8%, transparent);
+.nav-rail-button:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+/* Focus state layer and ring */
+.nav-rail-button:focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.nav-rail-button:focus-visible {
+  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-primary, var(--mat-sys-primary));
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
 }
 
 /* Pressed state layer */
-.nav-rail-button:active {
-  background-color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--mat-sys-on-surface)) 10%, transparent);
+.nav-rail-button:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* Selected/Active state layer */
+.nav-rail-button[aria-expanded="true"]::before,
+.nav-rail-button.active::before {
+  background-color: var(--md-sys-color-on-secondary-container, var(--mat-sys-on-secondary-container));
+  opacity: var(--md-sys-state-selected-opacity);
 }
 
 .nav-rail-button-content {
