@@ -162,17 +162,9 @@
               </mat-icon>
 
               <!-- Two-line content layout following Material Design standards -->
-              <div matListItemTitle class="document-title">
-                {{ doc.name }}
-              </div>
-              <div matListItemLine class="document-subtitle">
-                <span class="document-size">{{ doc.size | fileSize }}</span>
-                <span class="document-date">{{ formatDocumentDate(doc.uploadDate) }}</span>
-              </div>
-
-              <!-- Trailing actions -->
-              <div matListItemMeta class="document-actions">
-                <!-- Delete button -->
+              <div matListItemTitle class="document-title-container">
+                <span class="document-title">{{ doc.name }}</span>
+                <!-- Delete button positioned inline with title -->
                 <button mat-icon-button
                         (click)="deleteDocument(doc.id); $event.stopPropagation()"
                         matTooltip="Delete document"
@@ -180,6 +172,10 @@
                         [attr.aria-label]="'Delete document: ' + doc.name">
                   <mat-icon aria-hidden="true">delete</mat-icon>
                 </button>
+              </div>
+              <div matListItemLine class="document-subtitle">
+                <span class="document-size">{{ doc.size | fileSize }}</span>
+                <span class="document-date">{{ formatDocumentDate(doc.uploadDate) }}</span>
               </div>
 
               <!-- Swipe delete indicator (mobile only) -->

@@ -375,14 +375,28 @@ mat-sidenav-content {
   position: relative;
   border-radius: 12px;
   margin-bottom: var(--md-spacing-1);
-  overflow: hidden;
+  overflow: visible !important; /* Force override Angular Material overflow */
   cursor: pointer;
-  min-height: 72px; /* Material Design 3 two-line list item height */
-  padding: var(--md-spacing-2) var(--md-spacing-4);
+  min-height: 80px !important; /* Force override Angular Material height */
+  height: auto !important; /* Allow height to grow with content */
+  padding: var(--md-spacing-3) var(--md-spacing-4) !important;
   transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
   user-select: none;
   -webkit-user-select: none;
   touch-action: pan-y; /* Allow vertical scrolling but enable horizontal pan for swipe */
+}
+
+/* Override Angular Material's internal list item styles */
+.document-item.mat-mdc-list-item {
+  height: auto !important;
+  min-height: 80px !important;
+}
+
+.document-item .mat-mdc-list-item-content {
+  height: auto !important;
+  min-height: 80px !important;
+  overflow: visible !important;
+  padding: var(--md-spacing-3) var(--md-spacing-4) !important;
 }
 
 /* State layer implementation */
@@ -437,12 +451,24 @@ mat-sidenav-content {
 }
 
 /* Document content styling */
+.document-title-container {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin-bottom: var(--md-spacing-1) !important;
+  min-height: var(--md-sys-typescale-body-large-line-height) !important;
+}
+
 .document-title {
   font-size: var(--md-sys-typescale-body-large-font-size) !important;
   font-weight: var(--md-sys-typescale-body-large-font-weight) !important;
   color: var(--md-sys-color-on-surface) !important;
   line-height: var(--md-sys-typescale-body-large-line-height) !important;
-  margin-bottom: var(--md-spacing-1) !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
 .document-item.selected .document-title {
@@ -456,6 +482,19 @@ mat-sidenav-content {
   font-size: var(--md-sys-typescale-body-medium-font-size) !important;
   color: var(--md-sys-color-on-surface-variant) !important;
   line-height: var(--md-sys-typescale-body-medium-line-height) !important;
+  margin-top: var(--md-spacing-1) !important;
+  padding-right: 48px !important; /* Add padding to avoid overlap with delete button */
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* Override Angular Material's list item line styling */
+.document-item .mat-mdc-list-item-line {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  height: auto !important;
 }
 
 .document-item.selected .document-subtitle {
@@ -501,13 +540,10 @@ mat-sidenav-content {
   color: var(--md-sys-color-on-primary-container) !important;
 }
 
-/* Trailing actions */
-.document-actions {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--md-spacing-1);
+/* Delete button in title container */
+.document-title-container .delete-button {
+  flex-shrink: 0;
   margin-left: var(--md-spacing-2);
-  margin-top: var(--md-spacing-1); /* Align with title text baseline */
 }
 
 /* ===== DELETE BUTTON STATE LAYERS ===== */
@@ -683,11 +719,9 @@ mat-sidenav-content {
     padding: var(--md-spacing-3) var(--md-spacing-4);
   }
 
-  .document-actions {
-    /* Hide delete button on mobile in favor of swipe gesture */
-    .delete-button {
-      display: none;
-    }
+  /* Hide delete button on mobile in favor of swipe gesture */
+  .document-title-container .delete-button {
+    display: none;
   }
 
   /* Show swipe hint for mobile users */
@@ -720,7 +754,7 @@ mat-sidenav-content {
     display: none; /* No swipe indicators on desktop */
   }
 
-  .document-actions .delete-button {
+  .document-title-container .delete-button {
     display: flex;
   }
 }
