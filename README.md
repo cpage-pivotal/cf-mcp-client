@@ -17,13 +17,16 @@ Tanzu Platform Chat (cf-mcp-client) is a Spring chatbot application that can be 
 
 ### Preparing the Application
 
-1. Build the application package:
+1. Create a directory for the application and navigate to it:
 
 ```bash
-mvn clean package
+mkdir tanzu-platform-chat
+cd tanzu-platform-chat
 ```
 
-2. Push the application to Cloud Foundry:
+2. Download the latest JAR file and manifest.yml from the [Releases page](https://github.com/cpage-pivotal/cf-mcp-client/releases) into this directory
+
+3. Push the application to Cloud Foundry from the directory containing the downloaded files:
 
 ```bash
 cf push
