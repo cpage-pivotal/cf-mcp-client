@@ -84,7 +84,7 @@ cf restart ai-tool-chat
 ```
 
 5. Click on the document tool on the right-side of the screen, and upload a .PDF File
-![Upload File](images/uploads.png)
+<p> <img src="images/uploads.png" alt="Upload File" width="250"> </p>
 
 Now your chatbot will respond to queries about the uploaded document
 
