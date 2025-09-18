@@ -6,7 +6,10 @@
   bottom: 0;
   width: var(--md-nav-rail-width); /* Responsive width */
   z-index: 1000;
-  background-color: var(--md-sys-color-surface-container, var(--mat-sys-surface-container));
+  background: linear-gradient(to bottom,
+    var(--md-sys-color-surface-container, var(--mat-sys-surface-container)) 0%,
+    color-mix(in srgb, var(--md-sys-color-tertiary) 12%, var(--md-sys-color-surface-container, var(--mat-sys-surface-container)) 88%) 100%
+  );
   border-left: 1px solid var(--md-sys-color-outline-variant, var(--mat-sys-outline-variant));
   display: flex;
   flex-direction: column;

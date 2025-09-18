@@ -16,7 +16,10 @@ header[role="banner"] {
 
 mat-toolbar {
   height: var(--md-spacing-16); /* 64px using Material Design spacing */
-  background-color: var(--md-sys-color-surface-container-high) !important;
+  background: linear-gradient(135deg,
+    var(--md-sys-color-surface-container-high) 0%,
+    color-mix(in srgb, var(--md-sys-color-primary) 15%, var(--md-sys-color-surface-container-high) 85%) 100%
+  ) !important;
   box-shadow: var(--md-sys-elevation-3dp);
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
