@@ -310,7 +310,7 @@ mat-chip mat-icon[matChipAvatar] {
 .server-protocol mat-chip {
   font-size: var(--md-sys-typescale-label-small-font-size);
   height: 24px;
-  border-radius: 12px;
+  border-radius: 8px;
   font-weight: var(--md-sys-typescale-label-medium-font-weight);
   background-color: var(--md-sys-color-surface-variant);
   color: var(--md-sys-color-on-surface-variant);
