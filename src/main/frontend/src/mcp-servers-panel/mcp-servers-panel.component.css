@@ -310,13 +310,12 @@ mat-chip mat-icon[matChipAvatar] {
 .server-protocol mat-chip {
   font-size: var(--md-sys-typescale-label-small-font-size);
   height: 24px;
-  line-height: 24px;
-  padding: 0 10px;
   border-radius: 12px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  font-weight: var(--md-sys-typescale-label-medium-font-weight);
+  background-color: var(--md-sys-color-surface-variant);
+  color: var(--md-sys-color-on-surface-variant);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  transition: var(--md-motion-duration-short2) var(--md-motion-easing-standard);
 }
 
 /* Tools icon */
@@ -331,13 +330,13 @@ mat-chip mat-icon[matChipAvatar] {
 
 /* Protocol-specific styles */
 .protocol-sse {
-  background-color: #e3f2fd !important;
-  color: #1565c0 !important;
+  background-color: var(--md-sys-color-primary-container) !important;
+  color: var(--md-sys-color-on-primary-container) !important;
 }
 
 .protocol-streamable {
-  background-color: #f3e5f5 !important;
-  color: #6a1b9a !important;
+  background-color: var(--md-sys-color-secondary-container) !important;
+  color: var(--md-sys-color-on-secondary-container) !important;
 }
 
 /* Unhealthy server card */
