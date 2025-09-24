@@ -8,12 +8,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
-.modal-header h2 {
-  margin: 0;
+.modal-header h2[mat-dialog-title] {
+  margin: 0 !important;
   flex: 1;
+  color: var(--mat-sys-on-surface) !important;
+  font-size: var(--mat-sys-typescale-headline-small-size) !important;
+  font-weight: var(--mat-sys-typescale-headline-small-weight) !important;
+  line-height: var(--mat-sys-typescale-headline-small-line-height) !important;
+  letter-spacing: var(--mat-sys-typescale-headline-small-tracking) !important;
   word-wrap: break-word; /* Handle long agent names */
   overflow-wrap: break-word; /* Modern property for word wrapping */
 }
@@ -21,6 +28,14 @@
 .close-button {
   margin-left: 16px;
   flex-shrink: 0; /* Prevent button from shrinking */
+  color: var(--mat-sys-on-surface) !important;
+}
+
+.close-button mat-icon {
+  color: var(--mat-sys-on-surface) !important;
+  font-size: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
 }
 
 .modal-content {
@@ -33,16 +48,20 @@
 
 .no-tools {
   text-align: center;
-  padding: 32px 16px;
-  color: rgba(0, 0, 0, 0.6);
+  padding: 40px 24px;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: var(--mat-sys-typescale-body-large-size);
+  font-weight: var(--mat-sys-typescale-body-large-weight);
+  line-height: var(--mat-sys-typescale-body-large-line-height);
 }
 
 .no-tools-icon {
-  font-size: var(--md-sys-typescale-display-medium-font-size);
+  font-size: 48px;
   height: 48px;
   width: 48px;
   margin-bottom: 16px;
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--mat-sys-outline);
+  opacity: 0.6;
 }
 
 .tools-list {
@@ -56,22 +75,27 @@
 .tool-card {
   border-left: 4px solid var(--mat-sys-primary);
   margin-right: 0; /* Ensure no right margin causing overflow */
+  background-color: var(--mat-sys-surface-container-low);
   word-wrap: break-word; /* Handle long content */
   overflow-wrap: break-word; /* Modern property for word wrapping */
 }
 
 .tool-name {
-  font-size: var(--md-sys-typescale-title-medium-font-size);
-  font-weight: var(--md-sys-typescale-title-medium-font-weight);
-  color: var(--mat-sys-primary);
+  font-size: var(--mat-sys-typescale-title-medium-size) !important;
+  font-weight: var(--mat-sys-typescale-title-medium-weight) !important;
+  line-height: var(--mat-sys-typescale-title-medium-line-height) !important;
+  color: var(--mat-sys-primary) !important;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
 .tool-description {
   margin: 0;
-  color: rgba(0, 0, 0, 0.7);
-  line-height: 1.4;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: var(--mat-sys-typescale-body-medium-size);
+  font-weight: var(--mat-sys-typescale-body-medium-weight);
+  line-height: var(--mat-sys-typescale-body-medium-line-height);
+  letter-spacing: var(--mat-sys-typescale-body-medium-tracking);
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
