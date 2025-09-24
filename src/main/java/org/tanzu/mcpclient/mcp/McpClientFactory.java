@@ -5,6 +5,7 @@ import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientSseClientTransport;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
+import io.modelcontextprotocol.json.jackson.JacksonMcpJsonMapper;
 import org.springframework.stereotype.Component;
 
 import javax.net.ssl.SSLContext;
@@ -74,7 +75,7 @@ public class McpClientFactory {
 
         HttpClientSseClientTransport transport = HttpClientSseClientTransport.builder(serverUrl)
                 .clientBuilder(clientBuilder)
-                .objectMapper(new ObjectMapper())
+                .jsonMapper(new JacksonMcpJsonMapper(new ObjectMapper()))
                 .build();
 
         return McpClient.sync(transport)
@@ -90,7 +91,7 @@ public class McpClientFactory {
 
         HttpClientStreamableHttpTransport transport = HttpClientStreamableHttpTransport.builder(serverUrl)
                 .clientBuilder(clientBuilder)
-                .objectMapper(new ObjectMapper())
+                .jsonMapper(new JacksonMcpJsonMapper(new ObjectMapper()))
                 .resumableStreams(true)
                 .build();
 
