@@ -96,10 +96,10 @@ Model Context Protocol (MCP) servers are lightweight programs that expose specif
 
 #### SSE Protocol (Server-Sent Events)
 
-1. Create a user-provided service for an SSE-based MCP server:
+1. Create a user-provided service for an SSE-based MCP server using the `mcpSseURL` tag:
 
 ```bash
-cf cups mcp-server-sse -p '{"mcpSseURL":"https://your-sse-mcp-server.example.com"}'
+cf cups mcp-server-sse -p '{"uri":"https://your-sse-mcp-server.example.com"}' -t "mcpSseURL"
 ```
 
 2. Bind the MCP service to your application:
@@ -110,10 +110,10 @@ cf bind-service ai-tool-chat mcp-server-sse
 
 #### Streamable HTTP Protocol
 
-1. Create a user-provided service for a Streamable HTTP-based MCP server:
+1. Create a user-provided service for a Streamable HTTP-based MCP server using the `mcpStreamableURL` tag:
 
 ```bash
-cf cups mcp-server-streamable -p '{"mcpStreamableURL":"https://your-streamable-mcp-server.example.com"}'
+cf cups mcp-server-streamable -p '{"uri":"https://your-streamable-mcp-server.example.com"}' -t "mcpStreamableURL"
 ```
 
 2. Bind the MCP service to your application:

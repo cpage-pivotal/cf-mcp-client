@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>21</java.version>
-		<spring-ai.version>1.1.0-M2</spring-ai.version>
+		<spring-ai.version>1.1.0-M3</spring-ai.version>
 	</properties>
 
 	<dependencyManagement>
@@ -116,7 +116,7 @@
 						</goals>
 						<configuration>
 							<!-- See https://nodejs.org/en/download/ for latest node and npm (lts) versions -->
-							<nodeVersion>v22.12.0</nodeVersion>
+							<nodeVersion>v24.9.0</nodeVersion>
 						</configuration>
 					</execution>
 					<execution>

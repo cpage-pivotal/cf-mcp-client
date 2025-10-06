@@ -27,6 +27,11 @@ public class McpDiscoveryService {
     public static final String MCP_SSE_URL = "mcpSseURL";                   // Explicit SSE support
     public static final String MCP_STREAMABLE_URL = "mcpStreamableURL";     // Streamable HTTP support
 
+    // Constants for tag-based discovery
+    public static final String TAG_MCP_SSE = "mcpSseURL";
+    public static final String TAG_MCP_STREAMABLE = "mcpStreamableURL";
+    public static final String CREDENTIALS_URI_KEY = "uri";
+
     private final CfEnv cfEnv;
     private final GenaiLocator genaiLocator; // Optional - may be null
 
@@ -143,9 +148,65 @@ public class McpDiscoveryService {
 
     /**
      * Extracts MCP service configuration from a Cloud Foundry service binding.
-     * Checks keys in priority order: mcpStreamableURL > mcpSseURL > mcpServiceURL
+     * First tries tag-based discovery (new approach), then falls back to credential-based discovery (legacy).
      */
     private McpServiceConfiguration extractMcpServiceConfiguration(CfService service) {
+        // First, try tag-based discovery (new approach)
+        McpServiceConfiguration tagBasedConfig = extractFromTags(service);
+        if (tagBasedConfig != null) {
+            return tagBasedConfig;
+        }
+
+        // Fall back to credential-based discovery (legacy support)
+        return extractFromCredentials(service);
+    }
+
+    /**
+     * Extracts MCP service configuration using tag-based discovery.
+     * Looks for mcpStreamableURL or mcpSseURL tags, then reads the 'uri' key from credentials.
+     */
+    private McpServiceConfiguration extractFromTags(CfService service) {
+        CfCredentials credentials = service.getCredentials();
+        if (credentials == null) {
+            return null;
+        }
+
+        // Check for mcpStreamableURL tag
+        if (service.existsByTagIgnoreCase(TAG_MCP_STREAMABLE)) {
+            String uri = credentials.getString(CREDENTIALS_URI_KEY);
+            if (isValidUrl(uri)) {
+                logger.debug("Found MCP Streamable service '{}' via tag with URI: {}",
+                    service.getName(), uri);
+                return new McpServiceConfiguration(
+                    service.getName(),
+                    uri,
+                    new ProtocolType.StreamableHttp()
+                );
+            }
+        }
+
+        // Check for mcpSseURL tag
+        if (service.existsByTagIgnoreCase(TAG_MCP_SSE)) {
+            String uri = credentials.getString(CREDENTIALS_URI_KEY);
+            if (isValidUrl(uri)) {
+                logger.debug("Found MCP SSE service '{}' via tag with URI: {}",
+                    service.getName(), uri);
+                return new McpServiceConfiguration(
+                    service.getName(),
+                    uri,
+                    new ProtocolType.SSE()
+                );
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Extracts MCP service configuration using legacy credential-based discovery.
+     * Checks keys in priority order: mcpStreamableURL > mcpSseURL > mcpServiceURL
+     */
+    private McpServiceConfiguration extractFromCredentials(CfService service) {
         CfCredentials credentials = service.getCredentials();
         if (credentials == null) {
             return null;
@@ -156,14 +217,18 @@ public class McpDiscoveryService {
         // Check keys in priority order
         if (credentialsMap.containsKey(MCP_STREAMABLE_URL)) {
             String url = (String) credentialsMap.get(MCP_STREAMABLE_URL);
-            if (url != null && !url.trim().isEmpty()) {
+            if (isValidUrl(url)) {
+                logger.debug("Found legacy MCP Streamable service '{}' via credentials",
+                    service.getName());
                 return new McpServiceConfiguration(service.getName(), url, new ProtocolType.StreamableHttp());
             }
         }
 
         if (credentialsMap.containsKey(MCP_SSE_URL)) {
             String url = (String) credentialsMap.get(MCP_SSE_URL);
-            if (url != null && !url.trim().isEmpty()) {
+            if (isValidUrl(url)) {
+                logger.debug("Found legacy MCP SSE service '{}' via credentials",
+                    service.getName());
                 return new McpServiceConfiguration(service.getName(), url, new ProtocolType.SSE());
             }
         }
@@ -171,12 +236,21 @@ public class McpDiscoveryService {
         if (credentialsMap.containsKey(MCP_SERVICE_URL)) {
             // Legacy support - defaults to Legacy protocol (which uses SSE)
             String url = (String) credentialsMap.get(MCP_SERVICE_URL);
-            if (url != null && !url.trim().isEmpty()) {
+            if (isValidUrl(url)) {
+                logger.debug("Found legacy MCP service '{}' via credentials with mcpServiceURL",
+                    service.getName());
                 return new McpServiceConfiguration(service.getName(), url, new ProtocolType.Legacy());
             }
         }
 
         return null;
+    }
+
+    /**
+     * Validates that a URL string is not null or empty.
+     */
+    private boolean isValidUrl(String url) {
+        return url != null && !url.trim().isEmpty();
     }
 
     /**

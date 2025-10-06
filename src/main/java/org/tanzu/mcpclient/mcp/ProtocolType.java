@@ -3,6 +3,7 @@ package org.tanzu.mcpclient.mcp;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.pivotal.cfenv.core.CfService;
 
 import java.util.Map;
 
@@ -55,5 +56,29 @@ public sealed interface ProtocolType
             return new Legacy();
         }
         throw new IllegalArgumentException("No valid MCP binding key found in credentials");
+    }
+
+    /**
+     * Factory method that supports both tag-based and credential-based detection.
+     * Checks tags first (new approach), then falls back to credentials (legacy approach).
+     *
+     * @param service The Cloud Foundry service to extract protocol from
+     * @return ProtocolType instance based on service tags or credentials
+     * @throws IllegalArgumentException if no valid protocol identifier is found
+     */
+    static ProtocolType fromServiceBinding(CfService service) {
+        // Check tags first (new approach)
+        if (service.existsByTagIgnoreCase("mcpStreamableURL")) {
+            return new StreamableHttp();
+        } else if (service.existsByTagIgnoreCase("mcpSseURL")) {
+            return new SSE();
+        }
+
+        // Fall back to credentials (legacy approach)
+        if (service.getCredentials() != null && service.getCredentials().getMap() != null) {
+            return fromCredentials(service.getCredentials().getMap());
+        }
+
+        throw new IllegalArgumentException("No valid MCP protocol identifier found in service: " + service.getName());
     }
 }

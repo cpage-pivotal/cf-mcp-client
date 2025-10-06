@@ -225,7 +225,8 @@ cf push
 # Note the URL it deploys to (e.g., https://time-mcp-server.apps.your-cf-domain.com)
 
 # Create a user-provided service pointing to the MCP server using SSE protocol
-cf cups mcp-time-server -p '{"mcpSseURL":"https://time-mcp-server.apps.your-cf-domain.com"}'
+# The -t flag specifies the protocol type, while -p contains the service URL
+cf cups mcp-time-server -p '{"uri":"https://time-mcp-server.apps.your-cf-domain.com"}' -t "mcpSseURL"
 
 # Return to the chat app directory and bind the service
 cd ../cf-mcp-client
@@ -240,9 +241,16 @@ cf restart ai-tool-chat
 If your MCP server supports Streamable HTTP Protocol instead of SSE, use:
 
 ```bash
-# Create service with Streamable HTTP protocol
-cf cups mcp-time-server -p '{"mcpStreamableURL":"https://time-mcp-server.apps.your-cf-domain.com"}'
+# Create service with Streamable HTTP protocol tag
+# The tag identifies the protocol, while uri contains the actual endpoint
+cf cups mcp-time-server -p '{"uri":"https://time-mcp-server.apps.your-cf-domain.com"}' -t "mcpStreamableURL"
 ```
+
+**Understanding the New Format:**
+- **Service tags** (`-t` flag) identify the protocol type (`mcpSseURL` or `mcpStreamableURL`)
+- **Credentials** (`-p` flag) contain the service URL in the standardized `uri` field
+- This separates "what type of service" (tag) from "how to connect" (credentials)
+- Both legacy credential-based format and new tag-based format are supported for backward compatibility
 
 ### Step 11: Test MCP Tool Usage
 
@@ -344,8 +352,9 @@ All managed by Cloud Foundry—you just focus on your application logic!
 **MCP tools not working?**
 - Verify the MCP server is running: `cf app time-mcp-server`
 - Check the Agents panel (🔌) shows your service
-- Confirm the mcpSseURL or mcpStreamableURL matches the deployed app URL
-- Ensure you're using the correct protocol key for your MCP server type
+- Confirm the `uri` credential matches the deployed app URL
+- Ensure you're using the correct protocol tag (`mcpSseURL` or `mcpStreamableURL`) with the `-t` flag
+- Verify the service tag matches your MCP server's protocol type
 
 **Memory not persisting?**
 - Both vector store and embeddings must be bound
