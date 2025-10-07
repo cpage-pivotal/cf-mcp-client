@@ -31,32 +31,52 @@ public class McpServerService {
     }
 
     /**
-     * Creates a new MCP synchronous client for this server using the appropriate protocol.
+     * Creates a new MCP synchronous client for this server using the appropriate protocol with fallback.
      */
     public McpSyncClient createMcpSyncClient() {
         return switch (protocol) {
             case ProtocolType.StreamableHttp streamableHttp ->
-                    clientFactory.createStreamableClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+                    clientFactory.createStreamableClientWithFallback(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
             case ProtocolType.SSE sse ->
-                    clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+                    clientFactory.createSseClientWithFallback(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
             case ProtocolType.Legacy legacy ->
-                    clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+                    clientFactory.createSseClientWithFallback(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
         };
     }
 
     /**
-     * Creates a health check client for this server using the appropriate protocol.
+     * Creates a health check client for this server using the appropriate protocol with fallback.
      */
     public McpSyncClient createHealthCheckClient() {
-        return clientFactory.createHealthCheckClient(serverUrl, protocol);
+        try {
+            return switch (protocol) {
+                case ProtocolType.StreamableHttp streamableHttp ->
+                        clientFactory.createStreamableClientWithFallback(serverUrl, Duration.ofSeconds(10), Duration.ofSeconds(10));
+                case ProtocolType.SSE sse ->
+                        clientFactory.createSseClientWithFallback(serverUrl, Duration.ofSeconds(10), Duration.ofSeconds(10));
+                case ProtocolType.Legacy legacy ->
+                        clientFactory.createSseClientWithFallback(serverUrl, Duration.ofSeconds(10), Duration.ofSeconds(10));
+            };
+        } catch (McpConnectionException e) {
+            logger.debug("Health check connection failed for {}: {}", name, e.getMessage());
+            return null;
+        }
     }
 
     /**
      * Gets the health status and available tools for this MCP server.
-     * Returns an McpServer instance with health information.
+     * Now uses fallback connection strategy.
      */
     public McpServer getHealthyMcpServer() {
-        try (McpSyncClient client = createHealthCheckClient()) {
+        McpSyncClient client = createHealthCheckClient();
+
+        if (client == null) {
+            // Connection failed entirely
+            logger.warn("MCP server {} is not reachable (tried with and without suffix)", name);
+            return new McpServer(name, name, false, Collections.emptyList(), protocol);
+        }
+
+        try (client) {
             // Initialize connection
             McpSchema.InitializeResult initResult = client.initialize();
             logger.debug("Initialized MCP server {}: protocol version {}", name,
