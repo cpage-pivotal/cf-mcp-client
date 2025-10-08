@@ -31,31 +31,17 @@ public class McpServerService {
     }
 
     /**
-     * Creates a new MCP synchronous client for this server using the appropriate protocol with fallback.
-     */
-    public McpSyncClient createMcpSyncClient() {
-        return switch (protocol) {
-            case ProtocolType.StreamableHttp streamableHttp ->
-                    clientFactory.createStreamableClientWithFallback(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
-            case ProtocolType.SSE sse ->
-                    clientFactory.createSseClientWithFallback(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
-            case ProtocolType.Legacy legacy ->
-                    clientFactory.createSseClientWithFallback(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
-        };
-    }
-
-    /**
      * Creates a health check client for this server using the appropriate protocol with fallback.
      */
     public McpSyncClient createHealthCheckClient() {
         try {
             return switch (protocol) {
                 case ProtocolType.StreamableHttp streamableHttp ->
-                        clientFactory.createStreamableClientWithFallback(serverUrl, Duration.ofSeconds(10), Duration.ofSeconds(10));
+                        clientFactory.createStreamableClientWithFallback(serverUrl, Duration.ofSeconds(5), Duration.ofSeconds(5));
                 case ProtocolType.SSE sse ->
-                        clientFactory.createSseClientWithFallback(serverUrl, Duration.ofSeconds(10), Duration.ofSeconds(10));
+                        clientFactory.createSseClientWithFallback(serverUrl, Duration.ofSeconds(5), Duration.ofSeconds(5));
                 case ProtocolType.Legacy legacy ->
-                        clientFactory.createSseClientWithFallback(serverUrl, Duration.ofSeconds(10), Duration.ofSeconds(10));
+                        clientFactory.createSseClientWithFallback(serverUrl, Duration.ofSeconds(5), Duration.ofSeconds(5));
             };
         } catch (McpConnectionException e) {
             logger.debug("Health check connection failed for {}: {}", name, e.getMessage());

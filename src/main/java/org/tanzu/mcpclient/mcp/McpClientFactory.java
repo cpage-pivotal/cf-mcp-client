@@ -26,7 +26,6 @@ public class McpClientFactory {
 
     private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(30);
     private static final Duration DEFAULT_REQUEST_TIMEOUT = Duration.ofMinutes(5);
-    private static final Duration HEALTH_CHECK_TIMEOUT = Duration.ofSeconds(10);
 
     private final SSLContext sslContext;
 
@@ -39,27 +38,6 @@ public class McpClientFactory {
      */
     public McpSyncClient createMcpSyncClient(String serverUrl) {
         return createMcpSyncClient(serverUrl, DEFAULT_CONNECT_TIMEOUT, DEFAULT_REQUEST_TIMEOUT);
-    }
-
-    /**
-     * Creates a new MCP synchronous client optimized for health checks (shorter timeouts).
-     */
-    public McpSyncClient createHealthCheckClient(String serverUrl) {
-        return createMcpSyncClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
-    }
-
-    /**
-     * Creates a new MCP synchronous client for health checks with specified protocol.
-     */
-    public McpSyncClient createHealthCheckClient(String serverUrl, ProtocolType protocol) {
-        return switch (protocol) {
-            case ProtocolType.StreamableHttp streamableHttp ->
-                    createStreamableClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
-            case ProtocolType.SSE sse ->
-                    createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
-            case ProtocolType.Legacy legacy ->
-                    createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT);
-        };
     }
 
     /**
@@ -172,13 +150,8 @@ public class McpClientFactory {
                     .clientBuilder(clientBuilder)
                     .jsonMapper(new JacksonMcpJsonMapper(new ObjectMapper()));
 
-            // Set the endpoint - empty string means no suffix
-            if (endpoint != null && !endpoint.isEmpty()) {
-                transportBuilder.sseEndpoint(endpoint);
-            } else {
-                // Use empty endpoint to connect directly to base URL
-                transportBuilder.sseEndpoint("");
-            }
+            String effectiveEndpoint = (endpoint != null && !endpoint.isEmpty()) ? endpoint : ".";
+            transportBuilder.sseEndpoint(effectiveEndpoint);
 
             HttpClientSseClientTransport transport = transportBuilder.build();
 
@@ -214,13 +187,8 @@ public class McpClientFactory {
                     .jsonMapper(new JacksonMcpJsonMapper(new ObjectMapper()))
                     .resumableStreams(true);
 
-            // Set the endpoint - empty string means no suffix
-            if (endpoint != null && !endpoint.isEmpty()) {
-                transportBuilder.endpoint(endpoint);
-            } else {
-                // Use empty endpoint to connect directly to base URL
-                transportBuilder.endpoint("");
-            }
+            String effectiveEndpoint = (endpoint != null && !endpoint.isEmpty()) ? endpoint : ".";
+            transportBuilder.endpoint(effectiveEndpoint);
 
             HttpClientStreamableHttpTransport transport = transportBuilder.build();
 
