@@ -44,16 +44,16 @@ export class BottomNavigationComponent {
       tooltip: 'Document Management'
     },
     {
-      id: 'agents',
-      icon: 'smart_toy',
-      label: 'Agents',
-      tooltip: 'A2A Agent Connections'
-    },
-    {
       id: 'mcp-servers',
       icon: 'hub',
       label: 'MCP',
       tooltip: 'MCP Server Connections'
+    },
+    {
+      id: 'agents',
+      icon: 'smart_toy',
+      label: 'Agents',
+      tooltip: 'A2A Agent Connections'
     },
     {
       id: 'memory',
