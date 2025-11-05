@@ -9,7 +9,8 @@ What makes this special? Cloud Foundry's service marketplace transforms complex 
 By the end of this guide, you'll have:
 - 💬 An AI chatbot powered by enterprise LLMs
 - 📚 Document Q&A using Retrieval Augmented Generation (RAG)
-- 🔧 Tool-using AI via Model Context Protocol (MCP) agents
+- 🔧 Tool-using AI via Model Context Protocol (MCP) servers
+- 🤖 Direct communication with specialized AI agents via A2A protocol
 - 🧠 Persistent conversation memory across sessions
 
 Let's turn infrastructure complexity into developer simplicity!
@@ -69,7 +70,7 @@ Open the provided URL in your browser to see your chat application.
 
 When you first open the application, you'll see:
 - A clean chat interface at the center
-- Four control buttons on the right side: Chat 💬, Documents 📄, Agents 🔌, and Memory 🧠
+- Five control buttons on the navigation rail: Chat 💬, Documents 📄, Agents 🤖, MCP Servers 🔌, and Memory 🧠
 
 Let's see what happens without any AI services:
 
@@ -77,10 +78,11 @@ Let's see what happens without any AI services:
 2. Press Send or hit Enter
 3. **Result:** The bot responds with "No chat model available"
 
-Click each button on the right to explore the status panels:
+Click each button on the navigation rail to explore the status panels:
 - **Chat 💬**: Shows "Chat Model: Not Available ❌"
 - **Documents 📄**: Shows "Vector Store: Not Available ❌" and "Embed Model: Not Available ❌"
-- **Agents 🔌**: Shows "Status: Not Available ❌"
+- **Agents 🤖**: Shows "No A2A agents configured" (for Agent2Agent protocol)
+- **MCP Servers 🔌**: Shows "Status: Not Available ❌" (for Model Context Protocol tools)
 - **Memory 🧠**: Shows "Memory: Transient ⚠️" (only lasts during the session)
 
 This demonstrates that your application is running but has no AI capabilities yet. Let's fix that!
@@ -256,8 +258,8 @@ cf cups mcp-time-server -p '{"uri":"https://time-mcp-server.apps.your-cf-domain.
 
 With the MCP server connected, your AI now has new abilities:
 
-1. Click the **Agents** button (🔌) to see available tools
-   - You should see: mcp-time-server listed under "Available Agents" ✅
+1. Click the **MCP Servers** button (🔌) to see available tools
+   - You should see: mcp-time-server listed under "Available MCP Servers" ✅
 2. Ask again: "What time is it?"
    - The AI will now provide the actual current time!
 
@@ -274,11 +276,152 @@ Try these questions to see the AI using tools:
 
 The AI seamlessly combines its language understanding with real-world data access!
 
+## Direct Agent Communication with A2A (Agent2Agent)
+
+While MCP servers give your AI tools to use, sometimes you need to consult with another specialized AI agent directly. This is where the Agent2Agent (A2A) protocol comes in. A2A enables your chat application to discover, connect to, and communicate with independent AI agent systems.
+
+### Understanding MCP vs A2A
+
+Let's clarify the difference between these two powerful capabilities:
+
+**MCP (Model Context Protocol):**
+- Provides tools and data sources that your LLM invokes
+- Your LLM decides when to use MCP tools as part of generating its response
+- Example: A time tool that your LLM calls to get the current time
+- Think of it as: "Giving your AI a toolbox"
+
+**A2A (Agent2Agent):**
+- Connects to independent AI agents with their own intelligence
+- You send messages directly to specialized agents and receive their complete responses
+- Example: A summarization agent that processes your text and returns a summary
+- Think of it as: "Letting your AI consult with expert colleagues"
+
+### Step 13: Experience the Power of Specialized Agents
+
+Let's see A2A in action by connecting to a text summarization agent.
+
+First, verify you have an A2A agent deployed. For this example, we'll use a summarization agent:
+
+```bash
+# Create a user-provided service pointing to an A2A agent
+# The agent card URI should point to /.well-known/agent.json
+cf cups a2a-summarizer \
+  -p '{"uri":"https://cf-summarization-a2a.apps.your-cf-domain.com/.well-known/agent.json"}' \
+  -t "a2a"
+
+# Bind the A2A agent to your application
+cf bind-service ai-tool-chat a2a-summarizer
+
+# Restart to pick up the new agent
+cf restart ai-tool-chat
+```
+
+**What's happening behind the scenes?**
+
+1. Cloud Foundry discovers the A2A service using the `a2a` tag
+2. The application fetches the Agent Card from the provided URI
+3. The Agent Card describes the agent's capabilities, skills, and endpoint
+4. The agent becomes available in your Agents panel
+5. All communication uses JSON-RPC 2.0 over HTTP
+
+### Step 14: Explore the Agents Panel
+
+1. Click the **Agents** button (🤖) on the navigation rail
+   - The button shows a status indicator:
+     - 🟢 Green: All agents healthy
+     - 🟠 Orange: Mixed health status
+     - 🔴 Red: No agents or all unhealthy
+
+2. The Agents panel opens showing your connected A2A agents:
+   - **Agent Name**: e.g., "Text Summarization Agent"
+   - **Version**: Agent version number
+   - **Description**: What the agent does
+   - **Capabilities**: Streaming, Push Notifications, State History
+   - **Health Status**: ✅ Healthy or ❌ Unhealthy with error details
+
+3. Each healthy agent has a "Send Message" button
+
+### Step 15: Send a Message to an Agent
+
+Let's use the summarization agent to summarize a long text:
+
+1. Click "Send Message" on the Text Summarization Agent card
+2. A dialog opens titled "Send Message to Text Summarization Agent"
+3. Paste in some text to summarize (or try this example):
+   ```
+   Cloud Foundry is a platform as a service (PaaS) that enables developers to deploy,
+   run, and scale applications without managing infrastructure. It provides automated
+   workflows for application deployment, service binding, health monitoring, and scaling.
+   The platform supports multiple programming languages and frameworks, offers a
+   marketplace of on-demand services, and handles all the operational complexity like
+   load balancing, SSL certificates, and zero-downtime deployments. Developers can
+   focus on writing code while Cloud Foundry manages the underlying infrastructure,
+   making it ideal for building cloud-native applications efficiently.
+   ```
+4. Click "Send"
+
+### Step 16: Observe the Agent Response
+
+Watch what happens in the chat:
+
+1. **Your message** appears in the chat (right-aligned, your user color)
+2. **Agent typing indicator** shows "Text Summarization Agent is thinking..."
+3. **Agent response** appears with distinctive styling:
+   - Left-aligned (like your LLM responses)
+   - Tertiary color scheme (different from your LLM)
+   - Header showing 🤖 icon and "Text Summarization Agent"
+   - The summarized text
+
+**Example response:**
+```
+🤖 Text Summarization Agent
+
+Cloud Foundry is a PaaS that simplifies application deployment and management
+by handling infrastructure, supporting multiple languages, providing service
+marketplace, and automating operational tasks like load balancing and scaling.
+```
+
+### Step 17: Understanding Agent Messages
+
+Notice how agent responses are different from your regular chatbot:
+
+**Regular Chatbot (LLM):**
+- Right side panel shows your configured LLM (e.g., GPT-4)
+- Responses use primary color scheme
+- Can invoke MCP tools to enhance responses
+
+**A2A Agent Messages:**
+- Agents panel shows all connected A2A agents
+- Each agent has its own identity and capabilities
+- Responses use tertiary color scheme
+- Clear attribution with agent name and icon
+- Agents process your message independently using their own AI
+
+### When to Use A2A vs MCP
+
+**Use MCP when:**
+- You want your LLM to have access to tools and data sources
+- The capability should be automatically invoked during conversation
+- You need real-time data, API access, or system integration
+- Example: Current time, database queries, file system access
+
+**Use A2A when:**
+- You want to consult a specialized AI agent
+- You need a second opinion or specialized processing
+- The agent has domain-specific expertise
+- You want explicit agent responses shown to the user
+- Example: Document summarization, translation, code analysis
+
+**Use Both when:**
+- You want your LLM to have tools (MCP) AND
+- You want to directly consult specialized agents (A2A)
+- Maximum flexibility and capability!
+
 ## Persistent Memory with Vector Storage
 
 When both a vector database and embeddings model are available, your chat application gains a superpower: it remembers conversations even after restarts! This transforms a stateless application into one with long-term memory.
 
-### Step 12: Experience Persistent Memory
+### Step 18: Experience Persistent Memory
 
 1. Click the **Memory** button (🧠) to check your setup
    - Memory: Persistent ✅ (thanks to vector store + embeddings)
@@ -317,6 +460,7 @@ You've built a sophisticated AI application using Cloud Foundry's platform servi
 - ✅ **Connected** enterprise LLMs with simple service bindings
 - ✅ **Implemented** RAG for intelligent document Q&A
 - ✅ **Extended** your AI with tool-using capabilities via MCP
+- ✅ **Connected** to specialized AI agents via A2A protocol
 - ✅ **Enabled** persistent memory that survives restarts
 
 ### Your Application Architecture
@@ -324,15 +468,23 @@ You've built a sophisticated AI application using Cloud Foundry's platform servi
 ```
 ┌─────────────────┐     ┌──────────────┐     ┌─────────────────┐
 │  Angular UI     │────▶│ Spring Boot  │────▶│  Chat LLM       │
-│                 │     │  Backend     │     │  (GPT/Claude)   │
-└─────────────────┘     └──────┬───────┘     └─────────────────┘
+│  - Chat         │     │  Backend     │     │  (GPT/Claude)   │
+│  - Documents    │     │              │     └─────────────────┘
+│  - Agents       │     │              │
+│  - Memory       │     │              │
+└─────────────────┘     └──────┬───────┘
                                │
-                    ┌──────────┴──────────┐
-                    │                     │
-              ┌─────▼──────┐       ┌─────▼──────┐
-              │ Vector DB  │       │ MCP Server │
-              │ + Embeddings│       │  (Tools)   │
-              └────────────┘       └────────────┘
+                    ┌──────────┼──────────┐
+                    │          │          │
+              ┌─────▼──────┐   │    ┌─────▼──────┐
+              │ Vector DB  │   │    │ MCP Server │
+              │ + Embeddings│   │    │  (Tools)   │
+              └────────────┘   │    └────────────┘
+                               │
+                         ┌─────▼──────┐
+                         │ A2A Agents │
+                         │ (AI Agents)│
+                         └────────────┘
 ```
 
 All managed by Cloud Foundry—you just focus on your application logic!
@@ -351,10 +503,25 @@ All managed by Cloud Foundry—you just focus on your application logic!
 
 **MCP tools not working?**
 - Verify the MCP server is running: `cf app time-mcp-server`
-- Check the Agents panel (🔌) shows your service
+- Check the MCP Servers panel (🔌) shows your service
 - Confirm the `uri` credential matches the deployed app URL
 - Ensure you're using the correct protocol tag (`mcpSseURL` or `mcpStreamableURL`) with the `-t` flag
 - Verify the service tag matches your MCP server's protocol type
+
+**A2A agents not appearing?**
+- Check the Agents panel (🤖) - agents should be listed
+- Verify the A2A service is bound: `cf services`
+- Ensure the agent card URI is accessible: test the `/.well-known/agent.json` URL in a browser
+- Check the service uses the `a2a` tag: `cf service a2a-summarizer`
+- View logs for agent initialization: `cf logs ai-tool-chat --recent | grep A2A`
+- If an agent shows as unhealthy, check the error message in the Agents panel
+
+**A2A messages not sending?**
+- Verify the agent shows as "Healthy" in the Agents panel
+- Check that the agent's endpoint URL is accessible from Cloud Foundry
+- Ensure your message text is not empty
+- View logs during message send: `cf logs ai-tool-chat`
+- Verify the agent responds to JSON-RPC 2.0 requests
 
 **Memory not persisting?**
 - Both vector store and embeddings must be bound

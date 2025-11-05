@@ -134,6 +134,57 @@ Your chatbot will now register with the MCP agents, and the LLM will be able to 
 
 ![Binding to Agents](images/cf-agents.png)
 
+### Binding to A2A Agents
+
+Agent2Agent (A2A) is a protocol that enables communication between independent AI agent systems. Unlike MCP servers which provide tools that your LLM can invoke, A2A agents are independent AI systems that can process messages and return their own intelligent responses. Think of MCP as giving your chatbot tools to use, while A2A lets your chatbot consult with other specialized AI agents.
+
+#### Key Differences: MCP vs A2A
+
+- **MCP Servers**: Provide tools and data sources that your LLM invokes as part of generating a response
+- **A2A Agents**: Independent AI agents that you can send messages to directly and receive complete responses from
+
+#### Binding an A2A Agent
+
+1. Create a user-provided service for an A2A agent using the `a2a` tag:
+
+```bash
+cf cups a2a-agent -p '{"uri":"https://your-a2a-agent.example.com/.well-known/agent.json"}' -t "a2a"
+```
+
+The URI should point to the agent's Agent Card (a JSON descriptor at `/.well-known/agent.json`).
+
+2. Bind the A2A service to your application:
+
+```bash
+cf bind-service ai-tool-chat a2a-agent
+```
+
+3. Restart your application to apply the binding:
+
+```bash
+cf restart ai-tool-chat
+```
+
+#### Using A2A Agents
+
+After binding A2A agents:
+
+1. Click the **Agents** button (🤖) on the navigation rail
+2. The Agents panel shows all connected A2A agents with their:
+   - Name, description, and version
+   - Health status (healthy/unhealthy)
+   - Capabilities (streaming, push notifications, state history)
+3. Click "Send Message" on any healthy agent
+4. Type your message in the dialog and click "Send"
+5. The agent's response appears in the chat with a distinct visual style
+
+Agent messages are displayed with:
+- A robot icon (🤖) and agent name header
+- Tertiary color scheme (different from your LLM's responses)
+- Clear attribution showing which agent responded
+
+You can bind multiple A2A agents simultaneously, each providing specialized capabilities. The Agents panel displays health status for each agent, and the navigation button shows a status indicator (green/orange/red) based on overall agent health.
+
 ### Using a Vector Store for Conversation Memory
 
 If you are bound to a vector database and an embedding model, then your chat memory will persist across application restarts and scaling.

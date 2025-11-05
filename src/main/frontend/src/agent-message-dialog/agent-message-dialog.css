@@ -1,0 +1,52 @@
+/* Dialog content layout */
+.full-width {
+  width: 100%;
+}
+
+mat-dialog-content {
+  padding: var(--md-sys-spacing-4) var(--md-sys-spacing-6);
+  min-width: 400px;
+}
+
+/* Agent description text using Material Design tokens */
+.agent-description {
+  margin-top: var(--md-sys-spacing-4);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-small-font-size);
+  font-weight: var(--md-sys-typescale-body-small-font-weight);
+  line-height: var(--md-sys-typescale-body-small-line-height);
+  font-style: italic;
+}
+
+/* Dialog actions */
+mat-dialog-actions {
+  padding: var(--md-sys-spacing-2) var(--md-sys-spacing-6) var(--md-sys-spacing-4);
+}
+
+/* Dialog title using Material Design tokens */
+h2[mat-dialog-title] {
+  font-size: var(--md-sys-typescale-headline-small-font-size);
+  font-weight: var(--md-sys-typescale-headline-small-font-weight);
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: var(--md-sys-spacing-2);
+}
+
+/* Form field enhancements */
+mat-form-field {
+  margin-bottom: var(--md-sys-spacing-2);
+}
+
+/* Textarea styling */
+textarea {
+  font-family: var(--md-sys-typescale-body-large-font-family);
+  font-size: var(--md-sys-typescale-body-large-font-size);
+  line-height: var(--md-sys-typescale-body-large-line-height);
+}
+
+/* Responsive design */
+@media (max-width: 599px) {
+  mat-dialog-content {
+    min-width: unset;
+    width: 100%;
+  }
+}

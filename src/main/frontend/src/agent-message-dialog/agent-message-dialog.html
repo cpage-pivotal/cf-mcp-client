@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>Send Message to {{data.agent.agentName}}</h2>
+
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Message</mat-label>
+    <textarea matInput
+              rows="6"
+              [ngModel]="messageText()"
+              (ngModelChange)="messageText.set($event)"
+              placeholder="Enter your message..."
+              aria-label="Message to send to agent">
+    </textarea>
+  </mat-form-field>
+
+  <p class="agent-description">{{data.agent.description}}</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" aria-label="Cancel">
+    Cancel
+  </button>
+  <button mat-raised-button
+          color="primary"
+          [disabled]="!canSend()"
+          (click)="onSend()"
+          [attr.aria-label]="canSend() ? 'Send message' : 'Enter a message to enable send'">
+    Send
+  </button>
+</mat-dialog-actions>
