@@ -909,12 +909,12 @@ toggleAgentsPanel(): void {
 4. ✅ Implement `A2ADiscoveryService.java`
 5. ⏭️ Write unit tests for models and discovery service (SKIPPED - to be added later)
 
-### Phase 2: Backend Services (Days 3-4)
-6. Implement `A2AAgentService.java`
-7. Implement `A2AConfiguration.java`
-8. Test initialization flow with mock agent cards
-9. Update `MetricsService.java` to include A2A agents
-10. Test metrics endpoint returns A2A data
+### Phase 2: Backend Services (Days 3-4) ✅ COMPLETE
+6. ✅ Implement `A2AAgentService.java`
+7. ✅ Implement `A2AConfiguration.java`
+8. ✅ Test initialization flow with mock agent cards
+9. ✅ Update `MetricsService.java` to include A2A agents
+10. ⏭️ Test metrics endpoint returns A2A data (SKIPPED - to be added later)
 
 ### Phase 3: Backend Controller (Day 5)
 11. Implement `A2AController.java`
@@ -1702,8 +1702,29 @@ cf-mcp-client/
   - `A2AServiceInfo` record for service name + URI pairing
   - Maven build verified - all code compiles successfully
 
+- ✅ **Phase 2: Backend Services** (Completed 2025-11-04)
+  - `A2AAgentService.java` - Manages communication with individual A2A agents
+    - Agent card fetching and caching on initialization
+    - Health status tracking with error message capture
+    - `sendMessage()` method with JSON-RPC 2.0 protocol
+    - RestClient-based HTTP communication
+    - Comprehensive logging with `[A2A]` prefix
+  - `A2AConfiguration.java` - Spring Configuration for agent initialization
+    - Listens for `ApplicationReadyEvent` to initialize agents on startup
+    - Creates `A2AAgentService` instances from discovered services
+    - Maintains agent services list and name mappings
+    - Publishes `A2AConfigurationEvent` for metrics integration
+  - `A2AConfigurationEvent.java` - Spring ApplicationEvent
+    - Carries list of initialized agent services
+    - Enables event-driven architecture for metrics updates
+  - `MetricsService.java` - Updated to include A2A agents
+    - Added `A2AAgent` record with agent metadata
+    - Added `a2aAgents` field to `Metrics` record
+    - Event listener for `A2AConfigurationEvent`
+    - `buildA2AAgentsList()` transformation method
+  - Maven build verified - all code compiles successfully
+
 ### Pending
-- Phase 2: Backend Services
 - Phase 3: Backend Controller
 - Phase 4: Frontend Models
 - Phase 5: Frontend Agents Panel
@@ -1714,8 +1735,10 @@ cf-mcp-client/
 - Phase 10: Documentation & Deployment
 
 ### Notes
-- Unit tests for Phase 1 were skipped initially and will be added later
-- All implementations use modern Java constructs (records, sealed interfaces) as per project guidelines
+- Unit tests for Phases 1 and 2 were skipped initially and will be added later
+- All implementations use modern Java constructs (records, sealed interfaces, lambdas) as per project guidelines
+- Event-driven architecture used for metrics integration following existing Spring patterns
+- Logging follows consistent format: `[A2A] [AgentName] [Operation] Message`
 
 ---
 
@@ -1723,4 +1746,4 @@ cf-mcp-client/
 
 This design document provides a comprehensive plan for implementing A2A client functionality in cf-mcp-client. It follows the existing architectural patterns, uses modern Angular and Java constructs, and adheres to Material Design 3 guidelines.
 
-**Next Steps**: Proceed with Phase 2 implementation (Backend Services: A2AAgentService, A2AConfiguration, MetricsService updates).
+**Next Steps**: Proceed with Phase 3 implementation (Backend Controller: A2AController with /a2a/send-message endpoint).
