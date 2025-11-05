@@ -1,0 +1,30 @@
+<nav class="navigation-rail" role="navigation" aria-label="Main navigation">
+  <div class="nav-rail-container">
+    @for (item of navigationItems; track item.id) {
+      <div class="nav-rail-item">
+        <button 
+          type="button"
+          class="nav-rail-button"
+          (click)="onNavItemClick(item.id)"
+          [matTooltip]="getTooltipText(item)"
+          matTooltipPosition="left"
+          [attr.aria-label]="item.tooltip"
+          [attr.data-nav-item]="item.id">
+          
+          <div class="nav-rail-button-content">
+            <!-- Main icon with status color -->
+            <mat-icon 
+              class="nav-rail-icon" 
+              [ngClass]="getStatusIndicator(item.id).show ? getStatusIndicator(item.id).color : ''"
+              [attr.aria-hidden]="true">
+              {{ item.icon }}
+            </mat-icon>
+          </div>
+          
+          <!-- Label -->
+          <span class="nav-rail-label">{{ item.label }}</span>
+        </button>
+      </div>
+    }
+  </div>
+</nav>
