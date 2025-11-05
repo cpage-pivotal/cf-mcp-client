@@ -35,7 +35,8 @@ export class AppComponent {
       serversWithPrompts: 0,
       available: false,
       promptsByServer: {}
-    }
+    },
+    a2aAgents: []
   });
 
   // Public readonly signals
@@ -145,6 +146,23 @@ export interface EnhancedPromptMetrics {
   promptsByServer: { [serverId: string]: McpPrompt[] };
 }
 
+export interface AgentCapabilities {
+  streaming: boolean;
+  pushNotifications: boolean;
+  stateTransitionHistory: boolean;
+}
+
+export interface A2AAgent {
+  serviceName: string;
+  agentName: string;
+  description: string;
+  version: string;
+  agentCardUri: string;
+  healthy: boolean;
+  errorMessage?: string;
+  capabilities: AgentCapabilities;
+}
+
 export interface PlatformMetrics {
   conversationId: string;
   chatModel: string;
@@ -152,4 +170,5 @@ export interface PlatformMetrics {
   vectorStoreName: string;
   mcpServers: McpServer[];
   prompts: EnhancedPromptMetrics;
+  a2aAgents: A2AAgent[];
 }

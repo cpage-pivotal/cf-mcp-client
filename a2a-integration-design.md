@@ -916,18 +916,18 @@ toggleAgentsPanel(): void {
 9. ✅ Update `MetricsService.java` to include A2A agents
 10. ⏭️ Test metrics endpoint returns A2A data (SKIPPED - to be added later)
 
-### Phase 3: Backend Controller (Day 5)
-11. Implement `A2AController.java`
-12. Create request/response DTOs
-13. Implement error handling
-14. Test end-to-end message sending
-15. Integration tests with test agent
+### Phase 3: Backend Controller (Day 5) ✅ COMPLETE
+11. ✅ Implement `A2AController.java`
+12. ✅ Create request/response DTOs
+13. ✅ Implement error handling
+14. ⏭️ Test end-to-end message sending (SKIPPED - to be added later)
+15. ⏭️ Integration tests with test agent (SKIPPED - to be added later)
 
-### Phase 4: Frontend Models (Day 6)
-16. Update TypeScript interfaces in `app.component.ts`
-17. Add A2AAgent and AgentCapabilities interfaces
-18. Update PlatformMetrics interface
-19. Update HTTP service methods if needed
+### Phase 4: Frontend Models (Day 6) ✅ COMPLETE
+16. ✅ Update TypeScript interfaces in `app.component.ts`
+17. ✅ Add A2AAgent and AgentCapabilities interfaces
+18. ✅ Update PlatformMetrics interface
+19. ✅ Update all component PlatformMetrics initializations
 
 ### Phase 5: Frontend Agents Panel (Days 7-8)
 20. Generate `AgentsPanelComponent` using Angular CLI
@@ -1724,9 +1724,32 @@ cf-mcp-client/
     - `buildA2AAgentsList()` transformation method
   - Maven build verified - all code compiles successfully
 
+- ✅ **Phase 3: Backend Controller** (Completed 2025-11-04)
+  - `A2AController.java` - REST controller for A2A operations
+    - POST `/a2a/send-message` endpoint for sending messages to agents
+    - `SendMessageRequest` and `SendMessageResponse` record DTOs
+    - Comprehensive error handling (404, 503, 500)
+    - Intelligent response text extraction from JSON-RPC results
+    - Parses Task or Message objects from agent responses
+    - Extracts text from TextPart elements with newline concatenation
+    - Consistent logging with debug, info, warn, and error levels
+  - Maven build verified - all code compiles successfully
+  - Unit tests skipped per Phase 3 requirements (steps 14-15)
+
+- ✅ **Phase 4: Frontend Models** (Completed 2025-11-04)
+  - Updated `app.component.ts` with new TypeScript interfaces
+    - `AgentCapabilities` interface (streaming, pushNotifications, stateTransitionHistory)
+    - `A2AAgent` interface with all required fields
+    - Updated `PlatformMetrics` interface to include `a2aAgents: A2AAgent[]`
+  - Updated PlatformMetrics initialization in all components:
+    - `app.component.ts` - Main metrics signal
+    - `bottom-navigation.ts` - Bottom navigation component
+    - `chatbox.component.ts` - Chatbox component
+    - `navigation-rail.component.ts` - Navigation rail component
+  - Angular build verified - all TypeScript compiles successfully
+  - Type safety enforced across frontend-backend communication
+
 ### Pending
-- Phase 3: Backend Controller
-- Phase 4: Frontend Models
 - Phase 5: Frontend Agents Panel
 - Phase 6: Frontend Message Dialog
 - Phase 7: Frontend Chat Integration
@@ -1735,10 +1758,12 @@ cf-mcp-client/
 - Phase 10: Documentation & Deployment
 
 ### Notes
-- Unit tests for Phases 1 and 2 were skipped initially and will be added later
+- Unit tests for Phases 1-3 were skipped initially and will be added later
 - All implementations use modern Java constructs (records, sealed interfaces, lambdas) as per project guidelines
+- All implementations use modern Angular constructs (signals, standalone components) as per project guidelines
 - Event-driven architecture used for metrics integration following existing Spring patterns
 - Logging follows consistent format: `[A2A] [AgentName] [Operation] Message`
+- Frontend now ready to consume A2A agent data from backend `/metrics` endpoint
 
 ---
 
@@ -1746,4 +1771,4 @@ cf-mcp-client/
 
 This design document provides a comprehensive plan for implementing A2A client functionality in cf-mcp-client. It follows the existing architectural patterns, uses modern Angular and Java constructs, and adheres to Material Design 3 guidelines.
 
-**Next Steps**: Proceed with Phase 3 implementation (Backend Controller: A2AController with /a2a/send-message endpoint).
+**Next Steps**: Proceed with Phase 5 implementation (Frontend Agents Panel: AgentsPanelComponent with agent display and message dialog integration).

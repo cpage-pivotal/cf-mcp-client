@@ -23,7 +23,8 @@ export class BottomNavigationComponent {
       serversWithPrompts: 0,
       available: false,
       promptsByServer: {}
-    }
+    },
+    a2aAgents: []
   };
 
   constructor(private sidenavService: SidenavService) {}

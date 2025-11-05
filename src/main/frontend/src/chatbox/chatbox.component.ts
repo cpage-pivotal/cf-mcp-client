@@ -82,7 +82,8 @@ export class ChatboxComponent implements OnDestroy {
       serversWithPrompts: 0,
       available: false,
       promptsByServer: {}
-    }
+    },
+    a2aAgents: []
   });
 
   // State signals
