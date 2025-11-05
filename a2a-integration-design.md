@@ -1080,19 +1080,19 @@ toggleAgentsPanel(): void {
 24. ✅ Wire up to SidenavService
 25. ⏭️ Test panel open/close and status display (SKIPPED - per user request)
 
-### Phase 6: Frontend Message Dialog (Day 9)
-26. Generate `AgentMessageDialogComponent`
-27. Implement dialog component
-28. Create dialog template
-29. Add form validation
-30. Test dialog flow
+### Phase 6: Frontend Message Dialog (Day 9) ✅ COMPLETE
+26. ✅ Generate `AgentMessageDialogComponent`
+27. ✅ Implement dialog component with signals
+28. ✅ Create dialog template with Material Design
+29. ✅ Add form validation
+30. ⏭️ Test dialog flow (SKIPPED - per user request)
 
-### Phase 7: Frontend Chat Integration (Days 10-11)
-31. Update `ChatboxComponent` interface
-32. Implement `sendMessageToAgent()` method
-33. Update template to handle agent persona
-34. Add agent-specific styling
-35. Test message flow end-to-end
+### Phase 7: Frontend Chat Integration (Days 10-11) ✅ COMPLETE
+31. ✅ Update `ChatboxComponent` interface to add agent persona
+32. ✅ Implement `sendMessageToAgent()` method
+33. ✅ Update template to handle agent persona
+34. ✅ Add agent-specific styling with Material Design tokens
+35. ⏭️ Test message flow end-to-end (SKIPPED - per user request)
 
 ### Phase 8: Frontend App Integration (Day 12)
 36. Update `AppComponent` to include AgentsPanelComponent
@@ -1911,9 +1911,57 @@ cf-mcp-client/
   - Angular build verified - no compilation errors
   - Matches MCP Servers panel quality and patterns exactly
 
+- ✅ **Phase 6: Frontend Message Dialog** (Completed 2025-11-04)
+  - Enhanced `AgentMessageDialogComponent` with modern Angular signals
+  - **Component Logic** (`agent-message-dialog.ts`):
+    - Converted `messageText` from plain string to `signal('')`
+    - Modern Angular signal getters `messageText()` and setters `messageText.set()`
+    - Form validation with `canSend()` method
+    - Proper dialog result typing with `AgentMessageDialogResult`
+  - **Template** (`agent-message-dialog.html`):
+    - Signal binding with `[ngModel]` and `(ngModelChange)`
+    - Added comprehensive ARIA labels for accessibility
+    - Material Design outline appearance form field
+    - Dynamic aria-label on Send button based on validation state
+  - **Styling** (`agent-message-dialog.css`):
+    - All spacing uses `--md-sys-spacing-*` tokens
+    - Typography uses `--md-sys-typescale-*` tokens
+    - Colors use `--md-sys-color-*` tokens
+    - Responsive design with mobile breakpoint at 599px
+  - Angular build verified - no compilation errors
+
+- ✅ **Phase 7: Frontend Chat Integration** (Completed 2025-11-04)
+  - Updated `ChatboxComponent` to support agent persona messages
+  - **Interface Updates** (`chatbox.component.ts:46-63`):
+    - Added `'agent'` to ChatboxMessage persona union type
+    - Added optional `agentName?: string` field for agent identification
+    - Created `SendMessageResponse` interface for A2A backend communication
+  - **sendMessageToAgent() Method** (`chatbox.component.ts:396-460`):
+    - Adds user message → agent typing placeholder → backend call → response update
+    - HTTP POST to `/a2a/send-message` with serviceName and messageText
+    - Comprehensive error handling with user-friendly messages
+    - Uses signal updates for reactive message list management
+    - Shows agent name during typing indicator
+  - **Template Updates** (`chatbox.component.html:10-36`):
+    - Dynamic ARIA labels for agent message accessibility
+    - Agent header with smart_toy icon and agent name
+    - Added `data-agent-name` and `data-card-variant="agent"` attributes
+    - Conditional rendering of agent header when not typing
+    - Different typing messages for agent vs bot
+  - **Agent-Specific Styling** (`chatbox.component.css:100-162`):
+    - Left-aligned layout like bot messages
+    - Material Design 3 tertiary-container color scheme
+    - Card variant `data-card-variant="agent"` with elevated MD3 pattern
+    - Background: `var(--md-sys-color-tertiary-container)`
+    - Text: `var(--md-sys-color-on-tertiary-container)`
+    - Icon: `var(--md-sys-color-tertiary)`
+    - Agent header with flex layout, gap spacing, proper typography
+  - **Enhanced Computed Signals** (`chatbox.component.ts:154-167`):
+    - Updated `messagesWithReasoningFlags` to support agent persona
+    - Reasoning and error displays work for both bot and agent messages
+  - Angular build verified - no compilation errors
+
 ### Pending
-- Phase 6: Frontend Message Dialog (stub created, needs enhancement)
-- Phase 7: Frontend Chat Integration
 - Phase 8: Frontend App Integration
 - Phase 9: Testing & Refinement
 - Phase 10: Documentation & Deployment
@@ -1926,6 +1974,8 @@ cf-mcp-client/
 - Logging follows consistent format: `[A2A] [AgentName] [Operation] Message`
 - Frontend now ready to consume A2A agent data from backend `/metrics` endpoint
 - **AgentsPanelComponent achieves 100% Material Design 3 compliance** - all accessibility, typography, color, motion, and responsive design standards met
+- **ChatboxComponent enhanced with agent persona support** - visually distinct agent messages using tertiary color scheme
+- **AgentMessageDialogComponent uses modern Angular signals** - reactive form state management
 
 ---
 
@@ -1933,4 +1983,4 @@ cf-mcp-client/
 
 This design document provides a comprehensive plan for implementing A2A client functionality in cf-mcp-client. It follows the existing architectural patterns, uses modern Angular and Java constructs, and adheres to Material Design 3 guidelines.
 
-**Next Steps**: Proceed with Phase 6 (Frontend Message Dialog enhancement - optional) or skip to Phase 7 (Frontend Chat Integration: Update ChatboxComponent to handle agent persona messages and implement sendMessageToAgent() method).
+**Next Steps**: Proceed with Phase 8 (Frontend App Integration: Update AppComponent to include AgentsPanelComponent, add agents button to control panel, and wire up event handlers).

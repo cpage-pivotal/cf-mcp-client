@@ -15,7 +15,7 @@ import {
   effect
 } from '@angular/core';
 import {DOCUMENT} from '@angular/common';
-import {HttpParams} from '@angular/common/http';
+import {HttpParams, HttpClient} from '@angular/common/http';
 import {MatIconButton, MatFabButton} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
 import {MatFormField} from '@angular/material/form-field';
@@ -34,6 +34,7 @@ import {PromptResolutionService} from '../services/prompt-resolution.service';
 import {MatTooltip} from '@angular/material/tooltip';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {ThinkTagParser} from './think-tag-parser';
+import {A2AAgent} from '../app/app.component';
 
 interface ErrorInfo {
   message: string;
@@ -45,12 +46,20 @@ interface ErrorInfo {
 
 interface ChatboxMessage {
   text: string;
-  persona: 'user' | 'bot';
+  persona: 'user' | 'bot' | 'agent';
   typing?: boolean;
   reasoning?: string;
   showReasoning?: boolean;
   error?: ErrorInfo;
   showError?: boolean;
+  agentName?: string;
+}
+
+interface SendMessageResponse {
+  success: boolean;
+  agentName: string;
+  responseText: string;
+  error?: string;
 }
 
 @Component({
@@ -146,10 +155,10 @@ export class ChatboxComponent implements OnDestroy {
     return this._messages().map((message, index) => ({
       ...message,
       index,
-      hasReasoning: message.persona === 'bot' && 
-                   !!message.reasoning && 
+      hasReasoning: (message.persona === 'bot' || message.persona === 'agent') &&
+                   !!message.reasoning &&
                    message.reasoning.trim().length > 0,
-      hasError: message.persona === 'bot' && !!message.error,
+      hasError: (message.persona === 'bot' || message.persona === 'agent') && !!message.error,
       reasoningToggleId: `reasoning-toggle-${index}`,
       reasoningContentId: `reasoning-content-${index}`,
       errorToggleId: `error-toggle-${index}`,
@@ -209,7 +218,8 @@ export class ChatboxComponent implements OnDestroy {
     @Inject(DOCUMENT) private document: Document,
     private ngZone: NgZone,
     private dialog: MatDialog,
-    private promptResolutionService: PromptResolutionService
+    private promptResolutionService: PromptResolutionService,
+    private http: HttpClient
   ) {
     // Set up host and protocol
     if (this.document.location.hostname === 'localhost') {
@@ -355,7 +365,7 @@ export class ChatboxComponent implements OnDestroy {
     this.addBotMessagePlaceholder();
     this._chatMessage.set('');
     this._isConnecting.set(true);
-    
+
     // Reset the parser for the new message
     this.thinkTagParser.reset();
 
@@ -380,6 +390,72 @@ export class ChatboxComponent implements OnDestroy {
     } catch (error) {
       console.error('Chat request error:', error);
       this.handleChatError('Sorry, I encountered an error processing your request.');
+    }
+  }
+
+  async sendMessageToAgent(agent: A2AAgent, message: string): Promise<void> {
+    // Add user message to chat
+    this._messages.update(msgs => [
+      ...msgs,
+      { text: message, persona: 'user' }
+    ]);
+
+    // Add placeholder for agent response
+    this._messages.update(msgs => [
+      ...msgs,
+      {
+        text: '',
+        persona: 'agent',
+        typing: true,
+        agentName: agent.agentName
+      }
+    ]);
+
+    try {
+      // Call backend
+      const response = await this.http.post<SendMessageResponse>(
+        '/a2a/send-message',
+        {
+          serviceName: agent.serviceName,
+          messageText: message
+        }
+      ).toPromise();
+
+      // Update last message with response
+      if (response && response.success) {
+        this._messages.update(msgs => {
+          const lastMsg = msgs[msgs.length - 1];
+          return [
+            ...msgs.slice(0, -1),
+            { ...lastMsg, text: response.responseText, typing: false }
+          ];
+        });
+      } else {
+        this._messages.update(msgs => {
+          const lastMsg = msgs[msgs.length - 1];
+          return [
+            ...msgs.slice(0, -1),
+            {
+              ...lastMsg,
+              text: 'Error: ' + (response?.error || 'Unknown error'),
+              typing: false
+            }
+          ];
+        });
+      }
+    } catch (error) {
+      console.error('Error sending message to agent:', error);
+      this._messages.update(msgs => {
+        const lastMsg = msgs[msgs.length - 1];
+        return [
+          ...msgs.slice(0, -1),
+          {
+            ...lastMsg,
+            text: 'Error communicating with agent',
+            typing: false
+          }
+        ];
+      });
     }
   }
 

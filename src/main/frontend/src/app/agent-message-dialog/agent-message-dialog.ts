@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -30,7 +30,7 @@ export interface AgentMessageDialogResult {
   styleUrl: './agent-message-dialog.css'
 })
 export class AgentMessageDialog {
-  messageText = '';
+  messageText = signal('');
 
   constructor(
     public dialogRef: MatDialogRef<AgentMessageDialog>,
@@ -38,7 +38,7 @@ export class AgentMessageDialog {
   ) {}
 
   canSend(): boolean {
-    return this.messageText.trim().length > 0;
+    return this.messageText().trim().length > 0;
   }
 
   onCancel(): void {
@@ -48,7 +48,7 @@ export class AgentMessageDialog {
   onSend(): void {
     if (this.canSend()) {
       const result: AgentMessageDialogResult = {
-        message: this.messageText.trim()
+        message: this.messageText().trim()
       };
       this.dialogRef.close(result);
     }

@@ -97,6 +97,12 @@
   text-align: left;
 }
 
+/* Agent messages - left-aligned like bot but distinct styling */
+.chat-message.agent {
+  margin-right: auto;
+  text-align: left;
+}
+
 /* ===== MATERIAL DESIGN 3 CHAT CARDS ===== */
 /* Implementation of MD3 Card specifications with proper variants, elevation, and state layers */
 .md3-chat-card {
@@ -118,6 +124,41 @@
   border: none !important; /* Remove outlined border for elevated variant */
   /* MD3 1dp elevation using new elevation system */
   box-shadow: var(--md-sys-elevation-1dp);
+}
+
+/* Agent message cards - implement MD3 ELEVATED variant with tertiary container */
+.md3-chat-card[data-card-variant="agent"] {
+  background-color: var(--md-sys-color-tertiary-container) !important;
+  border: none !important; /* Remove outlined border for elevated variant */
+  /* MD3 1dp elevation using new elevation system */
+  box-shadow: var(--md-sys-elevation-1dp);
+}
+
+.md3-chat-card[data-card-variant="agent"] mat-card-content {
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+/* Agent message header styling */
+.agent-message-header {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-2);
+  margin-bottom: var(--md-sys-spacing-2);
+  font-weight: var(--md-sys-typescale-label-medium-font-weight);
+  font-size: var(--md-sys-typescale-label-medium-font-size);
+  color: var(--md-sys-color-on-tertiary-container);
+  opacity: 0.9;
+}
+
+.agent-message-header mat-icon {
+  color: var(--md-sys-color-tertiary);
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.agent-name {
+  font-weight: 500;
 }
 
 /* ===== MATERIAL DESIGN 3 STATE LAYERS ===== */
