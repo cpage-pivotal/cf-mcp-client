@@ -412,9 +412,10 @@ export class ChatboxComponent implements OnDestroy {
     ]);
 
     try {
-      // Call backend
+      // Call backend using same pattern as streamChatResponse
+      const url = `${this.protocol}//${this.host}/a2a/send-message`;
       const response = await this.http.post<SendMessageResponse>(
-        '/a2a/send-message',
+        url,
         {
           serviceName: agent.serviceName,
           messageText: message

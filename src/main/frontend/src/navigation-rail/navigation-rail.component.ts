@@ -45,6 +45,12 @@ export class NavigationRailComponent {
       tooltip: 'Document Management'
     },
     {
+      id: 'agents',
+      icon: 'smart_toy',
+      label: 'Agents',
+      tooltip: 'A2A Agent Connections'
+    },
+    {
       id: 'mcp-servers',
       icon: 'hub',
       label: 'MCP',
@@ -81,6 +87,17 @@ export class NavigationRailComponent {
           show: true,
           color: this.metrics.embeddingModel ? 'status-green' : 'status-red',
           icon: this.metrics.embeddingModel ? 'check_circle' : 'error'
+        };
+      case 'agents':
+        const healthyAgents = this.metrics.a2aAgents.filter(agent => agent.healthy).length;
+        return {
+          show: this.metrics.a2aAgents.length > 0,
+          color: this.metrics.a2aAgents.length === 0 ? 'status-red' :
+                 healthyAgents === this.metrics.a2aAgents.length ? 'status-green' :
+                 healthyAgents > 0 ? 'status-orange' : 'status-red',
+          icon: this.metrics.a2aAgents.length === 0 ? 'error' :
+                healthyAgents === this.metrics.a2aAgents.length ? 'check_circle' :
+                healthyAgents > 0 ? 'warning' : 'error'
         };
       case 'mcp-servers':
         const healthyServers = this.metrics.mcpServers.filter(server => server.healthy).length;

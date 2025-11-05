@@ -1,9 +1,10 @@
-import { Component, DestroyRef, inject, signal, effect } from '@angular/core';
+import { Component, DestroyRef, inject, signal, effect, ViewChild } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
 import { DocumentPanelComponent } from '../document-panel/document-panel.component';
 import { McpServersPanelComponent } from '../mcp-servers-panel/mcp-servers-panel.component';
+import { AgentsPanel } from './agents-panel/agents-panel';
 import { ChatboxComponent } from '../chatbox/chatbox.component';
 import { NavigationRailComponent } from '../navigation-rail/navigation-rail.component';
 import { BottomNavigationComponent } from './bottom-navigation/bottom-navigation';
@@ -15,12 +16,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, ChatboxComponent, NavigationRailComponent, BottomNavigationComponent],
+  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, AgentsPanel, ChatboxComponent, NavigationRailComponent, BottomNavigationComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
   title = 'pulseui';
+
+  // ViewChild references for components
+  @ViewChild(ChatboxComponent) chatbox?: ChatboxComponent;
 
   // Use signals for reactive state management
   private readonly _currentDocumentIds = signal<string[]>([]);
@@ -62,6 +66,11 @@ export class AppComponent {
   // Method to handle document selection from DocumentPanelComponent
   onDocumentIdsChanged(documentIds: string[]): void {
     this._currentDocumentIds.set([...documentIds]);
+  }
+
+  // Method to handle agent message sending
+  onAgentMessageSent(agent: A2AAgent, message: string): void {
+    this.chatbox?.sendMessageToAgent(agent, message);
   }
 
   // Initialize metrics polling with improved error handling

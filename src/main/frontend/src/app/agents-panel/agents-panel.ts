@@ -1,16 +1,21 @@
-import { AfterViewInit, Component, input, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, input, output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chip';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { SidenavService } from '../sidenav.service';
+import { SidenavService } from '../../services/sidenav.service';
 import { PlatformMetrics, A2AAgent } from '../app.component';
 import { AgentMessageDialog, AgentMessageDialogData, AgentMessageDialogResult } from '../agent-message-dialog/agent-message-dialog';
+
+export interface AgentMessageEvent {
+  agent: A2AAgent;
+  message: string;
+}
 
 @Component({
   selector: 'app-agents-panel',
@@ -31,6 +36,7 @@ import { AgentMessageDialog, AgentMessageDialogData, AgentMessageDialogResult } 
 })
 export class AgentsPanel implements AfterViewInit {
   metrics = input.required<PlatformMetrics>();
+  messageSent = output<AgentMessageEvent>();
 
   @ViewChild('sidenav') sidenav!: MatSidenav;
 
@@ -82,8 +88,10 @@ export class AgentsPanel implements AfterViewInit {
         this.sidenavService.close('agents');
 
         // Emit event to send message (handled by parent component)
-        // Note: We'll need to add an output event for this
-        // For now, we'll handle this through a service or parent component method
+        this.messageSent.emit({
+          agent: agent,
+          message: result.message
+        });
       }
     });
   }
