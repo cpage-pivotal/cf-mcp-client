@@ -71,3 +71,18 @@ body {
   gap: var(--md-spacing-2);
   background-color: transparent; /* No background interference */
 }
+
+/* Material Snackbar positioning - ensure it appears above all UI elements */
+.mat-mdc-snack-bar-container {
+  z-index: 1100 !important; /* Above sidenav (999) and other UI elements */
+}
+
+/* Ensure snackbar has proper Material Design 3 styling */
+.mat-mdc-simple-snack-bar {
+  background-color: var(--md-sys-color-inverse-surface) !important;
+  color: var(--md-sys-color-inverse-on-surface) !important;
+}
+
+.mat-mdc-snack-bar-action {
+  color: var(--md-sys-color-inverse-primary) !important;
+}
