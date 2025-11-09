@@ -87,8 +87,8 @@ public class ChatService {
         if (documentIds != null && !documentIds.isEmpty()) {
             logger.debug("Adding document context for documents: {}", documentIds);
 
-            // Use simple QuestionAnswerAdvisor with just VectorStore
-            spec = spec.advisors(new QuestionAnswerAdvisor(vectorStore));
+            // Use QuestionAnswerAdvisor builder (Spring AI 1.1.0-RC1 API)
+            spec = spec.advisors(QuestionAnswerAdvisor.builder(vectorStore).build());
         }
 
         // Add MCP tools if available
