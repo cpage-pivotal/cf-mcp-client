@@ -66,23 +66,36 @@ public class ChatConfiguration {
     }
 
     /**
-     * UPDATED: Creates ChatService bean using McpServerService instances with protocol information
-     * instead of raw URL strings for reliable protocol detection
+     * Creates McpToolCallbackCacheService bean for event-driven tool callback caching.
+     * Implements Spring AI 1.1.0-RC1's MCP caching pattern.
+     */
+    @Bean
+    public org.tanzu.mcpclient.mcp.McpToolCallbackCacheService mcpToolCallbackCacheService() {
+        logger.info("Creating McpToolCallbackCacheService with {} protocol-aware MCP server services",
+                mcpServerServices.size());
+        return new org.tanzu.mcpclient.mcp.McpToolCallbackCacheService(mcpServerServices);
+    }
+
+    /**
+     * UPDATED: Creates ChatService bean using McpToolCallbackCacheService for cached tool callbacks.
+     * Now leverages Spring AI 1.1.0-RC1's event-driven caching for improved performance.
      */
     @Bean
     public ChatService chatService(ChatClient.Builder chatClientBuilder,
                                    BaseChatMemoryAdvisor memoryAdvisor,
                                    VectorStore vectorStore,
+                                   org.tanzu.mcpclient.mcp.McpToolCallbackCacheService toolCallbackCacheService,
                                    ModelDiscoveryService modelDiscoveryService) {
 
-        logger.info("Creating ChatService with {} protocol-aware MCP server services", mcpServerServices.size());
+        logger.info("Creating ChatService with cached tool callbacks from {} MCP server(s)",
+                mcpServerServices.size());
 
         return new ChatService(
                 chatClientBuilder,
                 memoryAdvisor,
-                mcpServerServices, // Pass McpServerService instances instead of raw URLs
+                mcpServerServices, // Pass McpServerService instances for reference
                 vectorStore,
-                mcpClientFactory,
+                toolCallbackCacheService, // Use caching service instead of factory
                 modelDiscoveryService
         );
     }
