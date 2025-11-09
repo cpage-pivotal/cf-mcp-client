@@ -42,7 +42,7 @@ Starts the Spring Boot application on port 8080. Frontend must be built first or
 ## Architecture Overview
 
 ### Technology Stack
-- **Backend**: Spring Boot 3.5.5, Spring AI 1.1.0-M1, Java 21
+- **Backend**: Spring Boot 3.5.5, Spring AI 1.1.0-RC1, Java 21
 - **Frontend**: Angular 20, Angular Material, TypeScript
 - **Database**: PostgreSQL with pgvector extension for vector storage
 - **AI Integration**: Model Context Protocol (MCP) clients, OpenAI models
@@ -95,11 +95,27 @@ The application is designed for Cloud Foundry deployment with service binding su
 ### Configuration Notes
 - Default PostgreSQL connection: `localhost:5432/postgres` (user: postgres, pass: postgres)
 - Session timeout: 1440 minutes (24 hours)
-- Current version: 1.6.0
+- Current version: 2.1.1
 - Spring AI BOM manages all AI-related dependencies
 - Frontend uses Angular Material with custom theming
 - Maven handles Node.js installation (v22.12.0) and frontend build integration
 - Actuator endpoints exposed: `/actuator/health`, `/actuator/metrics`
+
+#### Automatic Retry Configuration
+The application includes automatic retry configuration for network exceptions introduced in Spring AI 1.1.0-RC1. This improves resilience when communicating with AI models and MCP servers:
+
+**Retry Configuration** (`application.yaml`):
+- `spring.ai.retry.max-attempts: 3` - Maximum number of retry attempts for failed requests
+- `spring.ai.retry.backoff.initial-interval: 2000` - Initial delay (2 seconds) before first retry
+- `spring.ai.retry.backoff.multiplier: 2.0` - Exponential backoff multiplier (2x, 4x, etc.)
+- `spring.ai.retry.backoff.max-interval: 10000` - Maximum delay cap (10 seconds)
+
+**Handled Exceptions**:
+- `TransientAiException` - HTTP status-based errors (e.g., 429 Too Many Requests, 503 Service Unavailable)
+- `ResourceAccessException` - Pre-response network failures (e.g., connection timeouts, connection refused)
+- `WebClientRequestException` - WebClient-specific request failures
+
+This configuration automatically retries transient network issues without manual intervention, improving the application's stability in distributed environments.
 
 ### Local Development Setup
 For local development, you'll need PostgreSQL running:

@@ -11,3 +11,10 @@ spring:
   sql:
     init:
       mode: never
+  ai:
+    retry:
+      max-attempts: 3
+      backoff:
+        initial-interval: 2000
+        multiplier: 2.0
+        max-interval: 10000
