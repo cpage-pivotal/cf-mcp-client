@@ -6,6 +6,8 @@
 mat-dialog-content {
   padding: var(--md-sys-spacing-4) var(--md-sys-spacing-6);
   min-width: 400px;
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
 }
 
 /* Agent description text using Material Design tokens */
@@ -21,6 +23,7 @@ mat-dialog-content {
 /* Dialog actions */
 mat-dialog-actions {
   padding: var(--md-sys-spacing-2) var(--md-sys-spacing-6) var(--md-sys-spacing-4);
+  background-color: var(--md-sys-color-surface);
 }
 
 /* Dialog title using Material Design tokens */
@@ -29,6 +32,9 @@ h2[mat-dialog-title] {
   font-weight: var(--md-sys-typescale-headline-small-font-weight);
   color: var(--md-sys-color-on-surface);
   margin-bottom: var(--md-sys-spacing-2);
+  background-color: var(--md-sys-color-surface);
+  padding: var(--md-sys-spacing-4) var(--md-sys-spacing-6);
+  margin: 0;
 }
 
 /* Form field enhancements */
