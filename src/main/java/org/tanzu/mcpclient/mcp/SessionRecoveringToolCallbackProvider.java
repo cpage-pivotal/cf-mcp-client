@@ -124,12 +124,11 @@ public class SessionRecoveringToolCallbackProvider implements ToolCallbackProvid
     /**
      * Determines if an exception is caused by an invalid MCP session.
      *
-     * Session errors can manifest in several ways:
-     * - "Session not found" in the error message
-     * - "MCP session with server terminated" message
-     * - HTTP 404 status code
-     * - McpTransportSessionNotFoundException exception type
-     * - "Sending message failed with a non-OK HTTP code: 404"
+     * Session errors can manifest in several ways depending on the transport:
+     * - Streamable HTTP: "Session not found" with HTTP 404
+     * - SSE: "Invalid session ID" with HTTP 400 and JSON-RPC error -32602
+     * - Generic: "MCP session with server terminated"
+     * - Exception type: McpTransportSessionNotFoundException
      *
      * @param e The exception to check
      * @return true if this appears to be a session error
@@ -149,18 +148,36 @@ public class SessionRecoveringToolCallbackProvider implements ToolCallbackProvid
             // Check exception message
             String currentMessage = current.getMessage();
             if (currentMessage != null) {
-                // Session-related error messages
+                // Session-related error messages (both Streamable HTTP and SSE)
                 if (currentMessage.contains("Session not found") ||
                     currentMessage.contains("session not found") ||
+                    currentMessage.contains("Invalid session ID") ||
+                    currentMessage.contains("invalid session") ||
                     currentMessage.contains("MCP session with server terminated") ||
                     currentMessage.contains("session with server terminated")) {
                     logger.debug("Detected session error by message: {}", currentMessage);
                     return true;
                 }
 
-                // HTTP 404 status typically indicates session not found
-                if (currentMessage.contains("404")) {
-                    logger.debug("Detected session error by 404 status in message: {}", currentMessage);
+                // HTTP status codes indicating session issues
+                // 404 for Streamable HTTP, 400 for SSE
+                if (currentMessage.contains("404") || currentMessage.contains("400")) {
+                    // Be more specific for 400 - only treat as session error if it mentions session
+                    if (currentMessage.contains("400")) {
+                        if (currentMessage.toLowerCase().contains("session")) {
+                            logger.debug("Detected session error by 400 status with session keyword: {}", currentMessage);
+                            return true;
+                        }
+                    } else {
+                        // 404 is typically session-related in MCP context
+                        logger.debug("Detected session error by 404 status in message: {}", currentMessage);
+                        return true;
+                    }
+                }
+
+                // JSON-RPC error code -32602 (Invalid params) often indicates invalid session ID
+                if (currentMessage.contains("-32602") && currentMessage.toLowerCase().contains("session")) {
+                    logger.debug("Detected session error by JSON-RPC error code -32602 with session keyword: {}", currentMessage);
                     return true;
                 }
             }
