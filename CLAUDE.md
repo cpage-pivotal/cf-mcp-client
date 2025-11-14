@@ -42,10 +42,10 @@ Starts the Spring Boot application on port 8080. Frontend must be built first or
 ## Architecture Overview
 
 ### Technology Stack
-- **Backend**: Spring Boot 3.5.5, Spring AI 1.1.0-RC1, Java 21
+- **Backend**: Spring Boot 3.5.5, Spring AI 1.1.0, Java 21
 - **Frontend**: Angular 20, Angular Material, TypeScript
 - **Database**: PostgreSQL with pgvector extension for vector storage
-- **AI Integration**: Model Context Protocol (MCP) clients, OpenAI models
+- **AI Integration**: Model Context Protocol (MCP) clients, Agent2Agent (A2A) protocol, OpenAI models
 
 ### Backend Architecture
 The application is structured around several key service layers:
@@ -60,12 +60,21 @@ The application is structured around several key service layers:
 #### MCP Integration
 The application dynamically connects to Model Context Protocol servers through:
 - **Dual Protocol Support**: Both SSE (Server-Sent Events) and Streamable HTTP protocols
-- **HTTP SSE transport**: With SSL context configuration for legacy MCP servers
-- **Streamable HTTP**: Modern protocol with improved performance and reliability
+- **HTTP SSE transport**: With SSL context configuration for legacy MCP servers (tag: `mcpSseURL`)
+- **Streamable HTTP**: Modern protocol with improved performance and reliability (tag: `mcpStreamableURL`)
 - Automatic tool discovery and registration from MCP servers
 - Session-based conversation management with tool callback providers
 - **Automatic Session Recovery**: Detects and recovers from MCP server restarts by automatically reconnecting with a fresh session when "Session not found" errors occur
 - **Graceful Degradation**: If an MCP server is unavailable, it is skipped and the chat service continues with available servers
+
+#### A2A Agent Integration
+The application supports Agent2Agent (A2A) protocol for communication with independent AI agent systems:
+- **Protocol Differences**: Unlike MCP servers (which provide tools your LLM invokes), A2A agents are independent AI systems that process messages and return complete responses
+- **Agent Discovery**: Agents register via user-provided service URLs pointing to Agent Card (JSON descriptor at `/.well-known/agent.json`)
+- **Service Binding**: Use Cloud Foundry user-provided services with tag `a2a`
+- **UI Integration**: Agents panel (🤖) displays connected agents with health status, capabilities, and message interface
+- **Capabilities**: Supports streaming, push notifications, and state history depending on agent implementation
+- **Visual Attribution**: Agent responses displayed with distinct styling and clear agent identification
 
 #### Vector Storage
 Uses PostgreSQL with pgvector extension for:
@@ -97,14 +106,14 @@ The application is designed for Cloud Foundry deployment with service binding su
 ### Configuration Notes
 - Default PostgreSQL connection: `localhost:5432/postgres` (user: postgres, pass: postgres)
 - Session timeout: 1440 minutes (24 hours)
-- Current version: 2.1.1
+- Current version: 2.2.0
 - Spring AI BOM manages all AI-related dependencies
 - Frontend uses Angular Material with custom theming
-- Maven handles Node.js installation (v22.12.0) and frontend build integration
+- Maven handles Node.js installation (v24.9.0) and frontend build integration
 - Actuator endpoints exposed: `/actuator/health`, `/actuator/metrics`
 
 #### Automatic Retry Configuration
-The application includes automatic retry configuration for network exceptions introduced in Spring AI 1.1.0-RC1. This improves resilience when communicating with AI models and MCP servers:
+The application includes automatic retry configuration for network exceptions introduced in Spring AI 1.1.0. This improves resilience when communicating with AI models and MCP servers:
 
 **Retry Configuration** (`application.yaml`):
 - `spring.ai.retry.max-attempts: 3` - Maximum number of retry attempts for failed requests
@@ -156,6 +165,40 @@ For local development, you'll need PostgreSQL running:
 docker run --name postgres-dev -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
 
 # Or use local PostgreSQL with database 'postgres', user 'postgres', password 'postgres'
+```
+
+### Cloud Foundry Deployment
+The application is designed for Cloud Foundry deployment with service bindings:
+
+#### Service Binding Tags
+- **GenAI Chat Models**: Automatically discovered from GenAI tile services
+- **GenAI Embedding Models**: For vector database operations
+- **Vector Database**: PostgreSQL service with pgvector extension
+- **MCP Servers**: User-provided services with tags:
+  - `mcpSseURL` - SSE-based MCP servers
+  - `mcpStreamableURL` - Streamable HTTP-based MCP servers
+- **A2A Agents**: User-provided services with tag `a2a` pointing to `/.well-known/agent.json`
+
+#### Example Deployment Commands
+```bash
+# Deploy application
+cf push
+
+# Bind GenAI services
+cf bind-service ai-tool-chat chat-llm
+cf bind-service ai-tool-chat embeddings-llm
+cf bind-service ai-tool-chat vector-db
+
+# Bind MCP server (SSE)
+cf cups mcp-server-sse -p '{"uri":"https://mcp-server.example.com"}' -t "mcpSseURL"
+cf bind-service ai-tool-chat mcp-server-sse
+
+# Bind A2A agent
+cf cups a2a-agent -p '{"uri":"https://agent.example.com/.well-known/agent.json"}' -t "a2a"
+cf bind-service ai-tool-chat a2a-agent
+
+# Restart to apply bindings
+cf restart ai-tool-chat
 ```
 
 ### Development Patterns
