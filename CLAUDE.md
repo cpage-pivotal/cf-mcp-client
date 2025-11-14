@@ -119,18 +119,23 @@ The application includes automatic retry configuration for network exceptions in
 This configuration automatically retries transient network issues without manual intervention, improving the application's stability in distributed environments.
 
 #### MCP Session Recovery
-The application includes automatic session recovery for MCP server connections. When an MCP server restarts, the previous session ID becomes invalid, causing "Session not found" errors. The session recovery mechanism automatically handles this:
+The application includes automatic session recovery for MCP server connections. When an MCP server restarts, the previous session ID becomes invalid, causing various session-related errors. The session recovery mechanism automatically handles this:
 
 **Implementation** (`SessionRecoveringToolCallbackProvider.java`):
 - Wraps `SyncMcpToolCallbackProvider` to intercept tool invocations
-- Detects session errors (404 HTTP status with "Session not found" message)
+- Detects session errors through multiple patterns:
+  - `McpTransportSessionNotFoundException` exception type
+  - "Session not found" error messages
+  - "MCP session with server terminated" messages
+  - HTTP 404 status codes
 - Automatically creates a new MCP client connection with a fresh session
 - Retries the failed tool invocation once with the new session
 - Thread-safe client recreation using `AtomicReference`
+- Debug logging to trace error detection and recovery
 
 **How it works**:
 1. When a tool is invoked, the wrapper delegates to the underlying `SyncMcpToolCallbackProvider`
-2. If a session error is detected, it logs a warning and attempts recovery
+2. If a session error is detected (by traversing the full exception chain), it logs a warning and attempts recovery
 3. A new MCP client is created and initialized with a fresh session
 4. The tool invocation is retried with the new client
 5. If recovery fails, the original error is propagated
