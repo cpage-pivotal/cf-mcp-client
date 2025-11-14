@@ -124,43 +124,50 @@ public class SessionRecoveringToolCallbackProvider implements ToolCallbackProvid
     /**
      * Determines if an exception is caused by an invalid MCP session.
      *
-     * Session errors typically contain:
+     * Session errors can manifest in several ways:
      * - "Session not found" in the error message
+     * - "MCP session with server terminated" message
      * - HTTP 404 status code
+     * - McpTransportSessionNotFoundException exception type
      * - "Sending message failed with a non-OK HTTP code: 404"
      *
      * @param e The exception to check
      * @return true if this appears to be a session error
      */
     private boolean isSessionError(Exception e) {
-        String message = e.getMessage();
-        if (message == null) {
-            return false;
-        }
-
-        // Check for session-related error messages
-        boolean hasSessionMessage = message.contains("Session not found") ||
-                                   message.contains("session not found");
-
-        // Check for 404 status
-        boolean has404Status = message.contains("404");
-
-        // Look for these patterns in the full exception chain
+        // Look for session error patterns in the full exception chain
         Throwable current = e;
         while (current != null) {
+            // Check exception type
+            String className = current.getClass().getName();
+            if (className.contains("McpTransportSessionNotFoundException") ||
+                className.contains("SessionNotFoundException")) {
+                logger.debug("Detected session error by exception type: {}", className);
+                return true;
+            }
+
+            // Check exception message
             String currentMessage = current.getMessage();
             if (currentMessage != null) {
+                // Session-related error messages
                 if (currentMessage.contains("Session not found") ||
-                    currentMessage.contains("session not found")) {
-                    hasSessionMessage = true;
+                    currentMessage.contains("session not found") ||
+                    currentMessage.contains("MCP session with server terminated") ||
+                    currentMessage.contains("session with server terminated")) {
+                    logger.debug("Detected session error by message: {}", currentMessage);
+                    return true;
                 }
+
+                // HTTP 404 status typically indicates session not found
                 if (currentMessage.contains("404")) {
-                    has404Status = true;
+                    logger.debug("Detected session error by 404 status in message: {}", currentMessage);
+                    return true;
                 }
             }
+
             current = current.getCause();
         }
 
-        return hasSessionMessage || has404Status;
+        return false;
     }
 }
