@@ -6,11 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.tool.definition.ToolDefinition;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * A ToolCallbackProvider wrapper that handles MCP server session recovery.
@@ -61,14 +61,14 @@ public class SessionRecoveringToolCallbackProvider implements ToolCallbackProvid
     }
 
     @Override
-    public List<ToolCallback> getToolCallbacks() {
+    public ToolCallback[] getToolCallbacks() {
         SyncMcpToolCallbackProvider delegate = delegateRef.get();
-        List<ToolCallback> originalCallbacks = delegate.getToolCallbacks();
+        ToolCallback[] originalCallbacks = delegate.getToolCallbacks();
 
         // Wrap each callback to handle session errors
-        return originalCallbacks.stream()
+        return Arrays.stream(originalCallbacks)
                 .map(this::wrapToolCallback)
-                .collect(Collectors.toList());
+                .toArray(ToolCallback[]::new);
     }
 
     /**
@@ -77,7 +77,7 @@ public class SessionRecoveringToolCallbackProvider implements ToolCallbackProvid
     private ToolCallback wrapToolCallback(ToolCallback originalCallback) {
         return new ToolCallback() {
             @Override
-            public String getToolDefinition() {
+            public ToolDefinition getToolDefinition() {
                 return originalCallback.getToolDefinition();
             }
 
@@ -100,8 +100,8 @@ public class SessionRecoveringToolCallbackProvider implements ToolCallbackProvid
                                     serverName);
 
                             // Find the corresponding callback in the new delegate and retry
-                            String toolDef = originalCallback.getToolDefinition();
-                            ToolCallback newCallback = newDelegate.getToolCallbacks().stream()
+                            ToolDefinition toolDef = originalCallback.getToolDefinition();
+                            ToolCallback newCallback = Arrays.stream(newDelegate.getToolCallbacks())
                                     .filter(cb -> cb.getToolDefinition().equals(toolDef))
                                     .findFirst()
                                     .orElseThrow(() -> new RuntimeException("Tool not found after reconnection"));
