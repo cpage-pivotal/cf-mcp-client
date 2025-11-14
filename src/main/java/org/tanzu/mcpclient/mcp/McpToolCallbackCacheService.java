@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -64,14 +65,18 @@ public class McpToolCallbackCacheService implements ApplicationListener<McpTools
             logger.info("Refreshing MCP tool callback cache for {} server(s)", mcpServerServices.size());
 
             // Create MCP clients and wrap them in tool callback providers
+            // Filter out failed connections to allow graceful degradation
             List<ToolCallbackProvider> providers = mcpServerServices.stream()
                     .map(this::createToolCallbackProvider)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .toList();
 
             cachedToolCallbacks = providers.toArray(new ToolCallbackProvider[0]);
             cacheInvalidated.set(false);
 
-            logger.info("MCP tool callback cache refreshed with {} provider(s)", cachedToolCallbacks.length);
+            logger.info("MCP tool callback cache refreshed with {} provider(s) from {} configured server(s)",
+                    cachedToolCallbacks.length, mcpServerServices.size());
 
             return cachedToolCallbacks;
 
@@ -85,25 +90,32 @@ public class McpToolCallbackCacheService implements ApplicationListener<McpTools
      * Wraps the client in a SessionRecoveringToolCallbackProvider that automatically
      * handles session recovery when the MCP server restarts.
      *
+     * Returns Optional.empty() if the server is unavailable, enabling graceful degradation.
+     *
      * @param serverService The MCP server service
-     * @return ToolCallbackProvider instance with session recovery capabilities
+     * @return Optional containing ToolCallbackProvider if successful, empty if server is unavailable
      */
-    private ToolCallbackProvider createToolCallbackProvider(McpServerService serverService) {
+    private Optional<ToolCallbackProvider> createToolCallbackProvider(McpServerService serverService) {
         try {
             logger.debug("Creating session-recovering tool callback provider for {} ({})",
                     serverService.getName(), serverService.getProtocol().displayName());
 
             // Create a supplier that generates fresh MCP clients
             // This will be used for initial connection and session recovery
-            return new SessionRecoveringToolCallbackProvider(
+            ToolCallbackProvider provider = new SessionRecoveringToolCallbackProvider(
                     serverService.getName(),
                     serverService::createMcpSyncClient
             );
 
+            logger.info("Successfully created tool callback provider for {} ({})",
+                    serverService.getName(), serverService.getProtocol().displayName());
+            return Optional.of(provider);
+
         } catch (Exception e) {
-            logger.error("Failed to create tool callback provider for {}: {}",
-                    serverService.getName(), e.getMessage(), e);
-            throw new RuntimeException("Failed to create MCP client for " + serverService.getName(), e);
+            logger.warn("MCP server {} ({}) is currently unavailable and will be skipped: {}",
+                    serverService.getName(), serverService.getProtocol().displayName(), e.getMessage());
+            logger.debug("Full stack trace for unavailable MCP server {}: ", serverService.getName(), e);
+            return Optional.empty();
         }
     }
 

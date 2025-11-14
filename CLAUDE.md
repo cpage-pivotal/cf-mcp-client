@@ -65,6 +65,7 @@ The application dynamically connects to Model Context Protocol servers through:
 - Automatic tool discovery and registration from MCP servers
 - Session-based conversation management with tool callback providers
 - **Automatic Session Recovery**: Detects and recovers from MCP server restarts by automatically reconnecting with a fresh session when "Session not found" errors occur
+- **Graceful Degradation**: If an MCP server is unavailable, it is skipped and the chat service continues with available servers
 
 #### Vector Storage
 Uses PostgreSQL with pgvector extension for:
@@ -140,7 +141,13 @@ The application includes automatic session recovery for MCP server connections. 
 4. The tool invocation is retried with the new client
 5. If recovery fails, the original error is propagated
 
-This feature ensures that MCP server restarts don't disrupt ongoing conversations, providing a seamless experience even when external tools are temporarily unavailable.
+**Graceful Degradation** (`McpToolCallbackCacheService.java`):
+- During cache initialization/refresh, if an MCP server is unavailable, it is skipped rather than failing the entire chat service
+- Returns `Optional.empty()` for unavailable servers, allowing other healthy servers to be used
+- Logs warnings for unavailable servers with debug-level stack traces
+- Chat requests can still proceed with tools from available MCP servers
+
+This feature ensures that MCP server restarts and temporary unavailability don't disrupt ongoing conversations, providing a seamless experience even when external tools are temporarily down.
 
 ### Local Development Setup
 For local development, you'll need PostgreSQL running:
