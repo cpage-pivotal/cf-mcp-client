@@ -124,11 +124,11 @@ The application includes automatic session recovery for MCP server connections. 
 
 **Implementation** (`SessionRecoveringToolCallbackProvider.java`):
 - Wraps `SyncMcpToolCallbackProvider` to intercept tool invocations
-- Detects session errors through multiple patterns:
-  - `McpTransportSessionNotFoundException` exception type
-  - "Session not found" error messages
-  - "MCP session with server terminated" messages
-  - HTTP 404 status codes
+- Detects session errors through multiple patterns (transport-specific):
+  - **Streamable HTTP**: "Session not found" with HTTP 404
+  - **SSE**: "Invalid session ID" with HTTP 400 and JSON-RPC error -32602
+  - **Generic**: "MCP session with server terminated"
+  - **Exception type**: `McpTransportSessionNotFoundException`
 - Automatically creates a new MCP client connection with a fresh session
 - Retries the failed tool invocation once with the new session
 - Thread-safe client recreation using `AtomicReference`
