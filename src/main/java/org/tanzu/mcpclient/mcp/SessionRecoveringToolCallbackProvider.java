@@ -4,13 +4,13 @@ import io.modelcontextprotocol.client.McpSyncClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
-import org.springframework.ai.model.ToolMetadata;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * A ToolCallbackProvider wrapper that handles MCP server session recovery.
@@ -61,29 +61,24 @@ public class SessionRecoveringToolCallbackProvider implements ToolCallbackProvid
     }
 
     @Override
-    public List<ToolMetadata> getToolMetadata() {
-        return delegateRef.get().getToolMetadata();
+    public List<ToolCallback> getToolCallbacks() {
+        SyncMcpToolCallbackProvider delegate = delegateRef.get();
+        List<ToolCallback> originalCallbacks = delegate.getToolCallbacks();
+
+        // Wrap each callback to handle session errors
+        return originalCallbacks.stream()
+                .map(this::wrapToolCallback)
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public ToolCallback getToolCallback(String toolName) {
-        SyncMcpToolCallbackProvider delegate = delegateRef.get();
-        ToolCallback originalCallback = delegate.getToolCallback(toolName);
-
-        if (originalCallback == null) {
-            return null;
-        }
-
-        // Wrap the callback to handle session errors
+    /**
+     * Wraps a ToolCallback to add session recovery capabilities.
+     */
+    private ToolCallback wrapToolCallback(ToolCallback originalCallback) {
         return new ToolCallback() {
             @Override
-            public String getName() {
-                return originalCallback.getName();
-            }
-
-            @Override
-            public String getDescription() {
-                return originalCallback.getDescription();
+            public String getToolDefinition() {
+                return originalCallback.getToolDefinition();
             }
 
             @Override
@@ -104,13 +99,14 @@ public class SessionRecoveringToolCallbackProvider implements ToolCallbackProvid
                             logger.info("Successfully reconnected to MCP server: {}. Retrying tool invocation...",
                                     serverName);
 
-                            // Retry with the new delegate
-                            ToolCallback newCallback = newDelegate.getToolCallback(toolName);
-                            if (newCallback != null) {
-                                return newCallback.call(functionArguments);
-                            } else {
-                                throw new RuntimeException("Tool " + toolName + " not found after reconnection");
-                            }
+                            // Find the corresponding callback in the new delegate and retry
+                            String toolDef = originalCallback.getToolDefinition();
+                            ToolCallback newCallback = newDelegate.getToolCallbacks().stream()
+                                    .filter(cb -> cb.getToolDefinition().equals(toolDef))
+                                    .findFirst()
+                                    .orElseThrow(() -> new RuntimeException("Tool not found after reconnection"));
+
+                            return newCallback.call(functionArguments);
                         } catch (Exception reconnectError) {
                             logger.error("Failed to recover from session error for MCP server {}: {}",
                                     serverName, reconnectError.getMessage(), reconnectError);
