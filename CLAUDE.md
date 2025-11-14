@@ -64,6 +64,7 @@ The application dynamically connects to Model Context Protocol servers through:
 - **Streamable HTTP**: Modern protocol with improved performance and reliability
 - Automatic tool discovery and registration from MCP servers
 - Session-based conversation management with tool callback providers
+- **Automatic Session Recovery**: Detects and recovers from MCP server restarts by automatically reconnecting with a fresh session when "Session not found" errors occur
 
 #### Vector Storage
 Uses PostgreSQL with pgvector extension for:
@@ -116,6 +117,25 @@ The application includes automatic retry configuration for network exceptions in
 - `WebClientRequestException` - WebClient-specific request failures
 
 This configuration automatically retries transient network issues without manual intervention, improving the application's stability in distributed environments.
+
+#### MCP Session Recovery
+The application includes automatic session recovery for MCP server connections. When an MCP server restarts, the previous session ID becomes invalid, causing "Session not found" errors. The session recovery mechanism automatically handles this:
+
+**Implementation** (`SessionRecoveringToolCallbackProvider.java`):
+- Wraps `SyncMcpToolCallbackProvider` to intercept tool invocations
+- Detects session errors (404 HTTP status with "Session not found" message)
+- Automatically creates a new MCP client connection with a fresh session
+- Retries the failed tool invocation once with the new session
+- Thread-safe client recreation using `AtomicReference`
+
+**How it works**:
+1. When a tool is invoked, the wrapper delegates to the underlying `SyncMcpToolCallbackProvider`
+2. If a session error is detected, it logs a warning and attempts recovery
+3. A new MCP client is created and initialized with a fresh session
+4. The tool invocation is retried with the new client
+5. If recovery fails, the original error is propagated
+
+This feature ensures that MCP server restarts don't disrupt ongoing conversations, providing a seamless experience even when external tools are temporarily unavailable.
 
 ### Local Development Setup
 For local development, you'll need PostgreSQL running:

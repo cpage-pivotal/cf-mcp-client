@@ -1,10 +1,8 @@
 package org.tanzu.mcpclient.mcp;
 
-import io.modelcontextprotocol.client.McpSyncClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.mcp.McpToolsChangedEvent;
-import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
@@ -84,21 +82,23 @@ public class McpToolCallbackCacheService implements ApplicationListener<McpTools
 
     /**
      * Creates a tool callback provider for the given MCP server service.
-     * Initializes the MCP client and wraps it in a SyncMcpToolCallbackProvider.
+     * Wraps the client in a SessionRecoveringToolCallbackProvider that automatically
+     * handles session recovery when the MCP server restarts.
      *
      * @param serverService The MCP server service
-     * @return ToolCallbackProvider instance
+     * @return ToolCallbackProvider instance with session recovery capabilities
      */
     private ToolCallbackProvider createToolCallbackProvider(McpServerService serverService) {
         try {
-            logger.debug("Creating tool callback provider for {} ({})",
+            logger.debug("Creating session-recovering tool callback provider for {} ({})",
                     serverService.getName(), serverService.getProtocol().displayName());
 
-            McpSyncClient client = serverService.createMcpSyncClient();
-            client.initialize();
-
-            // Wrap in SyncMcpToolCallbackProvider which provides built-in caching in Spring AI 1.1.0-RC1
-            return new SyncMcpToolCallbackProvider(client);
+            // Create a supplier that generates fresh MCP clients
+            // This will be used for initial connection and session recovery
+            return new SessionRecoveringToolCallbackProvider(
+                    serverService.getName(),
+                    serverService::createMcpSyncClient
+            );
 
         } catch (Exception e) {
             logger.error("Failed to create tool callback provider for {}: {}",
