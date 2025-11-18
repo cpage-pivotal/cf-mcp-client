@@ -286,9 +286,12 @@ public class A2AAgentService {
                                 String resultJson = objectMapper.writeValueAsString(resultMap);
                                 A2AModels.SendStreamingMessageResponse response = objectMapper.readValue(resultJson, A2AModels.SendStreamingMessageResponse.class);
 
-                                if (response.task() == null) {
-                                    logger.warn("[A2A] [{}] [STREAM] Parsed response has null task. Raw result: {}",
+                                if (response.status() == null) {
+                                    logger.warn("[A2A] [{}] [STREAM] Parsed response has null status. Raw result: {}",
                                             agentCard.name(), resultJson);
+                                } else {
+                                    logger.debug("[A2A] [{}] [STREAM] Parsed status update: taskId={}, state={}, final={}",
+                                            agentCard.name(), response.taskId(), response.status().state(), response.finalStatus());
                                 }
 
                                 return response;

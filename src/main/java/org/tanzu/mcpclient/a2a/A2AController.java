@@ -267,29 +267,26 @@ public class A2AController {
      * Extracts task state, status message, and response text.
      */
     private A2AModels.StatusUpdate buildStatusUpdate(A2AModels.SendStreamingMessageResponse response, String agentName) {
-        A2AModels.Task task = response.task();
-
-        if (task == null) {
-            logger.warn("[A2A] [{}] Received streaming response with null task", agentName);
-            return new A2AModels.StatusUpdate("status", "unknown", "Task is null", null, agentName);
+        if (response.status() == null) {
+            logger.warn("[A2A] [{}] Received streaming response with null status: taskId={}, kind={}",
+                    agentName, response.taskId(), response.kind());
+            return new A2AModels.StatusUpdate("status", "unknown", "Status is null", null, agentName);
         }
 
-        if (task.status() == null) {
-            logger.warn("[A2A] [{}] Received task with null status: taskId={}", agentName, task.id());
-            return new A2AModels.StatusUpdate("status", "unknown", "Task status is null", null, agentName);
-        }
-
-        A2AModels.TaskStatus status = task.status();
+        A2AModels.TaskStatus status = response.status();
         String state = status.state();
         String statusMessage = null;
         String responseText = null;
 
-        logger.debug("[A2A] [{}] Building status update: state={}, hasMessage={}",
-                agentName, state, status.message() != null);
+        logger.debug("[A2A] [{}] Building status update: taskId={}, state={}, final={}, hasMessage={}",
+                agentName, response.taskId(), state, response.finalStatus(), status.message() != null);
 
-        // Check if this is a final result (completed, failed, rejected, canceled)
-        boolean isFinalState = "completed".equals(state) || "failed".equals(state)
-                || "rejected".equals(state) || "canceled".equals(state);
+        // Check if this is a final result using the 'final' flag and state
+        boolean isFinalState = Boolean.TRUE.equals(response.finalStatus())
+                || "completed".equals(state)
+                || "failed".equals(state)
+                || "rejected".equals(state)
+                || "canceled".equals(state);
 
         String eventType = isFinalState ? "result" : "status";
 
