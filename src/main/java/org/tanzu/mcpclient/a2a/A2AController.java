@@ -4,13 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * REST controller for A2A (Agent to Agent) operations.
@@ -24,6 +26,7 @@ public class A2AController {
 
     private final A2AConfiguration a2aConfiguration;
     private final ObjectMapper objectMapper;
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public A2AController(A2AConfiguration a2aConfiguration, ObjectMapper objectMapper) {
         this.a2aConfiguration = a2aConfiguration;
@@ -169,6 +172,149 @@ public class A2AController {
         }
 
         return textBuilder.toString();
+    }
+
+    /**
+     * Sends a message to an A2A agent with streaming support for status updates.
+     * Uses SSE to stream task status updates and final results as they arrive.
+     *
+     * @param serviceName The Cloud Foundry service name of the agent
+     * @param messageText The text message to send to the agent
+     * @return SseEmitter that streams status updates
+     */
+    @GetMapping(value = "/stream-message", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamMessage(@RequestParam("serviceName") String serviceName,
+                                    @RequestParam("messageText") String messageText) {
+        logger.debug("Received stream-message request for service: {}", serviceName);
+
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+
+        executor.execute(() -> {
+            try {
+                // Find agent service by service name
+                A2AAgentService agentService = a2aConfiguration.getAgentServices().stream()
+                        .filter(service -> service.getServiceName().equals(serviceName))
+                        .findFirst()
+                        .orElse(null);
+
+                if (agentService == null) {
+                    logger.warn("Agent service not found: {}", serviceName);
+                    sendError(emitter, "Agent service not found: " + serviceName);
+                    return;
+                }
+
+                // Check if agent is healthy
+                if (!agentService.isHealthy()) {
+                    logger.warn("Agent service is unhealthy: {}", serviceName);
+                    sendError(emitter, "Agent is unhealthy: " + agentService.getErrorMessage());
+                    return;
+                }
+
+                String agentName = agentService.getAgentCard().name();
+
+                // Subscribe to streaming responses from agent
+                agentService.sendMessageStreaming(messageText)
+                        .subscribe(
+                                response -> {
+                                    try {
+                                        // Extract status update from response
+                                        A2AModels.StatusUpdate statusUpdate = buildStatusUpdate(response, agentName);
+
+                                        // Send status update as JSON SSE event
+                                        String jsonData = objectMapper.writeValueAsString(statusUpdate);
+                                        String eventType = statusUpdate.type();
+
+                                        emitter.send(SseEmitter.event()
+                                                .data(jsonData)
+                                                .name(eventType));
+
+                                        logger.debug("[A2A] [{}] Sent SSE event: type={}, state={}",
+                                                agentName, eventType, statusUpdate.state());
+
+                                    } catch (IOException e) {
+                                        logger.error("[A2A] [{}] Error sending SSE event", agentName, e);
+                                        emitter.completeWithError(e);
+                                    }
+                                },
+                                error -> {
+                                    logger.error("[A2A] [{}] Streaming error: {}", agentName, error.getMessage(), error);
+                                    sendError(emitter, "Streaming error: " + error.getMessage());
+                                },
+                                () -> {
+                                    try {
+                                        logger.debug("[A2A] [{}] Streaming completed", agentName);
+                                        emitter.send(SseEmitter.event()
+                                                .name("close")
+                                                .data(""));
+                                        emitter.complete();
+                                    } catch (IOException e) {
+                                        emitter.completeWithError(e);
+                                    }
+                                }
+                        );
+
+            } catch (Exception e) {
+                logger.error("Failed to initiate streaming: {}", e.getMessage(), e);
+                sendError(emitter, "Failed to initiate streaming: " + e.getMessage());
+            }
+        });
+
+        return emitter;
+    }
+
+    /**
+     * Builds a StatusUpdate from a SendStreamingMessageResponse.
+     * Extracts task state, status message, and response text.
+     */
+    private A2AModels.StatusUpdate buildStatusUpdate(A2AModels.SendStreamingMessageResponse response, String agentName) {
+        A2AModels.Task task = response.task();
+
+        if (task == null || task.status() == null) {
+            return new A2AModels.StatusUpdate("status", "unknown", null, null, agentName);
+        }
+
+        A2AModels.TaskStatus status = task.status();
+        String state = status.state();
+        String statusMessage = null;
+        String responseText = null;
+
+        // Check if this is a final result (completed, failed, rejected, canceled)
+        boolean isFinalState = "completed".equals(state) || "failed".equals(state)
+                || "rejected".equals(state) || "canceled".equals(state);
+
+        String eventType = isFinalState ? "result" : "status";
+
+        // Extract status message if available (for intermediate states)
+        if (status.message() != null && status.message().parts() != null) {
+            List<A2AModels.Part> parts = status.message().parts();
+            String text = extractTextFromParts(parts);
+
+            if (isFinalState) {
+                responseText = text;  // Final result
+            } else {
+                statusMessage = text;  // Intermediate status
+            }
+        }
+
+        return new A2AModels.StatusUpdate(eventType, state, statusMessage, responseText, agentName);
+    }
+
+    /**
+     * Sends an error event via SSE and completes the emitter.
+     */
+    private void sendError(SseEmitter emitter, String errorMessage) {
+        try {
+            A2AModels.StatusUpdate errorUpdate = new A2AModels.StatusUpdate(
+                    "error", "failed", null, errorMessage, null
+            );
+            String errorJson = objectMapper.writeValueAsString(errorUpdate);
+            emitter.send(SseEmitter.event()
+                    .data(errorJson)
+                    .name("error"));
+            emitter.complete();
+        } catch (Exception e) {
+            emitter.completeWithError(e);
+        }
     }
 
     /**

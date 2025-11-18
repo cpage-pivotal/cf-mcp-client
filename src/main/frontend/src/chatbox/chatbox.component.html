@@ -27,11 +27,20 @@
                 }
                 @if (messageData.typing) {
                   <div class="typing-indicator-container" role="status" aria-live="polite" aria-label="Agent is typing">
-                    <div class="typing-indicator">
-                      <span class="typing-dot"></span>
-                      <span class="typing-dot"></span>
-                      <span class="typing-dot"></span>
-                    </div>
+                    @if (messageData.persona === 'agent' && messageData.statusMessage) {
+                      <!-- Agent status message during streaming -->
+                      <div class="agent-status-message">
+                        <mat-icon class="status-icon" aria-hidden="true">sync</mat-icon>
+                        <span class="status-text">{{ messageData.statusMessage }}</span>
+                      </div>
+                    } @else {
+                      <!-- Default typing indicator -->
+                      <div class="typing-indicator">
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                      </div>
+                    }
                   </div>
                 } @else {
                   <div class="main-content" role="text">

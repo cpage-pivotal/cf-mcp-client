@@ -170,4 +170,29 @@ public class A2AModels {
         String uri,
         byte[] bytes
     ) {}
+
+    /**
+     * Streaming message response (used in SSE streaming)
+     */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record SendStreamingMessageResponse(
+        String kind,
+        Task task
+    ) {
+        public SendStreamingMessageResponse(Task task) {
+            this("sendStreamingMessageResponse", task);
+        }
+    }
+
+    /**
+     * Status update event for frontend SSE consumption
+     */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record StatusUpdate(
+        String type,
+        String state,
+        String statusMessage,
+        String responseText,
+        String agentName
+    ) {}
 }

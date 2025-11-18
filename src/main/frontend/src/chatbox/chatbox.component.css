@@ -161,6 +161,51 @@
   font-weight: 500;
 }
 
+/* Agent status message styling (for streaming progress) */
+.agent-status-message {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-2);
+  font-size: var(--md-sys-typescale-body-medium-font-size);
+  font-weight: var(--md-sys-typescale-body-medium-font-weight);
+  color: var(--md-sys-color-on-tertiary-container);
+  font-style: italic;
+  opacity: 0.85;
+  padding: var(--md-sys-spacing-2) 0;
+}
+
+.agent-status-message .status-icon {
+  color: var(--md-sys-color-tertiary);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  animation: rotate-icon 1.5s linear infinite;
+}
+
+.agent-status-message .status-text {
+  animation: pulse-opacity 1.5s ease-in-out infinite;
+}
+
+/* Rotating animation for status icon */
+@keyframes rotate-icon {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pulsing animation for status text */
+@keyframes pulse-opacity {
+  0%, 100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* ===== MATERIAL DESIGN 3 STATE LAYERS ===== */
 /* Chat cards with proper Material Design 3 state layer implementation */
 
