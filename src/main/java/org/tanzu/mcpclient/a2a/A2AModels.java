@@ -170,4 +170,29 @@ public class A2AModels {
         String uri,
         byte[] bytes
     ) {}
+
+    /**
+     * Streaming message response (used in SSE streaming)
+     * This matches the actual A2A status-update structure returned by agents
+     */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record SendStreamingMessageResponse(
+        String kind,
+        String taskId,
+        String contextId,
+        TaskStatus status,
+        @JsonProperty("final") Boolean finalStatus
+    ) {}
+
+    /**
+     * Status update event for frontend SSE consumption
+     */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record StatusUpdate(
+        String type,
+        String state,
+        String statusMessage,
+        String responseText,
+        String agentName
+    ) {}
 }

@@ -53,6 +53,8 @@ interface ChatboxMessage {
   error?: ErrorInfo;
   showError?: boolean;
   agentName?: string;
+  statusMessage?: string;  // For streaming status updates
+  taskState?: string;      // Task state from A2A protocol
 }
 
 interface SendMessageResponse {
@@ -60,6 +62,14 @@ interface SendMessageResponse {
   agentName: string;
   responseText: string;
   error?: string;
+}
+
+interface StatusUpdate {
+  type: string;         // 'status', 'result', or 'error'
+  state: string;        // Task state: 'pending', 'running', 'completed', etc.
+  statusMessage: string | null;
+  responseText: string | null;
+  agentName: string;
 }
 
 @Component({
@@ -400,6 +410,191 @@ export class ChatboxComponent implements OnDestroy {
       { text: message, persona: 'user' }
     ]);
 
+    // Check if agent supports streaming
+    const supportsStreaming = agent.capabilities?.streaming || false;
+
+    if (supportsStreaming) {
+      // Use streaming endpoint
+      await this.sendMessageToAgentStreaming(agent, message);
+    } else {
+      // Fall back to blocking endpoint
+      await this.sendMessageToAgentBlocking(agent, message);
+    }
+  }
+
+  /**
+   * Sends a message to an agent using streaming (SSE) for real-time status updates.
+   * Only used when agent.capabilities.streaming is true.
+   */
+  private async sendMessageToAgentStreaming(agent: A2AAgent, message: string): Promise<void> {
+    // Add placeholder for agent response
+    this._messages.update(msgs => [
+      ...msgs,
+      {
+        text: '',
+        persona: 'agent',
+        typing: true,
+        agentName: agent.agentName,
+        statusMessage: 'Connecting to agent...',
+        taskState: 'pending'
+      }
+    ]);
+
+    try {
+      // Use SSE streaming endpoint
+      const encodedServiceName = encodeURIComponent(agent.serviceName);
+      const encodedMessage = encodeURIComponent(message);
+      const url = `${this.protocol}//${this.host}/a2a/stream-message?serviceName=${encodedServiceName}&messageText=${encodedMessage}`;
+
+      const eventSource = new EventSource(url);
+
+      // Handle status updates (intermediate progress)
+      eventSource.addEventListener('status', (event: MessageEvent) => {
+        const statusUpdate: StatusUpdate = JSON.parse(event.data);
+        console.log('[A2A] Status update:', statusUpdate);
+
+        this._messages.update(msgs => {
+          const lastMsg = msgs[msgs.length - 1];
+          if (lastMsg.persona === 'agent') {
+            return [
+              ...msgs.slice(0, -1),
+              {
+                ...lastMsg,
+                typing: true,
+                statusMessage: statusUpdate.statusMessage || `Agent is ${statusUpdate.state}...`,
+                taskState: statusUpdate.state
+              }
+            ];
+          }
+          return msgs;
+        });
+      });
+
+      // Handle final result
+      eventSource.addEventListener('result', (event: MessageEvent) => {
+        const statusUpdate: StatusUpdate = JSON.parse(event.data);
+        console.log('[A2A] Result:', statusUpdate);
+
+        this._messages.update(msgs => {
+          const lastMsg = msgs[msgs.length - 1];
+          if (lastMsg.persona === 'agent') {
+            return [
+              ...msgs.slice(0, -1),
+              {
+                ...lastMsg,
+                text: statusUpdate.responseText || 'No response',
+                typing: false,
+                statusMessage: undefined,
+                taskState: statusUpdate.state
+              }
+            ];
+          }
+          return msgs;
+        });
+
+        // Close the EventSource after receiving final result
+        eventSource.close();
+      });
+
+      // Handle errors
+      eventSource.addEventListener('error', (event: MessageEvent) => {
+        console.error('[A2A] Error event:', event);
+
+        try {
+          const errorUpdate: StatusUpdate = JSON.parse(event.data);
+          this._messages.update(msgs => {
+            const lastMsg = msgs[msgs.length - 1];
+            if (lastMsg.persona === 'agent') {
+              return [
+                ...msgs.slice(0, -1),
+                {
+                  ...lastMsg,
+                  text: `Error: ${errorUpdate.responseText || 'Agent communication failed'}`,
+                  typing: false,
+                  statusMessage: undefined,
+                  taskState: 'failed'
+                }
+              ];
+            }
+            return msgs;
+          });
+        } catch {
+          // If we can't parse the error, show generic message
+          this._messages.update(msgs => {
+            const lastMsg = msgs[msgs.length - 1];
+            if (lastMsg.persona === 'agent') {
+              return [
+                ...msgs.slice(0, -1),
+                {
+                  ...lastMsg,
+                  text: 'Error: Agent communication failed',
+                  typing: false,
+                  statusMessage: undefined,
+                  taskState: 'failed'
+                }
+              ];
+            }
+            return msgs;
+          });
+        }
+
+        eventSource.close();
+      });
+
+      // Handle stream close
+      eventSource.addEventListener('close', () => {
+        console.log('[A2A] Stream closed');
+        eventSource.close();
+      });
+
+      // Handle connection errors
+      eventSource.onerror = (error) => {
+        console.error('[A2A] EventSource error:', error);
+        this._messages.update(msgs => {
+          const lastMsg = msgs[msgs.length - 1];
+          if (lastMsg.persona === 'agent') {
+            return [
+              ...msgs.slice(0, -1),
+              {
+                ...lastMsg,
+                text: 'Error: Connection to agent failed',
+                typing: false,
+                statusMessage: undefined,
+                taskState: 'failed'
+              }
+            ];
+          }
+          return msgs;
+        });
+        eventSource.close();
+      };
+
+    } catch (error) {
+      console.error('Error initiating agent stream:', error);
+      this._messages.update(msgs => {
+        const lastMsg = msgs[msgs.length - 1];
+        if (lastMsg.persona === 'agent') {
+          return [
+            ...msgs.slice(0, -1),
+            {
+              ...lastMsg,
+              text: 'Error: Failed to connect to agent',
+              typing: false,
+              statusMessage: undefined,
+              taskState: 'failed'
+            }
+          ];
+        }
+        return msgs;
+      });
+    }
+  }
+
+  /**
+   * Sends a message to an agent using blocking request (no streaming).
+   * Used as fallback when agent.capabilities.streaming is false.
+   */
+  private async sendMessageToAgentBlocking(agent: A2AAgent, message: string): Promise<void> {
     // Add placeholder for agent response
     this._messages.update(msgs => [
       ...msgs,
@@ -412,7 +607,7 @@ export class ChatboxComponent implements OnDestroy {
     ]);
 
     try {
-      // Call backend using same pattern as streamChatResponse
+      // Call backend using blocking endpoint
       const url = `${this.protocol}//${this.host}/a2a/send-message`;
       const response = await this.http.post<SendMessageResponse>(
         url,

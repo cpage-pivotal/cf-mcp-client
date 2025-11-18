@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ public class A2AConfiguration {
 
     private final A2ADiscoveryService discoveryService;
     private final RestClient.Builder restClientBuilder;
+    private final WebClient.Builder webClientBuilder;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -33,10 +35,12 @@ public class A2AConfiguration {
 
     public A2AConfiguration(A2ADiscoveryService discoveryService,
                            RestClient.Builder restClientBuilder,
+                           WebClient.Builder webClientBuilder,
                            ObjectMapper objectMapper,
                            ApplicationEventPublisher eventPublisher) {
         this.discoveryService = discoveryService;
         this.restClientBuilder = restClientBuilder;
+        this.webClientBuilder = webClientBuilder;
         this.objectMapper = objectMapper;
         this.eventPublisher = eventPublisher;
 
@@ -72,6 +76,7 @@ public class A2AConfiguration {
                         serviceInfo.serviceName(),
                         serviceInfo.agentCardUri(),
                         restClientBuilder,
+                        webClientBuilder,
                         objectMapper
                 );
 
