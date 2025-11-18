@@ -269,14 +269,23 @@ public class A2AController {
     private A2AModels.StatusUpdate buildStatusUpdate(A2AModels.SendStreamingMessageResponse response, String agentName) {
         A2AModels.Task task = response.task();
 
-        if (task == null || task.status() == null) {
-            return new A2AModels.StatusUpdate("status", "unknown", null, null, agentName);
+        if (task == null) {
+            logger.warn("[A2A] [{}] Received streaming response with null task", agentName);
+            return new A2AModels.StatusUpdate("status", "unknown", "Task is null", null, agentName);
+        }
+
+        if (task.status() == null) {
+            logger.warn("[A2A] [{}] Received task with null status: taskId={}", agentName, task.id());
+            return new A2AModels.StatusUpdate("status", "unknown", "Task status is null", null, agentName);
         }
 
         A2AModels.TaskStatus status = task.status();
         String state = status.state();
         String statusMessage = null;
         String responseText = null;
+
+        logger.debug("[A2A] [{}] Building status update: state={}, hasMessage={}",
+                agentName, state, status.message() != null);
 
         // Check if this is a final result (completed, failed, rejected, canceled)
         boolean isFinalState = "completed".equals(state) || "failed".equals(state)
@@ -291,9 +300,14 @@ public class A2AController {
 
             if (isFinalState) {
                 responseText = text;  // Final result
+                logger.info("[A2A] [{}] Final result received: state={}, textLength={}",
+                        agentName, state, text != null ? text.length() : 0);
             } else {
                 statusMessage = text;  // Intermediate status
+                logger.debug("[A2A] [{}] Status message: {}", agentName, statusMessage);
             }
+        } else {
+            logger.debug("[A2A] [{}] No message in status for state={}", agentName, state);
         }
 
         return new A2AModels.StatusUpdate(eventType, state, statusMessage, responseText, agentName);

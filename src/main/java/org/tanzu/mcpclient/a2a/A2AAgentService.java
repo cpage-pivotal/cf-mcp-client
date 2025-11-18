@@ -273,12 +273,29 @@ public class A2AAgentService {
 
                             // Extract the result as a SendStreamingMessageResponse
                             Object result = jsonRpcResponse.result();
-                            if (result instanceof Map<?, ?> resultMap) {
-                                // Convert Map to SendStreamingMessageResponse
-                                String resultJson = objectMapper.writeValueAsString(resultMap);
-                                return objectMapper.readValue(resultJson, A2AModels.SendStreamingMessageResponse.class);
+                            if (result == null) {
+                                logger.warn("[A2A] [{}] [STREAM] Received null result in JSON-RPC response", agentCard.name());
+                                return null;
                             }
 
+                            if (result instanceof Map<?, ?> resultMap) {
+                                // Log the result structure for debugging
+                                logger.debug("[A2A] [{}] [STREAM] Result keys: {}", agentCard.name(), resultMap.keySet());
+
+                                // Convert Map to SendStreamingMessageResponse
+                                String resultJson = objectMapper.writeValueAsString(resultMap);
+                                A2AModels.SendStreamingMessageResponse response = objectMapper.readValue(resultJson, A2AModels.SendStreamingMessageResponse.class);
+
+                                if (response.task() == null) {
+                                    logger.warn("[A2A] [{}] [STREAM] Parsed response has null task. Raw result: {}",
+                                            agentCard.name(), resultJson);
+                                }
+
+                                return response;
+                            }
+
+                            logger.warn("[A2A] [{}] [STREAM] Result is not a Map, type: {}",
+                                    agentCard.name(), result.getClass().getName());
                             return null;
                         } catch (Exception e) {
                             logger.error("[A2A] [{}] [STREAM] Error parsing SSE event: {}", agentCard.name(), e.getMessage(), e);

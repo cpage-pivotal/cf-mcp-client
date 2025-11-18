@@ -410,6 +410,23 @@ export class ChatboxComponent implements OnDestroy {
       { text: message, persona: 'user' }
     ]);
 
+    // Check if agent supports streaming
+    const supportsStreaming = agent.capabilities?.streaming || false;
+
+    if (supportsStreaming) {
+      // Use streaming endpoint
+      await this.sendMessageToAgentStreaming(agent, message);
+    } else {
+      // Fall back to blocking endpoint
+      await this.sendMessageToAgentBlocking(agent, message);
+    }
+  }
+
+  /**
+   * Sends a message to an agent using streaming (SSE) for real-time status updates.
+   * Only used when agent.capabilities.streaming is true.
+   */
+  private async sendMessageToAgentStreaming(agent: A2AAgent, message: string): Promise<void> {
     // Add placeholder for agent response
     this._messages.update(msgs => [
       ...msgs,
@@ -569,6 +586,71 @@ export class ChatboxComponent implements OnDestroy {
           ];
         }
         return msgs;
+      });
+    }
+  }
+
+  /**
+   * Sends a message to an agent using blocking request (no streaming).
+   * Used as fallback when agent.capabilities.streaming is false.
+   */
+  private async sendMessageToAgentBlocking(agent: A2AAgent, message: string): Promise<void> {
+    // Add placeholder for agent response
+    this._messages.update(msgs => [
+      ...msgs,
+      {
+        text: '',
+        persona: 'agent',
+        typing: true,
+        agentName: agent.agentName
+      }
+    ]);
+
+    try {
+      // Call backend using blocking endpoint
+      const url = `${this.protocol}//${this.host}/a2a/send-message`;
+      const response = await this.http.post<SendMessageResponse>(
+        url,
+        {
+          serviceName: agent.serviceName,
+          messageText: message
+        }
+      ).toPromise();
+
+      // Update last message with response
+      if (response && response.success) {
+        this._messages.update(msgs => {
+          const lastMsg = msgs[msgs.length - 1];
+          return [
+            ...msgs.slice(0, -1),
+            { ...lastMsg, text: response.responseText, typing: false }
+          ];
+        });
+      } else {
+        this._messages.update(msgs => {
+          const lastMsg = msgs[msgs.length - 1];
+          return [
+            ...msgs.slice(0, -1),
+            {
+              ...lastMsg,
+              text: 'Error: ' + (response?.error || 'Unknown error'),
+              typing: false
+            }
+          ];
+        });
+      }
+    } catch (error) {
+      console.error('Error sending message to agent:', error);
+      this._messages.update(msgs => {
+        const lastMsg = msgs[msgs.length - 1];
+        return [
+          ...msgs.slice(0, -1),
+          {
+            ...lastMsg,
+            text: 'Error communicating with agent',
+            typing: false
+          }
+        ];
       });
     }
   }
