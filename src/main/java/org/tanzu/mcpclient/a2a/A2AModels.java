@@ -56,6 +56,7 @@ public class A2AModels {
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Message(
+        String kind,
         String role,
         List<Part> parts,
         String messageId,
@@ -63,7 +64,11 @@ public class A2AModels {
         String contextId
     ) {
         public Message(String role, List<Part> parts, String messageId) {
-            this(role, parts, messageId, null, null);
+            this("message", role, parts, messageId, null, null);
+        }
+
+        public Message(String kind, String role, List<Part> parts, String messageId) {
+            this(kind, role, parts, messageId, null, null);
         }
     }
 
