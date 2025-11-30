@@ -1,5 +1,6 @@
 package org.tanzu.mcpclient.metrics;
 
+import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,6 +141,6 @@ public class MetricsService {
             String agentCardUri,
             boolean healthy,
             String errorMessage,
-            AgentCard.Capabilities capabilities
+            AgentCapabilities capabilities
     ) {}
 }

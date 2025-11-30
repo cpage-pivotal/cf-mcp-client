@@ -7,16 +7,24 @@ import io.a2a.client.MessageEvent;
 import io.a2a.client.TaskEvent;
 import io.a2a.client.TaskUpdateEvent;
 import io.a2a.client.config.ClientConfig;
+import io.a2a.client.http.A2ACardResolver;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfig;
-import io.a2a.common.A2ACardResolver;
-import io.a2a.spec.*;
+import io.a2a.spec.AgentCard;
+import io.a2a.spec.Message;
+import io.a2a.spec.Task;
+import io.a2a.spec.TaskState;
+import io.a2a.spec.TaskStatus;
+import io.a2a.spec.TextPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -175,8 +183,11 @@ public class A2AAgentService {
                 responseFuture.completeExceptionally(error);
             };
 
-            // Create message using SDK's utility method
-            Message message = A2A.toUserMessage(messageText);
+            // Create message using SDK Message.Builder
+            Message message = new Message.Builder()
+                    .role(Message.Role.USER)
+                    .parts(new TextPart(messageText))
+                    .build();
 
             long startTime = System.currentTimeMillis();
 
@@ -256,8 +267,11 @@ public class A2AAgentService {
                 sink.tryEmitError(error);
             };
 
-            // Create message using SDK
-            Message message = A2A.toUserMessage(messageText);
+            // Create message using SDK Message.Builder
+            Message message = new Message.Builder()
+                    .role(Message.Role.USER)
+                    .parts(new TextPart(messageText))
+                    .build();
 
             // Send message using streaming client
             streamingClient.sendMessage(message, consumers, errorHandler, null);
@@ -277,18 +291,19 @@ public class A2AAgentService {
      * Creates a synthetic Task from a Message for consistency in streaming responses.
      */
     private Task createTaskFromMessage(Message message) {
-        // Create a TaskStatus with the message
-        TaskStatus status = new TaskStatus.Builder()
-                .message(message)
-                .timestamp(java.time.Instant.now())
-                .build();
+        // Create a TaskStatus with the message and COMPLETED state
+        TaskStatus status = new TaskStatus(
+                TaskState.COMPLETED,
+                message,
+                OffsetDateTime.now(ZoneOffset.UTC)
+        );
 
         // Create a Task with completed state
         return new Task.Builder()
-                .taskId(message.getTaskId() != null ? message.getTaskId() : java.util.UUID.randomUUID().toString())
+                .id(message.getTaskId() != null ? message.getTaskId() : UUID.randomUUID().toString())
                 .contextId(message.getContextId())
-                .state(Task.State.COMPLETED)
                 .status(status)
+                .history(List.of(message))
                 .build();
     }
 

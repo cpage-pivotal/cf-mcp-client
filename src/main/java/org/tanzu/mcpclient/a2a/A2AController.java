@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.a2a.spec.Message;
 import io.a2a.spec.Part;
 import io.a2a.spec.Task;
+import io.a2a.spec.TaskState;
 import io.a2a.spec.TextPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,8 +131,8 @@ public class A2AController {
 
         // Handle SDK Task
         if (response instanceof Task task) {
-            if (task.getStatus() != null && task.getStatus().getMessage() != null) {
-                return extractTextFromMessage(task.getStatus().getMessage());
+            if (task.getStatus() != null && task.getStatus().message() != null) {
+                return extractTextFromMessage(task.getStatus().message());
             }
             logger.debug("Task has no status message");
             return "";
@@ -270,29 +271,29 @@ public class A2AController {
 
         if (task.getStatus() == null) {
             logger.warn("[A2A] [{}] Received task update with null status: taskId={}, state={}",
-                    agentName, task.getTaskId(), task.getState());
+                    agentName, task.getId(), task.getStatus() != null ? task.getStatus().state() : "null");
             return new A2AModels.StatusUpdate("status", "unknown", "Status is null", null, agentName);
         }
 
-        String state = task.getState().toString().toLowerCase();
+        String state = task.getStatus().state().asString();
         String statusMessage = null;
         String responseText = null;
 
         logger.debug("[A2A] [{}] Building status update: taskId={}, state={}, final={}, hasMessage={}",
-                agentName, task.getTaskId(), state, isFinal, task.getStatus().getMessage() != null);
+                agentName, task.getId(), state, isFinal, task.getStatus().message() != null);
 
         // Determine event type based on final flag and state
         boolean isFinalState = isFinal
-                || task.getState() == Task.State.COMPLETED
-                || task.getState() == Task.State.FAILED
-                || task.getState() == Task.State.REJECTED
-                || task.getState() == Task.State.CANCELED;
+                || task.getStatus().state() == TaskState.COMPLETED
+                || task.getStatus().state() == TaskState.FAILED
+                || task.getStatus().state() == TaskState.REJECTED
+                || task.getStatus().state() == TaskState.CANCELED;
 
         String eventType = isFinalState ? "result" : "status";
 
         // Extract message text if available
-        if (task.getStatus().getMessage() != null) {
-            String text = extractTextFromMessage(task.getStatus().getMessage());
+        if (task.getStatus().message() != null) {
+            String text = extractTextFromMessage(task.getStatus().message());
 
             if (isFinalState) {
                 responseText = text;  // Final result
