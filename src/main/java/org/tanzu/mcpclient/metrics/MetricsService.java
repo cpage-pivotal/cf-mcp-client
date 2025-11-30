@@ -1,12 +1,12 @@
 package org.tanzu.mcpclient.metrics;
 
+import io.a2a.spec.AgentCard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.tanzu.mcpclient.a2a.A2AAgentService;
 import org.tanzu.mcpclient.a2a.A2AConfigurationEvent;
-import org.tanzu.mcpclient.a2a.AgentCard;
 import org.tanzu.mcpclient.chat.ChatConfigurationEvent;
 import org.tanzu.mcpclient.document.DocumentConfigurationEvent;
 import org.tanzu.mcpclient.prompt.McpPrompt;
@@ -140,6 +140,6 @@ public class MetricsService {
             String agentCardUri,
             boolean healthy,
             String errorMessage,
-            AgentCard.AgentCapabilities capabilities
+            AgentCard.Capabilities capabilities
     ) {}
 }

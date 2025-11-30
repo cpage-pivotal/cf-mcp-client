@@ -1,6 +1,10 @@
 package org.tanzu.mcpclient.a2a;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.a2a.spec.Message;
+import io.a2a.spec.Part;
+import io.a2a.spec.Task;
+import io.a2a.spec.TextPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -10,13 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * REST controller for A2A (Agent to Agent) operations.
  * Provides endpoints for sending messages to A2A agents and receiving responses.
+ * Uses the A2A Java SDK types (io.a2a.spec.*) directly.
  */
 @RestController
 @RequestMapping("/a2a")
@@ -73,11 +77,11 @@ public class A2AController {
                         ));
             }
 
-            // Send message to agent
-            A2AModels.JsonRpcResponse response = agentService.sendMessage(request.messageText());
+            // Send message to agent - returns SDK Message or Task
+            Object response = agentService.sendMessage(request.messageText());
 
-            // Extract response text from JSON-RPC result
-            String responseText = extractResponseText(response.result());
+            // Extract response text from SDK object
+            String responseText = extractResponseText(response);
 
             logger.info("Successfully sent message to agent {} and received response",
                     agentService.getAgentCard().name());
@@ -114,60 +118,54 @@ public class A2AController {
     }
 
     /**
-     * Extracts text from the JSON-RPC result object.
-     * The result can be either a Task or a Message object.
+     * Extracts text from the SDK response object (Message or Task).
      *
-     * @param result The JSON-RPC result object
-     * @return Extracted text from the result
+     * @param response The SDK response object (Message or Task)
+     * @return Extracted text from the response
      */
-    private String extractResponseText(Object result) {
-        if (result == null) {
+    private String extractResponseText(Object response) {
+        if (response == null) {
             return "";
         }
 
-        try {
-            // Try to parse as Task first
-            A2AModels.Task task = objectMapper.convertValue(result, A2AModels.Task.class);
-            if (task != null && task.status() != null && task.status().message() != null) {
-                return extractTextFromParts(task.status().message().parts());
+        // Handle SDK Task
+        if (response instanceof Task task) {
+            if (task.getStatus() != null && task.getStatus().getMessage() != null) {
+                return extractTextFromMessage(task.getStatus().getMessage());
             }
-        } catch (Exception e) {
-            logger.debug("Result is not a Task, trying Message");
+            logger.debug("Task has no status message");
+            return "";
         }
 
-        try {
-            // Try to parse as Message
-            A2AModels.Message message = objectMapper.convertValue(result, A2AModels.Message.class);
-            if (message != null && message.parts() != null) {
-                return extractTextFromParts(message.parts());
-            }
-        } catch (Exception e) {
-            logger.warn("Failed to parse result as Task or Message: {}", e.getMessage());
+        // Handle SDK Message
+        if (response instanceof Message message) {
+            return extractTextFromMessage(message);
         }
 
         // Fallback: return string representation
-        return result.toString();
+        logger.warn("Unknown response type: {}", response.getClass().getName());
+        return response.toString();
     }
 
     /**
-     * Extracts text content from a list of message parts.
+     * Extracts text content from an SDK Message.
      * Concatenates all TextPart elements.
      *
-     * @param parts List of message parts
+     * @param message SDK Message object
      * @return Concatenated text from all text parts
      */
-    private String extractTextFromParts(List<A2AModels.Part> parts) {
-        if (parts == null || parts.isEmpty()) {
+    private String extractTextFromMessage(Message message) {
+        if (message == null || message.getParts() == null || message.getParts().isEmpty()) {
             return "";
         }
 
         StringBuilder textBuilder = new StringBuilder();
-        for (A2AModels.Part part : parts) {
-            if (part instanceof A2AModels.TextPart textPart) {
+        for (Part<?> part : message.getParts()) {
+            if (part instanceof TextPart textPart) {
                 if (!textBuilder.isEmpty()) {
                     textBuilder.append("\n");
                 }
-                textBuilder.append(textPart.text());
+                textBuilder.append(textPart.getText());
             }
         }
 
@@ -212,13 +210,13 @@ public class A2AController {
 
                 String agentName = agentService.getAgentCard().name();
 
-                // Subscribe to streaming responses from agent
+                // Subscribe to streaming responses from agent (SDK TaskUpdate events)
                 agentService.sendMessageStreaming(messageText)
                         .subscribe(
-                                response -> {
+                                taskUpdate -> {
                                     try {
-                                        // Extract status update from response
-                                        A2AModels.StatusUpdate statusUpdate = buildStatusUpdate(response, agentName);
+                                        // Build status update from SDK Task
+                                        A2AModels.StatusUpdate statusUpdate = buildStatusUpdate(taskUpdate, agentName);
 
                                         // Send status update as JSON SSE event
                                         String jsonData = objectMapper.writeValueAsString(statusUpdate);
@@ -263,37 +261,38 @@ public class A2AController {
     }
 
     /**
-     * Builds a StatusUpdate from a SendStreamingMessageResponse.
+     * Builds a StatusUpdate from an SDK TaskUpdate.
      * Extracts task state, status message, and response text.
      */
-    private A2AModels.StatusUpdate buildStatusUpdate(A2AModels.SendStreamingMessageResponse response, String agentName) {
-        if (response.status() == null) {
-            logger.warn("[A2A] [{}] Received streaming response with null status: taskId={}, kind={}",
-                    agentName, response.taskId(), response.kind());
+    private A2AModels.StatusUpdate buildStatusUpdate(A2AAgentService.TaskUpdate taskUpdate, String agentName) {
+        Task task = taskUpdate.task();
+        boolean isFinal = taskUpdate.isFinal();
+
+        if (task.getStatus() == null) {
+            logger.warn("[A2A] [{}] Received task update with null status: taskId={}, state={}",
+                    agentName, task.getTaskId(), task.getState());
             return new A2AModels.StatusUpdate("status", "unknown", "Status is null", null, agentName);
         }
 
-        A2AModels.TaskStatus status = response.status();
-        String state = status.state();
+        String state = task.getState().toString().toLowerCase();
         String statusMessage = null;
         String responseText = null;
 
         logger.debug("[A2A] [{}] Building status update: taskId={}, state={}, final={}, hasMessage={}",
-                agentName, response.taskId(), state, response.finalStatus(), status.message() != null);
+                agentName, task.getTaskId(), state, isFinal, task.getStatus().getMessage() != null);
 
-        // Check if this is a final result using the 'final' flag and state
-        boolean isFinalState = Boolean.TRUE.equals(response.finalStatus())
-                || "completed".equals(state)
-                || "failed".equals(state)
-                || "rejected".equals(state)
-                || "canceled".equals(state);
+        // Determine event type based on final flag and state
+        boolean isFinalState = isFinal
+                || task.getState() == Task.State.COMPLETED
+                || task.getState() == Task.State.FAILED
+                || task.getState() == Task.State.REJECTED
+                || task.getState() == Task.State.CANCELED;
 
         String eventType = isFinalState ? "result" : "status";
 
-        // Extract status message if available (for intermediate states)
-        if (status.message() != null && status.message().parts() != null) {
-            List<A2AModels.Part> parts = status.message().parts();
-            String text = extractTextFromParts(parts);
+        // Extract message text if available
+        if (task.getStatus().getMessage() != null) {
+            String text = extractTextFromMessage(task.getStatus().getMessage());
 
             if (isFinalState) {
                 responseText = text;  // Final result

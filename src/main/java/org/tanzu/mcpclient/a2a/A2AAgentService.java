@@ -16,9 +16,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -134,20 +132,21 @@ public class A2AAgentService {
 
     /**
      * Sends a text message to the A2A agent using the SDK client (blocking mode).
+     * Returns the SDK Message or Task directly.
      *
      * @param messageText The text message to send
-     * @return JSON-RPC response from the agent (for compatibility with existing controller)
+     * @return SDK Message or Task response from the agent
      * @throws IllegalStateException if agent is unhealthy
      * @throws RuntimeException if message send fails
      */
-    public A2AModels.JsonRpcResponse sendMessage(String messageText) {
+    public Object sendMessage(String messageText) {
         if (!healthy) {
             throw new IllegalStateException("Agent is unhealthy: " + errorMessage);
         }
 
         logger.debug("[A2A] [{}] [SEND] Sending message to agent", agentCard.name());
 
-        CompletableFuture<A2AModels.JsonRpcResponse> responseFuture = new CompletableFuture<>();
+        CompletableFuture<Object> responseFuture = new CompletableFuture<>();
 
         try {
             // Create event consumers to capture response
@@ -157,34 +156,12 @@ public class A2AAgentService {
                             logger.debug("[A2A] [{}] [SEND] Received event: {}", card.name(), event.getClass().getSimpleName());
 
                             if (event instanceof MessageEvent messageEvent) {
-                                // Convert SDK Message to A2AModels format
-                                Message sdkMessage = messageEvent.getMessage();
-                                A2AModels.Message legacyMessage = convertSdkMessageToLegacy(sdkMessage);
-
-                                // Wrap in JSON-RPC response for compatibility
-                                A2AModels.JsonRpcResponse response = new A2AModels.JsonRpcResponse(
-                                        "2.0",
-                                        1,
-                                        legacyMessage,
-                                        null
-                                );
-
-                                responseFuture.complete(response);
+                                // Return SDK Message directly
+                                responseFuture.complete(messageEvent.getMessage());
 
                             } else if (event instanceof TaskEvent taskEvent) {
-                                // For tasks, extract the final message from task status
-                                Task task = taskEvent.getTask();
-                                A2AModels.Task legacyTask = convertSdkTaskToLegacy(task);
-
-                                // Wrap in JSON-RPC response
-                                A2AModels.JsonRpcResponse response = new A2AModels.JsonRpcResponse(
-                                        "2.0",
-                                        1,
-                                        legacyTask,
-                                        null
-                                );
-
-                                responseFuture.complete(response);
+                                // Return SDK Task directly
+                                responseFuture.complete(taskEvent.getTask());
                             }
                         } catch (Exception e) {
                             logger.error("[A2A] [{}] [SEND] Error processing event: {}", card.name(), e.getMessage(), e);
@@ -207,7 +184,7 @@ public class A2AAgentService {
             blockingClient.sendMessage(message, consumers, errorHandler, null);
 
             // Wait for response with timeout
-            A2AModels.JsonRpcResponse response = responseFuture.get(MESSAGE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            Object response = responseFuture.get(MESSAGE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
             long duration = System.currentTimeMillis() - startTime;
             logger.info("[A2A] [{}] [RESPONSE] Received response in {}ms", agentCard.name(), duration);
@@ -226,12 +203,13 @@ public class A2AAgentService {
 
     /**
      * Sends a message to the A2A agent using streaming for real-time status updates.
+     * Returns a Flux of TaskUpdate events containing the SDK Task.
      *
      * @param messageText The text message to send
-     * @return Flux of SendStreamingMessageResponse containing status updates and final result
+     * @return Flux of TaskUpdate records containing SDK Task and completion status
      * @throws IllegalStateException if agent is unhealthy
      */
-    public Flux<A2AModels.SendStreamingMessageResponse> sendMessageStreaming(String messageText) {
+    public Flux<TaskUpdate> sendMessageStreaming(String messageText) {
         if (!healthy) {
             return Flux.error(new IllegalStateException("Agent is unhealthy: " + errorMessage));
         }
@@ -239,7 +217,7 @@ public class A2AAgentService {
         logger.debug("[A2A] [{}] [STREAM] Starting streaming message to agent", agentCard.name());
 
         // Create a Sinks.Many to emit events as they arrive
-        Sinks.Many<A2AModels.SendStreamingMessageResponse> sink = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<TaskUpdate> sink = Sinks.many().multicast().onBackpressureBuffer();
 
         try {
             // Create event consumers to capture streaming updates
@@ -249,23 +227,21 @@ public class A2AAgentService {
                             logger.debug("[A2A] [{}] [STREAM] Received event: {}", card.name(), event.getClass().getSimpleName());
 
                             if (event instanceof TaskUpdateEvent updateEvent) {
-                                // Convert TaskUpdateEvent to streaming response
+                                // Emit task update (not final)
                                 Task task = updateEvent.getTask();
-                                A2AModels.SendStreamingMessageResponse streamingResponse = convertTaskUpdateToStreamingResponse(task, false);
-                                sink.tryEmitNext(streamingResponse);
+                                sink.tryEmitNext(new TaskUpdate(task, false));
 
                             } else if (event instanceof TaskEvent taskEvent) {
-                                // Final task event
+                                // Emit final task event
                                 Task task = taskEvent.getTask();
-                                A2AModels.SendStreamingMessageResponse streamingResponse = convertTaskUpdateToStreamingResponse(task, true);
-                                sink.tryEmitNext(streamingResponse);
+                                sink.tryEmitNext(new TaskUpdate(task, true));
                                 sink.tryEmitComplete();
 
                             } else if (event instanceof MessageEvent messageEvent) {
-                                // Direct message response (no task)
-                                Message sdkMessage = messageEvent.getMessage();
-                                A2AModels.SendStreamingMessageResponse streamingResponse = convertMessageToStreamingResponse(sdkMessage);
-                                sink.tryEmitNext(streamingResponse);
+                                // Direct message response (no task) - convert to task-like structure
+                                Message msg = messageEvent.getMessage();
+                                Task syntheticTask = createTaskFromMessage(msg);
+                                sink.tryEmitNext(new TaskUpdate(syntheticTask, true));
                                 sink.tryEmitComplete();
                             }
                         } catch (Exception e) {
@@ -298,118 +274,22 @@ public class A2AAgentService {
     }
 
     /**
-     * Converts an SDK Message to the legacy A2AModels.Message format.
+     * Creates a synthetic Task from a Message for consistency in streaming responses.
      */
-    private A2AModels.Message convertSdkMessageToLegacy(Message sdkMessage) {
-        List<A2AModels.Part> legacyParts = new ArrayList<>();
+    private Task createTaskFromMessage(Message message) {
+        // Create a TaskStatus with the message
+        TaskStatus status = new TaskStatus.Builder()
+                .message(message)
+                .timestamp(java.time.Instant.now())
+                .build();
 
-        for (Part<?> sdkPart : sdkMessage.getParts()) {
-            if (sdkPart instanceof TextPart textPart) {
-                legacyParts.add(new A2AModels.TextPart(textPart.getText()));
-            }
-            // Can add support for FilePart and DataPart if needed
-        }
-
-        return new A2AModels.Message(
-                "message",
-                sdkMessage.getRole().toString().toLowerCase(),
-                legacyParts,
-                sdkMessage.getMessageId(),
-                sdkMessage.getTaskId(),
-                sdkMessage.getContextId()
-        );
-    }
-
-    /**
-     * Converts an SDK Task to the legacy A2AModels.Task format.
-     */
-    private A2AModels.Task convertSdkTaskToLegacy(Task sdkTask) {
-        A2AModels.TaskStatus legacyStatus = null;
-
-        if (sdkTask.getStatus() != null) {
-            TaskStatus sdkStatus = sdkTask.getStatus();
-            A2AModels.Message legacyMessage = null;
-
-            if (sdkStatus.getMessage() != null) {
-                legacyMessage = convertSdkMessageToLegacy(sdkStatus.getMessage());
-            }
-
-            legacyStatus = new A2AModels.TaskStatus(
-                    sdkTask.getState().toString().toLowerCase(),
-                    legacyMessage,
-                    sdkStatus.getTimestamp()
-            );
-        }
-
-        // Convert history if present
-        List<A2AModels.Message> legacyHistory = new ArrayList<>();
-        if (sdkTask.getHistory() != null) {
-            for (Message sdkHistoryMessage : sdkTask.getHistory()) {
-                legacyHistory.add(convertSdkMessageToLegacy(sdkHistoryMessage));
-            }
-        }
-
-        // Note: Artifacts conversion skipped for simplicity (can be added if needed)
-        return new A2AModels.Task(
-                "task",
-                sdkTask.getTaskId(),
-                sdkTask.getContextId(),
-                legacyStatus,
-                legacyHistory,
-                List.of()  // Empty artifacts list
-        );
-    }
-
-    /**
-     * Converts a Task update to a streaming response format.
-     */
-    private A2AModels.SendStreamingMessageResponse convertTaskUpdateToStreamingResponse(Task task, boolean isFinal) {
-        A2AModels.TaskStatus legacyStatus = null;
-
-        if (task.getStatus() != null) {
-            TaskStatus sdkStatus = task.getStatus();
-            A2AModels.Message legacyMessage = null;
-
-            if (sdkStatus.getMessage() != null) {
-                legacyMessage = convertSdkMessageToLegacy(sdkStatus.getMessage());
-            }
-
-            legacyStatus = new A2AModels.TaskStatus(
-                    task.getState().toString().toLowerCase(),
-                    legacyMessage,
-                    sdkStatus.getTimestamp()
-            );
-        }
-
-        return new A2AModels.SendStreamingMessageResponse(
-                "status-update",
-                task.getTaskId(),
-                task.getContextId(),
-                legacyStatus,
-                isFinal
-        );
-    }
-
-    /**
-     * Converts a direct message response to a streaming response format.
-     */
-    private A2AModels.SendStreamingMessageResponse convertMessageToStreamingResponse(Message message) {
-        A2AModels.Message legacyMessage = convertSdkMessageToLegacy(message);
-
-        // Wrap message in a task status
-        A2AModels.TaskStatus status = new A2AModels.TaskStatus(
-                "completed",
-                legacyMessage,
-                java.time.Instant.now()
-        );
-
-        return new A2AModels.SendStreamingMessageResponse(
-                "status-update",
-                message.getTaskId() != null ? message.getTaskId() : UUID.randomUUID().toString(),
-                message.getContextId(),
-                status,
-                true  // Final
-        );
+        // Create a Task with completed state
+        return new Task.Builder()
+                .taskId(message.getTaskId() != null ? message.getTaskId() : java.util.UUID.randomUUID().toString())
+                .contextId(message.getContextId())
+                .state(Task.State.COMPLETED)
+                .status(status)
+                .build();
     }
 
     // Getter methods
@@ -450,4 +330,13 @@ public class A2AAgentService {
             logger.error("[A2A] [{}] [CLEANUP] Error closing clients: {}", serviceName, e.getMessage(), e);
         }
     }
+
+    /**
+     * Record representing a task update from streaming responses.
+     * Contains the SDK Task and whether this is the final update.
+     *
+     * @param task The SDK Task object
+     * @param isFinal Whether this is the final update (task completed/failed)
+     */
+    public record TaskUpdate(Task task, boolean isFinal) {}
 }
