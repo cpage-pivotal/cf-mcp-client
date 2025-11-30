@@ -7,8 +7,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Spring Configuration for initializing A2A agents on startup.
- * Discovers A2A service bindings and creates agent service instances.
+ * Discovers A2A service bindings and creates agent service instances using the A2A Java SDK.
  */
 @Configuration
 public class A2AConfiguration {
@@ -25,8 +23,6 @@ public class A2AConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(A2AConfiguration.class);
 
     private final A2ADiscoveryService discoveryService;
-    private final RestClient.Builder restClientBuilder;
-    private final WebClient.Builder webClientBuilder;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -34,17 +30,13 @@ public class A2AConfiguration {
     private final Map<String, String> agentNamesByUri = new ConcurrentHashMap<>();
 
     public A2AConfiguration(A2ADiscoveryService discoveryService,
-                           RestClient.Builder restClientBuilder,
-                           WebClient.Builder webClientBuilder,
                            ObjectMapper objectMapper,
                            ApplicationEventPublisher eventPublisher) {
         this.discoveryService = discoveryService;
-        this.restClientBuilder = restClientBuilder;
-        this.webClientBuilder = webClientBuilder;
         this.objectMapper = objectMapper;
         this.eventPublisher = eventPublisher;
 
-        logger.info("A2AConfiguration initialized");
+        logger.info("A2AConfiguration initialized (using A2A Java SDK 0.3.2.Final)");
     }
 
     /**
@@ -75,8 +67,6 @@ public class A2AConfiguration {
                 A2AAgentService agentService = new A2AAgentService(
                         serviceInfo.serviceName(),
                         serviceInfo.agentCardUri(),
-                        restClientBuilder,
-                        webClientBuilder,
                         objectMapper
                 );
 
