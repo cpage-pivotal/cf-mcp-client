@@ -49,23 +49,26 @@
         <!-- Drag and Drop Zone -->
         <div class="drop-zone"
              [class.drag-over]="isDragOver()"
-             [class.disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === ''"
+             [class.disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()"
              (dragenter)="onDragEnter($event)"
              (dragleave)="onDragLeave($event)"
              (dragover)="onDragOver($event)"
              (drop)="onDrop($event)"
              role="button"
-             tabindex="0"
-             (click)="fileInput.click()"
-             [attr.aria-label]="isDragOver() ? 'Drop your PDF here to upload' : 'Click to upload PDF or drag and drop'"
-             [attr.aria-disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === ''">
+             [tabindex]="(isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()) ? -1 : 0"
+             (click)="isManualMode() || isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === '' ? null : fileInput.click()"
+             [attr.aria-label]="isDragOver() ? 'Drop your PDF here to upload' : (isManualMode() ? 'Upload disabled - manual document ID is active' : 'Click to upload PDF or drag and drop')"
+             [attr.aria-disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()">>
 
           <!-- Drop Zone Content -->
           <div class="drop-zone-content">
-            <mat-icon class="drop-zone-icon" aria-hidden="true">{{ isDragOver() ? 'file_download' : 'cloud_upload' }}</mat-icon>
+            <mat-icon class="drop-zone-icon" aria-hidden="true">{{ isDragOver() ? 'file_download' : (isManualMode() ? 'block' : 'cloud_upload') }}</mat-icon>
 
             <div class="drop-zone-text">
-              @if (isDragOver()) {
+              @if (isManualMode()) {
+                <div class="drop-zone-title">Upload Disabled</div>
+                <div class="drop-zone-subtitle">Manual document ID is active</div>
+              } @else if (isDragOver()) {
                 <div class="drop-zone-title">Drop your PDF here</div>
                 <div class="drop-zone-subtitle">Release to upload</div>
               } @else {
@@ -86,7 +89,7 @@
             <button mat-raised-button
                     color="primary"
                     (click)="fileInput.click(); $event.stopPropagation()"
-                    [disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === ''"
+                    [disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()"
                     class="browse-button"
                     aria-label="Browse for PDF files">
               <mat-icon aria-hidden="true">folder_open</mat-icon>
@@ -209,6 +212,70 @@
         </button>
       </div>
     }
+
+    <!-- Advanced Options Section -->
+    <section aria-labelledby="advanced-options-heading" class="advanced-section">
+      <mat-expansion-panel 
+        [expanded]="isAdvancedSectionExpanded()"
+        (opened)="isAdvancedSectionExpanded.set(true)"
+        (closed)="isAdvancedSectionExpanded.set(false)"
+        class="advanced-expansion-panel">
+        <mat-expansion-panel-header>
+          <mat-panel-title id="advanced-options-heading">
+            <mat-icon class="advanced-icon" aria-hidden="true">settings</mat-icon>
+            Advanced Options
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="advanced-content">
+          <!-- Info about manual mode -->
+          <div class="advanced-info" role="status" aria-live="polite">
+            <mat-icon class="info-icon" aria-hidden="true">info</mat-icon>
+            <p class="info-text">
+              For advanced users: Enter a document ID directly to bypass file uploads.
+            </p>
+          </div>
+
+          <!-- Manual Document ID input -->
+          <mat-form-field appearance="outline" class="manual-id-field">
+            <mat-label>Manual Document ID</mat-label>
+            <input 
+              matInput 
+              [ngModel]="manualDocumentId()"
+              (ngModelChange)="onManualDocumentIdChange($event)"
+              placeholder="Enter document ID"
+              aria-label="Manual document ID input"
+              aria-describedby="manual-id-hint">
+            <mat-icon matSuffix aria-hidden="true">vpn_key</mat-icon>
+            <mat-hint id="manual-id-hint">
+              @if (isManualMode()) {
+                <span class="active-hint">
+                  <mat-icon class="hint-icon" aria-hidden="true">check_circle</mat-icon>
+                  Active - File uploads disabled
+                </span>
+              } @else {
+                Enter a document ID to use instead of uploaded files
+              }
+            </mat-hint>
+          </mat-form-field>
+
+          <!-- Warning when manual mode is active -->
+          @if (isManualMode()) {
+            <div class="manual-mode-warning" role="alert" aria-live="assertive">
+              <mat-icon class="warning-icon" aria-hidden="true">warning</mat-icon>
+              <div class="warning-content">
+                <div class="warning-title">Manual Mode Active</div>
+                <div class="warning-text">
+                  Chat requests will use document ID: <strong>{{ manualDocumentId() }}</strong>
+                  <br>
+                  Clear the field above to re-enable file uploads.
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </mat-expansion-panel>
+    </section>
   </mat-sidenav>
 
   <mat-sidenav-content>

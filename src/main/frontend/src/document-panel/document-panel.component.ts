@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Inject, Input, Output, ViewChild, AfterViewInit, signal } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, Output, ViewChild, AfterViewInit, signal, computed } from '@angular/core';
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
@@ -10,6 +10,10 @@ import { FileSizePipe } from '../pipes/file-size.pipe';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
 import { PlatformMetrics } from '../app/app.component';
 import { SidenavService } from '../services/sidenav.service';
 import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
@@ -28,7 +32,8 @@ export class DocumentHammerConfig extends HammerGestureConfig {
   standalone: true,
   imports: [
     CommonModule, MatSidenavModule, MatButtonModule, MatIconModule,
-    MatListModule, MatSnackBarModule, FileSizePipe, MatProgressBarModule, MatTooltipModule, MatChipsModule
+    MatListModule, MatSnackBarModule, FileSizePipe, MatProgressBarModule, MatTooltipModule, MatChipsModule,
+    MatExpansionModule, MatFormFieldModule, MatInputModule, FormsModule
   ],
   providers: [
     { provide: HAMMER_GESTURE_CONFIG, useClass: DocumentHammerConfig }
@@ -57,6 +62,13 @@ export class DocumentPanelComponent implements AfterViewInit {
   selectedDocumentId = signal<string | null>(null);
   swipingDocumentId = signal<string | null>(null);
   swipeDistance = signal(0);
+
+  // Manual document ID mode (advanced feature)
+  manualDocumentId = signal<string>('');
+  isAdvancedSectionExpanded = signal<boolean>(false);
+  
+  // Computed signal to check if in manual mode
+  isManualMode = computed(() => this.manualDocumentId().trim().length > 0);
 
   @ViewChild('sidenav') sidenav!: MatSidenav;
 
@@ -187,8 +199,7 @@ export class DocumentPanelComponent implements AfterViewInit {
           });
           if (event.body?.allDocuments) {
             this.documents = event.body.allDocuments;
-            const documentIds = this.documents.map(doc => doc.id);
-            this.documentIdsChanged.emit(documentIds);
+            this.emitCurrentDocumentIds();
           } else {
             this.fetchDocuments(); // Fallback to refetch
           }
@@ -220,9 +231,8 @@ export class DocumentPanelComponent implements AfterViewInit {
       .subscribe({
         next: (data) => {
           this.documents = data;
-          // Emit all document IDs whenever the document list changes
-          const documentIds = this.documents.map(doc => doc.id);
-          this.documentIdsChanged.emit(documentIds);
+          // Emit document IDs based on mode
+          this.emitCurrentDocumentIds();
         },
         error: (error) => {
           console.error('Error fetching documents:', error);
@@ -248,7 +258,7 @@ export class DocumentPanelComponent implements AfterViewInit {
             duration: 3000
           });
           this.documents = [];
-          this.documentIdsChanged.emit([]);
+          this.emitCurrentDocumentIds();
         },
         error: (error) => {
           console.error('Error deleting all documents:', error);
@@ -278,8 +288,7 @@ export class DocumentPanelComponent implements AfterViewInit {
           });
           if (response?.remainingDocuments) {
             this.documents = response.remainingDocuments;
-            const documentIds = this.documents.map(doc => doc.id);
-            this.documentIdsChanged.emit(documentIds);
+            this.emitCurrentDocumentIds();
           } else {
             this.fetchDocuments(); // Fallback to refetch
           }
@@ -360,6 +369,28 @@ export class DocumentPanelComponent implements AfterViewInit {
       return `${diffDays - 1} days ago`;
     } else {
       return date.toLocaleDateString();
+    }
+  }
+
+  // Manual document ID methods
+  onManualDocumentIdChange(value: string): void {
+    this.manualDocumentId.set(value);
+    this.emitCurrentDocumentIds();
+  }
+
+  toggleAdvancedSection(): void {
+    this.isAdvancedSectionExpanded.set(!this.isAdvancedSectionExpanded());
+  }
+
+  // Helper method to emit the appropriate document IDs based on current mode
+  private emitCurrentDocumentIds(): void {
+    if (this.isManualMode()) {
+      // In manual mode, emit only the manual document ID
+      this.documentIdsChanged.emit([this.manualDocumentId().trim()]);
+    } else {
+      // In normal mode, emit all uploaded document IDs
+      const documentIds = this.documents.map(doc => doc.id);
+      this.documentIdsChanged.emit(documentIds);
     }
   }
 }
