@@ -27,15 +27,18 @@ public class ChatController {
 
     @GetMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter chatStream(@RequestParam("chat") String chat,
-                                 @RequestParam(value = "documentId", required = false) Optional<String> documentId,
                                  @RequestParam(value = "documentIds", required = false) Optional<List<String>> documentIds,
                                  HttpServletRequest request) {
 
         String conversationId = request.getSession().getId();
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
-        // Handle both single documentId (backward compatibility) and multiple documentIds
-        List<String> finalDocumentIds = determineDocumentIds(documentId, documentIds);
+        // Convert Optional to List, filtering out null/empty IDs
+        List<String> finalDocumentIds = documentIds
+                .map(ids -> ids.stream()
+                        .filter(id -> id != null && !id.trim().isEmpty())
+                        .toList())
+                .orElse(List.of());
 
         executor.execute(() -> {
             try {
@@ -109,27 +112,4 @@ public class ChatController {
         }
     }
 
-    /**
-     * Determines the final list of document IDs to use for the chat request.
-     * Prioritizes documentIds parameter over documentId for backward compatibility.
-     *
-     * @param documentId Single document ID (legacy parameter)
-     * @param documentIds Multiple document IDs (new parameter)
-     * @return List of document IDs to use, empty if none provided
-     */
-    private List<String> determineDocumentIds(Optional<String> documentId, Optional<List<String>> documentIds) {
-        // If documentIds is provided and not empty, use it
-        if (documentIds.isPresent() && !documentIds.get().isEmpty()) {
-            return documentIds.get().stream()
-                    .filter(id -> id != null && !id.trim().isEmpty())
-                    .toList();
-        }
-
-        if (documentId.isPresent() && !documentId.get().trim().isEmpty()) {
-            return List.of(documentId.get());
-        }
-
-        // No documents specified
-        return List.of();
-    }
 }
