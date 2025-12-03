@@ -233,6 +233,9 @@
             <mat-icon class="info-icon" aria-hidden="true">info</mat-icon>
             <p class="info-text">
               For advanced users: Enter a document ID directly to bypass file uploads.
+              @if (documents.length > 0) {
+                <br><strong>Note:</strong> Delete all uploaded files first to enable this feature.
+              }
             </p>
           </div>
 
@@ -243,12 +246,17 @@
               matInput 
               [ngModel]="manualDocumentId()"
               (ngModelChange)="onManualDocumentIdChange($event)"
+              [disabled]="documents.length > 0"
               placeholder="Enter document ID"
               aria-label="Manual document ID input"
               aria-describedby="manual-id-hint">
-            <mat-icon matSuffix aria-hidden="true">vpn_key</mat-icon>
             <mat-hint id="manual-id-hint">
-              @if (isManualMode()) {
+              @if (documents.length > 0) {
+                <span class="disabled-hint">
+                  <mat-icon class="hint-icon" aria-hidden="true">block</mat-icon>
+                  Disabled - Delete uploaded files to enable
+                </span>
+              } @else if (isManualMode()) {
                 <span class="active-hint">
                   <mat-icon class="hint-icon" aria-hidden="true">check_circle</mat-icon>
                   Active - File uploads disabled
