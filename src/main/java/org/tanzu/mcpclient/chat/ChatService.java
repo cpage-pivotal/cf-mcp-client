@@ -3,9 +3,11 @@ package org.tanzu.mcpclient.chat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.BaseChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.VectorStoreChatMemoryAdvisor;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +15,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.tanzu.mcpclient.mcp.McpServerService;
 import org.tanzu.mcpclient.mcp.McpToolCallbackCacheService;
+import org.tanzu.mcpclient.memory.MemoryConfiguration;
+import org.tanzu.mcpclient.memory.MemoryPreferenceService;
 import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import reactor.core.publisher.Flux;
 
@@ -28,6 +32,10 @@ public class ChatService {
     private final List<McpServerService> mcpServerServices;
     private final McpToolCallbackCacheService toolCallbackCacheService;
     private final ModelDiscoveryService modelDiscoveryService;
+    private final MessageChatMemoryAdvisor transientMemoryAdvisor;
+    private final VectorStoreChatMemoryAdvisor persistentMemoryAdvisor;
+    private final MemoryPreferenceService memoryPreferenceService;
+    private final MemoryConfiguration memoryConfiguration;
 
     @Value("classpath:/prompts/system-prompt.st")
     private Resource systemChatPrompt;
@@ -35,16 +43,26 @@ public class ChatService {
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
     /**
-     * Updated constructor to use McpToolCallbackCacheService for event-driven caching.
-     * Implements Spring AI 1.1.0-RC1's tool callback caching pattern.
+     * Updated constructor to support dynamic memory advisor selection.
+     * No longer sets a default memory advisor - instead selects per request based on user preference.
      */
-    public ChatService(ChatClient.Builder chatClientBuilder, BaseChatMemoryAdvisor memoryAdvisor,
-                       List<McpServerService> mcpServerServices, VectorStore vectorStore,
+    public ChatService(ChatClient.Builder chatClientBuilder,
+                       MessageChatMemoryAdvisor transientMemoryAdvisor,
+                       VectorStoreChatMemoryAdvisor persistentMemoryAdvisor,
+                       MemoryPreferenceService memoryPreferenceService,
+                       MemoryConfiguration memoryConfiguration,
+                       List<McpServerService> mcpServerServices,
+                       VectorStore vectorStore,
                        McpToolCallbackCacheService toolCallbackCacheService,
                        ModelDiscoveryService modelDiscoveryService) {
-        chatClientBuilder = chatClientBuilder.defaultAdvisors(memoryAdvisor, new SimpleLoggerAdvisor());
+        // Only add SimpleLoggerAdvisor as default - memory advisor will be added per request
+        chatClientBuilder = chatClientBuilder.defaultAdvisors(new SimpleLoggerAdvisor());
         this.chatClient = chatClientBuilder.build();
 
+        this.transientMemoryAdvisor = transientMemoryAdvisor;
+        this.persistentMemoryAdvisor = persistentMemoryAdvisor;
+        this.memoryPreferenceService = memoryPreferenceService;
+        this.memoryConfiguration = memoryConfiguration;
         this.mcpServerServices = mcpServerServices;
         this.vectorStore = vectorStore;
         this.toolCallbackCacheService = toolCallbackCacheService;
@@ -72,6 +90,32 @@ public class ChatService {
         return buildAndExecuteStreamChatRequest(chat, conversationId, documentIds, toolCallbackProviders);
     }
 
+    /**
+     * Selects the appropriate memory advisor based on user preference and availability.
+     */
+    private BaseChatMemoryAdvisor selectMemoryAdvisor(String conversationId) {
+        MemoryPreferenceService.MemoryType preference = memoryPreferenceService.getPreference(conversationId);
+        
+        // Check if persistent memory is available
+        boolean persistentAvailable = memoryConfiguration.isPersistentMemoryAvailable(vectorStore);
+        
+        // If user prefers persistent and it's available, use it
+        if (preference == MemoryPreferenceService.MemoryType.PERSISTENT && persistentAvailable) {
+            logger.debug("Using PERSISTENT memory advisor for conversation: {}", conversationId);
+            return persistentMemoryAdvisor;
+        }
+        
+        // Otherwise, use transient (default or fallback)
+        if (preference == MemoryPreferenceService.MemoryType.PERSISTENT && !persistentAvailable) {
+            logger.warn("PERSISTENT memory requested but not available, falling back to TRANSIENT for conversation: {}", 
+                    conversationId);
+        } else {
+            logger.debug("Using TRANSIENT memory advisor for conversation: {}", conversationId);
+        }
+        
+        return transientMemoryAdvisor;
+    }
+
     private Flux<String> buildAndExecuteStreamChatRequest(String chat, String conversationId, List<String> documentIds,
                                                           ToolCallbackProvider[] toolCallbackProviders) {
 
@@ -79,6 +123,10 @@ public class ChatService {
                 .prompt()
                 .user(chat)
                 .system(systemChatPrompt);
+
+        // Select and add the appropriate memory advisor based on user preference
+        BaseChatMemoryAdvisor selectedMemoryAdvisor = selectMemoryAdvisor(conversationId);
+        spec = spec.advisors(selectedMemoryAdvisor);
 
         // Add conversation context
         spec = spec.advisors(advisorSpec -> advisorSpec.param(CONVERSATION_ID, conversationId));

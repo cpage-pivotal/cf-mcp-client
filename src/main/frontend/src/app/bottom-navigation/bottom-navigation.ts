@@ -24,7 +24,8 @@ export class BottomNavigationComponent {
       available: false,
       promptsByServer: {}
     },
-    a2aAgents: []
+    a2aAgents: [],
+    memoryType: 'TRANSIENT'
   };
 
   constructor(private sidenavService: SidenavService) {}

@@ -9,6 +9,7 @@ import org.tanzu.mcpclient.a2a.A2AConfigurationEvent;
 import org.tanzu.mcpclient.a2a.AgentCard;
 import org.tanzu.mcpclient.chat.ChatConfigurationEvent;
 import org.tanzu.mcpclient.document.DocumentConfigurationEvent;
+import org.tanzu.mcpclient.memory.MemoryPreferenceService;
 import org.tanzu.mcpclient.prompt.McpPrompt;
 import org.tanzu.mcpclient.prompt.PromptConfigurationEvent;
 
@@ -38,7 +39,10 @@ public class MetricsService {
 
     private List<A2AAgentService> a2aAgentServices = List.of();
 
-    public MetricsService() {
+    private final MemoryPreferenceService memoryPreferenceService;
+
+    public MetricsService(MemoryPreferenceService memoryPreferenceService) {
+        this.memoryPreferenceService = memoryPreferenceService;
     }
 
     @EventListener
@@ -83,6 +87,9 @@ public class MetricsService {
 
         List<A2AAgent> a2aAgents = buildA2AAgentsList();
 
+        // Get the current memory type preference for this conversation
+        String memoryType = memoryPreferenceService.getPreference(conversationId).name();
+
         return new Metrics(
                 conversationId,
                 this.chatModel,
@@ -90,7 +97,8 @@ public class MetricsService {
                 this.vectorStoreName,
                 this.mcpServersWithHealth.toArray(new McpServer[0]),
                 promptMetrics,
-                a2aAgents
+                a2aAgents,
+                memoryType
         );
     }
 
@@ -122,7 +130,8 @@ public class MetricsService {
             String vectorStoreName,
             McpServer[] mcpServers,
             PromptMetrics prompts,
-            List<A2AAgent> a2aAgents
+            List<A2AAgent> a2aAgents,
+            String memoryType
     ) {}
 
     public record PromptMetrics(

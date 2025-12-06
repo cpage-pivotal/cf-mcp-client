@@ -40,7 +40,8 @@ export class AppComponent {
       available: false,
       promptsByServer: {}
     },
-    a2aAgents: []
+    a2aAgents: [],
+    memoryType: 'TRANSIENT'
   });
 
   // Public readonly signals
@@ -180,4 +181,5 @@ export interface PlatformMetrics {
   mcpServers: McpServer[];
   prompts: EnhancedPromptMetrics;
   a2aAgents: A2AAgent[];
+  memoryType: string;
 }
