@@ -127,6 +127,25 @@ mat-chip {
   cursor: default;
 }
 
+/* Clickable chip styling */
+mat-chip.clickable {
+  cursor: pointer;
+}
+
+mat-chip.clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--md-sys-elevation-1dp);
+}
+
+mat-chip.clickable:active {
+  transform: translateY(0);
+}
+
+mat-chip[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 /* Material Design 3 Chip States */
 mat-chip::before {
   content: '';

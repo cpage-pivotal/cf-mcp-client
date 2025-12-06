@@ -61,12 +61,17 @@
           <mat-chip-set>
             <mat-chip
               variant="assist"
-              [class.status-success]="metrics.vectorStoreName !== '' && metrics.embeddingModel !== ''"
-              [class.status-warning]="metrics.vectorStoreName === '' || metrics.embeddingModel === ''"
-              role="status"
-              [attr.aria-label]="'Memory type: ' + (metrics.vectorStoreName !== '' && metrics.embeddingModel !== '' ? 'Persistent' : 'Transient')">
-              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.vectorStoreName !== '' && metrics.embeddingModel !== '' ? 'storage' : 'memory' }}</mat-icon>
-              {{ metrics.vectorStoreName !== '' && metrics.embeddingModel !== '' ? 'Persistent' : 'Transient' }}
+              [class.status-success]="metrics.memoryType === 'PERSISTENT'"
+              [class.status-warning]="metrics.memoryType === 'TRANSIENT'"
+              [class.clickable]="isMemoryClickable()"
+              [disabled]="!isMemoryClickable() || isTogglingMemory"
+              (click)="toggleMemoryType()"
+              role="button"
+              [attr.aria-label]="'Memory type: ' + getMemoryTypeText() + '. ' + getMemoryTooltip()"
+              [matTooltip]="getMemoryTooltip()"
+              matTooltipPosition="left">
+              <mat-icon matChipAvatar aria-hidden="true">{{ getMemoryIcon() }}</mat-icon>
+              {{ getMemoryTypeText() }}
             </mat-chip>
           </mat-chip-set>
         </div>
