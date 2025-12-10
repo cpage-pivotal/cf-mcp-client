@@ -189,6 +189,12 @@ You can bind multiple A2A agents simultaneously, each providing specialized capa
 
 If you are bound to a vector database and an embedding model, then your chat memory will persist across application restarts and scaling.
 
+
+
 1. Follow the instructions above in [Binding to Vector Databases](#binding-to-vector-databases)
 
 ![Binding to Memory](images/cf-memory.png)
+
+
+## Disclaimer
+This repository is an unofficial project provided “as is.” It is not supported or endorsed by any organization, and no warranty or guarantee of functionality is provided. Use at your own discretion.
