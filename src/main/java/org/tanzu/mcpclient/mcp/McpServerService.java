@@ -9,6 +9,7 @@ import org.tanzu.mcpclient.metrics.McpServer;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -21,12 +22,18 @@ public class McpServerService {
     private final String name;
     private final String serverUrl;
     private final ProtocolType protocol;
+    private final Map<String, String> headers;
     private final McpClientFactory clientFactory;
 
     public McpServerService(String name, String serverUrl, ProtocolType protocol, McpClientFactory clientFactory) {
+        this(name, serverUrl, protocol, Map.of(), clientFactory);
+    }
+
+    public McpServerService(String name, String serverUrl, ProtocolType protocol, Map<String, String> headers, McpClientFactory clientFactory) {
         this.name = name;
         this.serverUrl = serverUrl;
         this.protocol = protocol;
+        this.headers = headers != null ? Map.copyOf(headers) : Map.of();
         this.clientFactory = clientFactory;
     }
 
@@ -36,11 +43,11 @@ public class McpServerService {
     public McpSyncClient createMcpSyncClient() {
         return switch (protocol) {
             case ProtocolType.StreamableHttp streamableHttp ->
-                    clientFactory.createStreamableClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+                    clientFactory.createStreamableClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5), headers);
             case ProtocolType.SSE sse ->
-                    clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+                    clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5), headers);
             case ProtocolType.Legacy legacy ->
-                    clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5));
+                    clientFactory.createSseClient(serverUrl, Duration.ofSeconds(30), Duration.ofMinutes(5), headers);
         };
     }
 
@@ -48,7 +55,7 @@ public class McpServerService {
      * Creates a health check client for this server using the appropriate protocol.
      */
     public McpSyncClient createHealthCheckClient() {
-        return clientFactory.createHealthCheckClient(serverUrl, protocol);
+        return clientFactory.createHealthCheckClient(serverUrl, protocol, headers);
     }
 
     /**
@@ -98,5 +105,9 @@ public class McpServerService {
 
     public ProtocolType getProtocol() {
         return protocol;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
     }
 }

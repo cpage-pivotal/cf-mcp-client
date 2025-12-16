@@ -94,7 +94,9 @@ Now your chatbot will respond to queries about the uploaded document
 
 Model Context Protocol (MCP) servers are lightweight programs that expose specific capabilities to AI models through a standardized interface. These servers act as bridges between LLMs and external tools, data sources, or services, allowing your AI application to perform actions like searching databases, accessing files, or calling external APIs without complex custom integrations.
 
-#### SSE Protocol (Server-Sent Events)
+#### Method 1: Using User-provided Services
+
+##### SSE Protocol (Server-Sent Events) 
 
 1. Create a user-provided service for an SSE-based MCP server using the `mcpSseURL` tag:
 
@@ -108,12 +110,46 @@ cf cups mcp-server-sse -p '{"uri":"https://your-sse-mcp-server.example.com"}' -t
 cf bind-service ai-tool-chat mcp-server-sse
 ```
 
-#### Streamable HTTP Protocol
+##### Streamable HTTP Protocol
 
 1. Create a user-provided service for a Streamable HTTP-based MCP server using the `mcpStreamableURL` tag:
 
 ```bash
 cf cups mcp-server-streamable -p '{"uri":"https://your-streamable-mcp-server.example.com"}' -t "mcpStreamableURL"
+```
+
+2. Bind the MCP service to your application:
+
+```bash
+cf bind-service ai-tool-chat mcp-server-streamable
+```
+
+#### Method 2: Using Service Publisher provided Services
+
+A common use case for the [Service Publisher tile](https://techdocs.broadcom.com/us/en/vmware-tanzu/platform/service-publisher/10-3/srvc-pub/index.html) is to publish MCP servers and make them available on the Tanzu Platform service marketplace. The service binding will include an API Key and URI allowing for more secure provisioning of access to MCP servers. The application will add the API key to requests to the MCP server.
+
+Published services will appear on the marketplace with their own service broker and selection of plans.
+
+##### SSE Protocol (Server-Sent Events) 
+
+1. Create a service from a published service broker for an SSE-based MCP server using the `mcpSseURL` tag:
+
+```bash
+cf create-service your-published-service service-plan mcp-server-sse -t "mcpSseURL"
+```
+
+2. Bind the MCP service to your application:
+
+```bash
+cf bind-service ai-tool-chat mcp-server-sse
+```
+
+##### Streamable HTTP Protocol
+
+1. Create a service from a published service broker for a Streamable HTTP-based MCP server using the `mcpStreamableURL` tag:
+
+```bash
+cf create-service your-published-service service-plan mcp-server-streamable -t "mcpStreamableURL"
 ```
 
 2. Bind the MCP service to your application:

@@ -59,7 +59,7 @@ public class ChatConfiguration {
         // Initialize protocol-aware services from new discovery method
         List<McpDiscoveryService.McpServiceConfiguration> serviceConfigs = mcpDiscoveryService.getMcpServicesWithProtocol();
         this.mcpServerServices.addAll(serviceConfigs.stream()
-                .map(config -> new McpServerService(config.serviceName(), config.serverUrl(), config.protocol(), mcpClientFactory))
+                .map(config -> new McpServerService(config.serviceName(), config.serverUrl(), config.protocol(), config.headers(), mcpClientFactory))
                 .toList());
 
         logger.info("ChatConfiguration initialized with {} MCP server services", mcpServerServices.size());
