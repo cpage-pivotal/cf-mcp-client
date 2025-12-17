@@ -171,6 +171,8 @@ public class McpDiscoveryService {
             return null;
         }
 
+        Map<String, String> headers = extractHeaders(credentials);
+
         // Check for mcpStreamableURL tag
         if (service.existsByTagIgnoreCase(TAG_MCP_STREAMABLE)) {
             String uri = credentials.getString(CREDENTIALS_URI_KEY);
@@ -180,7 +182,8 @@ public class McpDiscoveryService {
                 return new McpServiceConfiguration(
                     service.getName(),
                     uri,
-                    new ProtocolType.StreamableHttp()
+                    new ProtocolType.StreamableHttp(),
+                    headers
                 );
             }
         }
@@ -194,7 +197,8 @@ public class McpDiscoveryService {
                 return new McpServiceConfiguration(
                     service.getName(),
                     uri,
-                    new ProtocolType.SSE()
+                    new ProtocolType.SSE(),
+                    headers
                 );
             }
         }
@@ -213,6 +217,7 @@ public class McpDiscoveryService {
         }
 
         Map<String, Object> credentialsMap = credentials.getMap();
+        Map<String, String> headers = extractHeaders(credentials);
 
         // Check keys in priority order
         if (credentialsMap.containsKey(MCP_STREAMABLE_URL)) {
@@ -220,7 +225,7 @@ public class McpDiscoveryService {
             if (isValidUrl(url)) {
                 logger.debug("Found legacy MCP Streamable service '{}' via credentials",
                     service.getName());
-                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.StreamableHttp());
+                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.StreamableHttp(), headers);
             }
         }
 
@@ -229,7 +234,7 @@ public class McpDiscoveryService {
             if (isValidUrl(url)) {
                 logger.debug("Found legacy MCP SSE service '{}' via credentials",
                     service.getName());
-                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.SSE());
+                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.SSE(), headers);
             }
         }
 
@@ -239,7 +244,7 @@ public class McpDiscoveryService {
             if (isValidUrl(url)) {
                 logger.debug("Found legacy MCP service '{}' via credentials with mcpServiceURL",
                     service.getName());
-                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.Legacy());
+                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.Legacy(), headers);
             }
         }
 
@@ -254,11 +259,66 @@ public class McpDiscoveryService {
     }
 
     /**
+     * Extracts headers from service credentials.
+     * Looks for a 'headers' key in credentials and extracts all header key-value pairs.
+     * 
+     * @param credentials The Cloud Foundry service credentials
+     * @return Map of header names to header values, empty map if no headers found
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, String> extractHeaders(CfCredentials credentials) {
+        if (credentials == null) {
+            return Map.of();
+        }
+
+        Map<String, Object> credentialsMap = credentials.getMap();
+        if (credentialsMap == null || !credentialsMap.containsKey("headers")) {
+            return Map.of();
+        }
+
+        Object headersObj = credentialsMap.get("headers");
+        if (!(headersObj instanceof Map)) {
+            logger.debug("Headers credential is not a map, ignoring");
+            return Map.of();
+        }
+
+        try {
+            Map<String, Object> headersMap = (Map<String, Object>) headersObj;
+            Map<String, String> result = new java.util.HashMap<>();
+            
+            for (Map.Entry<String, Object> entry : headersMap.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if (value != null) {
+                    result.put(key, value.toString());
+                }
+            }
+
+            if (!result.isEmpty()) {
+                logger.debug("Extracted {} header(s) from credentials", result.size());
+            }
+            
+            return Map.copyOf(result);
+        } catch (Exception e) {
+            logger.warn("Error extracting headers from credentials: {}", e.getMessage());
+            return Map.of();
+        }
+    }
+
+    /**
      * Record representing MCP service configuration with protocol information.
      */
     public record McpServiceConfiguration(
             String serviceName,
             String serverUrl,
-            ProtocolType protocol
-    ) {}
+            ProtocolType protocol,
+            Map<String, String> headers
+    ) {
+        /**
+         * Constructor with default empty headers for backward compatibility.
+         */
+        public McpServiceConfiguration(String serviceName, String serverUrl, ProtocolType protocol) {
+            this(serviceName, serverUrl, protocol, Map.of());
+        }
+    }
 }
