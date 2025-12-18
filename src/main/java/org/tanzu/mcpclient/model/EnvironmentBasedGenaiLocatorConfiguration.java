@@ -1,4 +1,4 @@
-package org.tanzu.mcpclient.config;
+package org.tanzu.mcpclient.model;
 
 import io.pivotal.cfenv.boot.genai.DefaultGenaiLocator;
 import io.pivotal.cfenv.boot.genai.GenaiLocator;
