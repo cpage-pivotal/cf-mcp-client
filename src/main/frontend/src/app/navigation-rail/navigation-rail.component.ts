@@ -19,12 +19,6 @@ export class NavigationRailComponent {
     embeddingModel: '',
     vectorStoreName: '',
     mcpServers: [],
-    prompts: {
-      totalPrompts: 0,
-      serversWithPrompts: 0,
-      available: false,
-      promptsByServer: {}
-    },
     a2aAgents: [],
     memoryType: 'TRANSIENT'
   };

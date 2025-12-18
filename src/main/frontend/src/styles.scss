@@ -29,16 +29,6 @@ body {
   overflow-x: hidden !important;
 }
 
-/* Custom dialog container for prompt selection */
-.prompt-selection-dialog-container .mat-mdc-dialog-surface {
-  overflow-x: hidden !important;
-  padding: 24px;
-}
-
-.prompt-selection-dialog-container .mat-mdc-dialog-container {
-  overflow-x: hidden !important;
-}
-
 .mat-drawer-backdrop {
   background-color: transparent !important; /* Hidden by default */
 }

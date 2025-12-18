@@ -99,15 +99,6 @@
   </div>
   <div class="chatbox-footer" role="form" aria-label="Send message">
     <ng-form class="chat-input-container">
-      <button mat-icon-button type="button"
-              class="prompt-button"
-              (click)="openPromptSelection()"
-              [disabled]="!hasAvailablePrompts() || isBusy()"
-              [matTooltip]="hasAvailablePrompts() ? 'Select a prompt' : 'No prompts available'"
-              [attr.aria-label]="hasAvailablePrompts() ? 'Select a prompt' : 'No prompts available'">
-        <mat-icon [class.spinning]="isBusy()" aria-hidden="true">psychology</mat-icon>
-      </button>
-
       <mat-form-field appearance="outline" class="chat-input-field">
         <mat-label>Type your message</mat-label>
         <textarea name="chatbox-input"

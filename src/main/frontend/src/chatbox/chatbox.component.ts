@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import {DOCUMENT} from '@angular/common';
 import {HttpParams, HttpClient} from '@angular/common/http';
-import {MatIconButton, MatFabButton} from '@angular/material/button';
+import {MatFabButton} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
 import {MatFormField} from '@angular/material/form-field';
 import {MatInput, MatInputModule} from '@angular/material/input';
@@ -26,11 +26,6 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatDialog} from '@angular/material/dialog';
 import {MarkdownComponent} from 'ngx-markdown';
 import {PlatformMetrics} from '../app/app.component';
-import {
-  PromptSelectionDialogComponent,
-  PromptSelectionResult
-} from '../prompt-selection-dialog/prompt-selection-dialog.component';
-import {PromptResolutionService} from '../services/prompt-resolution.service';
 import {MatTooltip} from '@angular/material/tooltip';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {ThinkTagParser} from './think-tag-parser';
@@ -75,7 +70,7 @@ interface StatusUpdate {
 @Component({
   selector: 'app-chatbox',
   standalone: true,
-  imports: [FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatIconButton, MatFabButton, TextFieldModule, MatTooltip, MatExpansionModule],
+  imports: [FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatFabButton, TextFieldModule, MatTooltip, MatExpansionModule],
   templateUrl: './chatbox.component.html',
   styleUrl: './chatbox.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -96,12 +91,6 @@ export class ChatboxComponent implements OnDestroy {
     embeddingModel: '',
     vectorStoreName: '',
     mcpServers: [],
-    prompts: {
-      totalPrompts: 0,
-      serversWithPrompts: 0,
-      available: false,
-      promptsByServer: {}
-    },
     a2aAgents: [],
     memoryType: 'TRANSIENT'
   });
@@ -135,14 +124,6 @@ export class ChatboxComponent implements OnDestroy {
       }
     }
     return null;
-  });
-
-  readonly hasAvailablePrompts = computed(() => {
-    const metrics = this._metricsInput();
-    return metrics &&
-      metrics.prompts &&
-      metrics.prompts.available &&
-      metrics.prompts.totalPrompts > 0;
   });
 
   readonly sendButtonText = computed(() => {
@@ -229,7 +210,6 @@ export class ChatboxComponent implements OnDestroy {
     @Inject(DOCUMENT) private document: Document,
     private ngZone: NgZone,
     private dialog: MatDialog,
-    private promptResolutionService: PromptResolutionService,
     private http: HttpClient
   ) {
     // Set up host and protocol
@@ -284,18 +264,6 @@ export class ChatboxComponent implements OnDestroy {
       if (streaming || connecting) {
         console.log('Chat state changed:', { streaming, connecting });
       }
-    });
-
-    // Optimized metrics logging - only log meaningful changes
-    effect(() => {
-      const hasAvailablePrompts = this.hasAvailablePrompts();
-      const chatModel = this._metricsInput().chatModel;
-      
-      console.log('Chat capabilities:', {
-        hasModel: !!chatModel,
-        hasPrompts: hasAvailablePrompts,
-        modelName: chatModel
-      });
     });
 
     // Model validation - only warn when user tries to send without model
@@ -656,26 +624,6 @@ export class ChatboxComponent implements OnDestroy {
     }
   }
 
-  openPromptSelection(): void {
-    if (!this.hasAvailablePrompts()) {
-      return;
-    }
-
-    const dialogRef = this.dialog.open(PromptSelectionDialogComponent, {
-      data: { metrics: this._metricsInput() },
-      width: '90vw',
-      maxWidth: '800px',
-      maxHeight: '80vh',
-      panelClass: 'prompt-selection-dialog-container'
-    });
-
-    dialogRef.afterClosed().subscribe((result: PromptSelectionResult) => {
-      if (result) {
-        this.handlePromptSelection(result);
-      }
-    });
-  }
-
   private addUserMessage(text: string): void {
     this._messages.update(msgs => [
       ...msgs,
@@ -853,56 +801,6 @@ export class ChatboxComponent implements OnDestroy {
       this._isStreaming.set(false);
       this._isConnecting.set(false);
     });
-  }
-
-  private handlePromptSelection(result: PromptSelectionResult): void {
-    const promptId = `${result.prompt.serverId}:${result.prompt.name}`;
-
-    // If prompt has no arguments, use it directly
-    if (!result.prompt.arguments || result.prompt.arguments.length === 0) {
-      this.insertPromptIntoChat(result.prompt.name, result.prompt.description);
-      return;
-    }
-
-    // Resolve prompt with arguments
-    this.promptResolutionService.resolvePrompt({
-      promptId: promptId,
-      arguments: result.arguments
-    }).subscribe({
-      next: (resolvedPrompt) => {
-        this.insertResolvedPromptIntoChat(resolvedPrompt);
-      },
-      error: (error) => {
-        console.error('Error resolving prompt:', error);
-        // Fallback: insert prompt name
-        this.insertPromptIntoChat(result.prompt.name, 'Failed to resolve prompt with arguments');
-      }
-    });
-  }
-
-  private insertPromptIntoChat(promptName: string, description?: string): void {
-    const content = description || promptName;
-    this._chatMessage.set(content);
-    this.sendChatMessage();
-  }
-
-  private insertResolvedPromptIntoChat(resolvedPrompt: any): void {
-    let content: string;
-
-    if (resolvedPrompt.messages && resolvedPrompt.messages.length > 0) {
-      // Use structured messages
-      content = resolvedPrompt.messages
-        .map((msg: any) => msg.content)
-        .join('\n\n');
-    } else if (resolvedPrompt.content) {
-      // Use direct content
-      content = resolvedPrompt.content;
-    } else {
-      content = 'Resolved prompt content';
-    }
-
-    this._chatMessage.set(content);
-    this.sendChatMessage();
   }
 
   private streamChatResponse(params: HttpParams): Promise<void> {

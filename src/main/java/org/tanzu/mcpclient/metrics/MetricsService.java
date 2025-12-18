@@ -10,15 +10,13 @@ import org.tanzu.mcpclient.a2a.AgentCard;
 import org.tanzu.mcpclient.chat.ChatConfigurationEvent;
 import org.tanzu.mcpclient.document.DocumentConfigurationEvent;
 import org.tanzu.mcpclient.memory.MemoryPreferenceService;
-import org.tanzu.mcpclient.prompt.McpPrompt;
-import org.tanzu.mcpclient.prompt.PromptConfigurationEvent;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Service that collects and provides platform metrics including models, MCP servers, and prompts.
+ * Service that collects and provides platform metrics including models and MCP servers.
  * This service listens to various configuration events and maintains current state
  * for monitoring and status display purposes.
  */
@@ -31,11 +29,6 @@ public class MetricsService {
     private List<McpServer> mcpServersWithHealth = List.of();
     private String embeddingModel = "";
     private String vectorStoreName = "";
-
-    private int totalPrompts = 0;
-    private int serversWithPrompts = 0;
-    private boolean promptsAvailable = false;
-    private Map<String, List<McpPrompt>> promptsByServer = Map.of();
 
     private List<A2AAgentService> a2aAgentServices = List.of();
 
@@ -60,16 +53,6 @@ public class MetricsService {
     }
 
     @EventListener
-    public void handlePromptConfigurationEvent(PromptConfigurationEvent event) {
-        this.totalPrompts = event.getTotalPrompts();
-        this.serversWithPrompts = event.getServersWithPrompts();
-        this.promptsAvailable = event.isAvailable();
-        this.promptsByServer = event.getPromptsByServer();
-        logger.debug("Updated prompt metrics: total={}, servers={}, available={}",
-                totalPrompts, serversWithPrompts, promptsAvailable);
-    }
-
-    @EventListener
     public void handleA2AConfigurationEvent(A2AConfigurationEvent event) {
         this.a2aAgentServices = event.getAgentServices() != null ? event.getAgentServices() : List.of();
         logger.debug("Updated A2A metrics: agents={}", a2aAgentServices.size());
@@ -77,13 +60,6 @@ public class MetricsService {
 
     public Metrics getMetrics(String conversationId) {
         logger.debug("Retrieving metrics for conversation: {}", conversationId);
-
-        PromptMetrics promptMetrics = new PromptMetrics(
-                this.totalPrompts,
-                this.serversWithPrompts,
-                this.promptsAvailable,
-                this.promptsByServer
-        );
 
         List<A2AAgent> a2aAgents = buildA2AAgentsList();
 
@@ -96,7 +72,6 @@ public class MetricsService {
                 this.embeddingModel,
                 this.vectorStoreName,
                 this.mcpServersWithHealth.toArray(new McpServer[0]),
-                promptMetrics,
                 a2aAgents,
                 memoryType
         );
@@ -129,16 +104,8 @@ public class MetricsService {
             String embeddingModel,
             String vectorStoreName,
             McpServer[] mcpServers,
-            PromptMetrics prompts,
             List<A2AAgent> a2aAgents,
             String memoryType
-    ) {}
-
-    public record PromptMetrics(
-            int totalPrompts,
-            int serversWithPrompts,
-            boolean available,
-            Map<String, List<McpPrompt>> promptsByServer
     ) {}
 
     public record A2AAgent(

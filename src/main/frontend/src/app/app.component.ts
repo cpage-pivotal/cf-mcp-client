@@ -34,12 +34,6 @@ export class AppComponent {
     embeddingModel: '',
     vectorStoreName: '',
     mcpServers: [],
-    prompts: {
-      totalPrompts: 0,
-      serversWithPrompts: 0,
-      available: false,
-      promptsByServer: {}
-    },
     a2aAgents: [],
     memoryType: 'TRANSIENT'
   });
@@ -133,29 +127,6 @@ export interface McpServer {
   }; // New optional field for protocol object
 }
 
-export interface PromptArgument {
-  name: string;
-  description: string;
-  required: boolean;
-  defaultValue?: any;
-  schema?: any;
-}
-
-export interface McpPrompt {
-  serverId: string;
-  serverName: string;
-  name: string;
-  description: string;
-  arguments: PromptArgument[];
-}
-
-export interface EnhancedPromptMetrics {
-  totalPrompts: number;
-  serversWithPrompts: number;
-  available: boolean;
-  promptsByServer: { [serverId: string]: McpPrompt[] };
-}
-
 export interface AgentCapabilities {
   streaming: boolean;
   pushNotifications: boolean;
@@ -179,7 +150,6 @@ export interface PlatformMetrics {
   embeddingModel: string;
   vectorStoreName: string;
   mcpServers: McpServer[];
-  prompts: EnhancedPromptMetrics;
   a2aAgents: A2AAgent[];
   memoryType: string;
 }

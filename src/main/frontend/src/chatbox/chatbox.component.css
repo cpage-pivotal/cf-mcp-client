@@ -323,23 +323,6 @@
   opacity: 0.7;
 }
 
-/* Button styling */
-.prompt-button {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: var(--md-spacing-2); /* Align with input field */
-}
-
-.prompt-button mat-icon {
-  font-size: var(--md-sys-typescale-title-medium-font-size);
-  width: 24px;
-  height: 24px;
-}
-
 /* Material Design FAB styling */
 .send-fab {
   flex-shrink: 0;
@@ -375,58 +358,10 @@
   opacity: 0.6;
 }
 
-.prompt-button:disabled {
-  opacity: 0.5;
-  color: var(--md-sys-color-on-surface-variant);
-}
-
 /* Focus and accessibility enhancements */
-.prompt-button:focus-visible {
-  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-primary);
-  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
-}
-
 .send-fab:focus-visible {
   outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-primary);
   outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
-}
-
-/* State layers for chat input buttons */
-.prompt-button {
-  position: relative;
-  overflow: hidden;
-}
-
-.prompt-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: inherit;
-  background-color: currentColor;
-  opacity: 0;
-  transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.prompt-button:hover:not(:disabled)::before {
-  opacity: var(--md-sys-state-hover-opacity);
-}
-
-.prompt-button:focus-visible:not(:disabled)::before {
-  opacity: var(--md-sys-state-focus-opacity);
-}
-
-.prompt-button:active:not(:disabled)::before {
-  opacity: var(--md-sys-state-pressed-opacity);
-}
-
-/* Material Design loading rotation for prompt button when busy */
-.spinning {
-  animation: md-loading-rotation var(--md-sys-motion-duration-extra-long4) var(--md-sys-motion-easing-linear) infinite;
 }
 
 /* Disabled state styling */
@@ -793,17 +728,6 @@ button:active:not(:disabled) {
     opacity: 0.7 !important;
   }
 
-  /* Enhanced button visibility in chatbox footer */
-  .prompt-button {
-    color: var(--md-sys-color-on-surface) !important;
-    background-color: var(--md-sys-color-surface-container) !important;
-  }
-
-  .prompt-button:disabled {
-    color: var(--md-sys-color-on-surface-variant) !important;
-    opacity: 0.5 !important;
-  }
-
   /* Enhanced Send button visibility */
   .chatbox-footer button[mat-flat-button] {
     background-color: var(--md-sys-color-primary) !important;
@@ -877,11 +801,6 @@ button:active:not(:disabled) {
   /* Mobile chat input optimizations */
   .chat-input-container {
     gap: var(--md-spacing-2); /* Reduce gap on mobile */
-  }
-
-  .prompt-button {
-    width: 36px;
-    height: 36px;
   }
 
   .send-fab {
