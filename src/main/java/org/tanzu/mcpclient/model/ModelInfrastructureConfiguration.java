@@ -1,5 +1,6 @@
 package org.tanzu.mcpclient.model;
 
+import io.netty.channel.ChannelOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -13,7 +14,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
+
+import java.time.Duration;
 
 /**
  * Infrastructure configuration for model-related beans.
@@ -87,6 +93,32 @@ public class ModelInfrastructureConfiguration {
                 .apiKey(apiKey)
                 .baseUrl(baseUrl)
                 .build();
+    }
+
+    /**
+     * Configure WebClient.Builder with increased buffer sizes to handle large streaming responses.
+     * This is critical for MCP Streamable HTTP transport where tool calls can generate large payloads
+     * and long-lived streaming connections.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public WebClient.Builder webClientBuilder() {
+        logger.info("Configuring WebClient.Builder with increased buffer sizes for streaming with MCP tools");
+        
+        // Configure Netty HttpClient with increased buffer sizes and timeouts
+        HttpClient httpClient = HttpClient.create()
+                .responseTimeout(Duration.ofMinutes(5))
+                // Increase buffer size to handle large streaming responses
+                .option(ChannelOption.SO_RCVBUF, 10 * 1024 * 1024)  // 10MB receive buffer
+                .option(ChannelOption.SO_SNDBUF, 10 * 1024 * 1024); // 10MB send buffer
+        
+        return WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .codecs(configurer -> configurer
+                        .defaultCodecs()
+                        // Increase max in-memory size for streaming responses (default is 256KB)
+                        // This prevents "Connection prematurely closed DURING response" errors
+                        .maxInMemorySize(16 * 1024 * 1024));  // 16MB
     }
 
     @Bean
