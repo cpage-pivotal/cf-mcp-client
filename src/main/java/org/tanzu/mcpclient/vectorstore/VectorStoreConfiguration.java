@@ -9,10 +9,12 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.Filter;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import org.springframework.lang.NonNull;
+import org.tanzu.mcpclient.model.ModelDiscoveryService;
 
 import java.util.List;
 

@@ -12,7 +12,6 @@ import org.tanzu.mcpclient.document.DocumentConfigurationEvent;
 import org.tanzu.mcpclient.memory.MemoryPreferenceService;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**

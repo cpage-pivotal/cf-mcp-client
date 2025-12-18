@@ -12,14 +12,14 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.tanzu.mcpclient.memory.MemoryConfiguration;
-import org.tanzu.mcpclient.memory.MemoryPreferenceService;
-import org.tanzu.mcpclient.metrics.McpServer;
-import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import org.tanzu.mcpclient.mcp.McpClientFactory;
 import org.tanzu.mcpclient.mcp.McpDiscoveryService;
 import org.tanzu.mcpclient.mcp.McpServerService;
 import org.tanzu.mcpclient.mcp.ProtocolType;
+import org.tanzu.mcpclient.memory.MemoryConfiguration;
+import org.tanzu.mcpclient.memory.MemoryPreferenceService;
+import org.tanzu.mcpclient.metrics.McpServer;
+import org.tanzu.mcpclient.model.ModelDiscoveryService;
 
 import java.time.Duration;
 import java.util.ArrayList;
