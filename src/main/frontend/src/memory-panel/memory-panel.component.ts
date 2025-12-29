@@ -1,4 +1,4 @@
-import {Component, Input, ViewChild, AfterViewInit, OnChanges, SimpleChanges, inject} from '@angular/core';
+import {Component, Input, ViewChild, AfterViewInit, OnChanges, SimpleChanges, inject, signal} from '@angular/core';
 
 import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
 import {MatButtonModule} from '@angular/material/button';
@@ -40,7 +40,7 @@ export class MemoryPanelComponent implements AfterViewInit, OnChanges {
   }
 
   // Track if a memory toggle operation is in progress
-  isTogglingMemory: boolean = false;
+  isTogglingMemory = signal(false);
 
   @ViewChild('sidenav') sidenav!: MatSidenav;
 
@@ -97,11 +97,11 @@ export class MemoryPanelComponent implements AfterViewInit, OnChanges {
    */
   toggleMemoryType(): void {
     // Don't toggle if requirements aren't met or if already toggling
-    if (!this.isMemoryClickable() || this.isTogglingMemory) {
+    if (!this.isMemoryClickable() || this.isTogglingMemory()) {
       return;
     }
 
-    this.isTogglingMemory = true;
+    this.isTogglingMemory.set(true);
 
     // Determine the new memory type
     const newMemoryType = this.metrics.memoryType === 'TRANSIENT' ? 'PERSISTENT' : 'TRANSIENT';
@@ -119,11 +119,11 @@ export class MemoryPanelComponent implements AfterViewInit, OnChanges {
       next: (response) => {
         console.log('Memory type updated successfully:', response);
         // The metrics will be updated on the next polling cycle
-        this.isTogglingMemory = false;
+        this.isTogglingMemory.set(false);
       },
       error: (error) => {
         console.error('Error updating memory type:', error);
-        this.isTogglingMemory = false;
+        this.isTogglingMemory.set(false);
       }
     });
   }

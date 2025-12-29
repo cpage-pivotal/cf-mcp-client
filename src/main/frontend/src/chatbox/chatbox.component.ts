@@ -6,7 +6,6 @@ import {
   Inject,
   Injector,
   Input,
-  NgZone,
   OnDestroy,
   runInInjectionContext,
   ViewChild,
@@ -208,7 +207,6 @@ export class ChatboxComponent implements OnDestroy {
   constructor(
     private injector: Injector,
     @Inject(DOCUMENT) private document: Document,
-    private ngZone: NgZone,
     private dialog: MatDialog,
     private http: HttpClient
   ) {
@@ -760,47 +758,43 @@ export class ChatboxComponent implements OnDestroy {
   }
 
   private handleChatError(errorMessage: string): void {
-    this.ngZone.run(() => {
-      this.setBotMessageTyping(false);
-      if (this.lastBotMessage()?.text === '') {
-        this._messages.update(msgs => {
-          const lastIndex = msgs.length - 1;
-          if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
-            return [
-              ...msgs.slice(0, lastIndex),
-              { ...msgs[lastIndex], text: errorMessage, typing: false }
-            ];
-          }
-          return msgs;
-        });
-      }
-      this._isStreaming.set(false);
-      this._isConnecting.set(false);
-    });
-  }
-
-  private handleServerError(errorDetails: ErrorInfo): void {
-    this.ngZone.run(() => {
-      this.setBotMessageTyping(false);
+    this.setBotMessageTyping(false);
+    if (this.lastBotMessage()?.text === '') {
       this._messages.update(msgs => {
         const lastIndex = msgs.length - 1;
         if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
           return [
             ...msgs.slice(0, lastIndex),
-            { 
-              ...msgs[lastIndex], 
-              text: errorDetails.message, 
-              typing: false,
-              error: errorDetails,
-              showError: false
-            }
+            { ...msgs[lastIndex], text: errorMessage, typing: false }
           ];
         }
         return msgs;
       });
-      this._isStreaming.set(false);
-      this._isConnecting.set(false);
+    }
+    this._isStreaming.set(false);
+    this._isConnecting.set(false);
+  }
+
+  private handleServerError(errorDetails: ErrorInfo): void {
+    this.setBotMessageTyping(false);
+    this._messages.update(msgs => {
+      const lastIndex = msgs.length - 1;
+      if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
+        return [
+          ...msgs.slice(0, lastIndex),
+          {
+            ...msgs[lastIndex],
+            text: errorDetails.message,
+            typing: false,
+            error: errorDetails,
+            showError: false
+          }
+        ];
+      }
+      return msgs;
     });
+    this._isStreaming.set(false);
+    this._isConnecting.set(false);
   }
 
   private streamChatResponse(params: HttpParams): Promise<void> {
@@ -815,32 +809,28 @@ export class ChatboxComponent implements OnDestroy {
 
       eventSource.onopen = () => {
         console.log('EventSource connection opened');
-        this.ngZone.run(() => {
-          this._isConnecting.set(false);
-          this._isStreaming.set(true);
-        });
+        this._isConnecting.set(false);
+        this._isStreaming.set(true);
       };
 
       eventSource.onmessage = (event) => {
-        this.ngZone.run(() => {
-          if (isFirstChunk) {
-            this.setBotMessageTyping(false);
-            isFirstChunk = false;
-          }
+        if (isFirstChunk) {
+          this.setBotMessageTyping(false);
+          isFirstChunk = false;
+        }
 
-          // Handle JSON chunks
-          let chunk: string;
-          try {
-            const parsed = JSON.parse(event.data);
-            chunk = parsed.content || event.data;
-          } catch (e) {
-            chunk = event.data;
-          }
+        // Handle JSON chunks
+        let chunk: string;
+        try {
+          const parsed = JSON.parse(event.data);
+          chunk = parsed.content || event.data;
+        } catch (e) {
+          chunk = event.data;
+        }
 
-          if (chunk && chunk.length > 0) {
-            this.updateBotMessage(chunk);
-          }
-        });
+        if (chunk && chunk.length > 0) {
+          this.updateBotMessage(chunk);
+        }
       };
 
       eventSource.onerror = (error) => {
@@ -852,15 +842,13 @@ export class ChatboxComponent implements OnDestroy {
 
       // Listen for error events
       eventSource.addEventListener('error', (event: MessageEvent) => {
-        this.ngZone.run(() => {
-          try {
-            const errorDetails: ErrorInfo = JSON.parse(event.data);
-            this.handleServerError(errorDetails);
-          } catch (e) {
-            console.error('Failed to parse error details:', e);
-            this.handleChatError('Sorry, I encountered an error processing your request.');
-          }
-        });
+        try {
+          const errorDetails: ErrorInfo = JSON.parse(event.data);
+          this.handleServerError(errorDetails);
+        } catch (e) {
+          console.error('Failed to parse error details:', e);
+          this.handleChatError('Sorry, I encountered an error processing your request.');
+        }
         eventSource.close();
         resolve();
       });
@@ -868,10 +856,8 @@ export class ChatboxComponent implements OnDestroy {
       // Listen for successful completion
       eventSource.addEventListener('close', () => {
         eventSource.close();
-        this.ngZone.run(() => {
-          this._isStreaming.set(false);
-          this._isConnecting.set(false);
-        });
+        this._isStreaming.set(false);
+        this._isConnecting.set(false);
         resolve();
       });
     });

@@ -49,16 +49,16 @@
         <!-- Drag and Drop Zone -->
         <div class="drop-zone"
              [class.drag-over]="isDragOver()"
-             [class.disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()"
+             [class.disabled]="isUploading() || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()"
              (dragenter)="onDragEnter($event)"
              (dragleave)="onDragLeave($event)"
              (dragover)="onDragOver($event)"
              (drop)="onDrop($event)"
              role="button"
-             [tabindex]="(isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()) ? -1 : 0"
-             (click)="isManualMode() || isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === '' ? null : fileInput.click()"
+             [tabindex]="(isUploading() || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()) ? -1 : 0"
+             (click)="isManualMode() || isUploading() || metrics.vectorStoreName === '' || metrics.embeddingModel === '' ? null : fileInput.click()"
              [attr.aria-label]="isDragOver() ? 'Drop your PDF here to upload' : (isManualMode() ? 'Upload disabled - manual document ID is active' : 'Click to upload PDF or drag and drop')"
-             [attr.aria-disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()">>
+             [attr.aria-disabled]="isUploading() || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()">>
 
           <!-- Drop Zone Content -->
           <div class="drop-zone-content">
@@ -89,7 +89,7 @@
             <button mat-raised-button
                     color="primary"
                     (click)="fileInput.click(); $event.stopPropagation()"
-                    [disabled]="isUploading || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()"
+                    [disabled]="isUploading() || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()"
                     class="browse-button"
                     aria-label="Browse for PDF files">
               <mat-icon aria-hidden="true">folder_open</mat-icon>
@@ -105,17 +105,17 @@
         </div>
 
         <!-- Upload progress indicator -->
-        @if (isUploading) {
+        @if (isUploading()) {
           <div class="upload-progress-container" role="status" aria-live="polite" aria-label="File upload progress">
             <div class="upload-progress-header">
-              <mat-icon class="upload-icon" aria-hidden="true">{{ getFileTypeIcon(currentFileName) }}</mat-icon>
+              <mat-icon class="upload-icon" aria-hidden="true">{{ getFileTypeIcon(currentFileName()) }}</mat-icon>
               <div class="upload-info">
-                <div class="file-name">{{ currentFileName }}</div>
+                <div class="file-name">{{ currentFileName() }}</div>
                 <div class="upload-status">Uploading...</div>
               </div>
             </div>
-            <mat-progress-bar mode="determinate" [value]="uploadProgress" class="upload-progress-bar" [attr.aria-valuenow]="uploadProgress" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Upload progress: ' + uploadProgress + ' percent'"></mat-progress-bar>
-            <div class="progress-percentage">{{ uploadProgress }}%</div>
+            <mat-progress-bar mode="determinate" [value]="uploadProgress()" class="upload-progress-bar" [attr.aria-valuenow]="uploadProgress()" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Upload progress: ' + uploadProgress() + ' percent'"></mat-progress-bar>
+            <div class="progress-percentage">{{ uploadProgress() }}%</div>
           </div>
         }
       </div>

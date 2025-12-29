@@ -59,10 +59,10 @@ export class DocumentPanelComponent implements AfterViewInit {
   // Add Output event emitter for document IDs changes
   @Output() documentIdsChanged = new EventEmitter<string[]>();
 
-  // Upload progress properties
-  uploadProgress = 0;
-  isUploading = false;
-  currentFileName = '';
+  // Upload progress signals
+  uploadProgress = signal(0);
+  isUploading = signal(false);
+  currentFileName = signal('');
 
   // Drag and drop signals (modern Angular pattern)
   isDragOver = signal(false);
@@ -177,9 +177,9 @@ export class DocumentPanelComponent implements AfterViewInit {
     formData.append('file', file);
 
     // Reset and initialize progress tracking
-    this.uploadProgress = 0;
-    this.isUploading = true;
-    this.currentFileName = file.name;
+    this.uploadProgress.set(0);
+    this.isUploading.set(true);
+    this.currentFileName.set(file.name);
 
     let host: string;
     let protocol: string;
@@ -199,11 +199,11 @@ export class DocumentPanelComponent implements AfterViewInit {
         if (event.type === HttpEventType.UploadProgress) {
           // Calculate and update progress percentage
           if (event.total) {
-            this.uploadProgress = Math.round(100 * event.loaded / event.total);
+            this.uploadProgress.set(Math.round(100 * event.loaded / event.total));
           }
         } else if (event.type === HttpEventType.Response) {
           // Upload complete - use the response which includes all documents
-          this.isUploading = false;
+          this.isUploading.set(false);
           this.snackBar.open('File uploaded successfully', 'Close', {
             duration: 3000
           });
@@ -217,7 +217,7 @@ export class DocumentPanelComponent implements AfterViewInit {
       },
       error: (error) => {
         // Reset progress state on error
-        this.isUploading = false;
+        this.isUploading.set(false);
         console.error('Error uploading file:', error);
         this.snackBar.open('Error uploading file', 'Close', {
           duration: 3000

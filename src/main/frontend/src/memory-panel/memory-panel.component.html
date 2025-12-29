@@ -64,7 +64,7 @@
               [class.status-success]="metrics.memoryType === 'PERSISTENT'"
               [class.status-warning]="metrics.memoryType === 'TRANSIENT'"
               [class.clickable]="isMemoryClickable()"
-              [disabled]="!isMemoryClickable() || isTogglingMemory"
+              [disabled]="!isMemoryClickable() || isTogglingMemory()"
               (click)="toggleMemoryType()"
               role="button"
               [attr.aria-label]="'Memory type: ' + getMemoryTypeText() + '. ' + getMemoryTooltip()"

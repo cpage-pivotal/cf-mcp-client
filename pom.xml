@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.tanzu</groupId>
 	<artifactId>cf-mcp-client</artifactId>
-	<version>2.5.1</version>
+	<version>2.6.0</version>
 	<name>cf-mcp-client</name>
 	<description>Chat Client that can bind to GenAI LLMs, MCP Servers, external memory</description>
 

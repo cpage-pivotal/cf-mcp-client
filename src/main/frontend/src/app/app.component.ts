@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal, effect, ViewChild } from '@angular/core';
+import { Component, inject, signal, effect, ViewChild } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
@@ -11,7 +11,8 @@ import { BottomNavigationComponent } from './bottom-navigation/bottom-navigation
 import { HttpClient } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
 import { interval } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { startWith, switchMap, retry, shareReplay, catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -28,27 +29,52 @@ export class AppComponent {
 
   // Use signals for reactive state management
   private readonly _currentDocumentIds = signal<string[]>([]);
-  private readonly _metrics = signal<PlatformMetrics>({
-    conversationId: '',
-    chatModel: '',
-    embeddingModel: '',
-    vectorStoreName: '',
-    mcpServers: [],
-    a2aAgents: [],
-    memoryType: 'TRANSIENT'
-  });
 
-  // Public readonly signals
+  // Public readonly signal for document IDs
   readonly currentDocumentIds = this._currentDocumentIds.asReadonly();
-  readonly metrics = this._metrics.asReadonly();
 
-  private readonly destroyRef = inject(DestroyRef);
   private readonly httpClient = inject(HttpClient);
   private readonly document = inject(DOCUMENT);
 
-  constructor() {
-    this.initMetricsPolling();
+  // Reactive metrics polling using RxJS interop (zoneless-friendly pattern)
+  private readonly metricsPolling$ = interval(5000).pipe(
+    startWith(0), // Fetch immediately on startup
+    switchMap(() => {
+      const { protocol, host } = this.getApiBaseUrl();
+      return this.httpClient.get<PlatformMetrics>(`${protocol}//${host}/metrics`).pipe(
+        retry({ count: 3, delay: 1000 }),
+        catchError((error) => {
+          console.error('Error fetching metrics:', error);
+          // Return fallback value on error
+          return of({
+            conversationId: '',
+            chatModel: '',
+            embeddingModel: '',
+            vectorStoreName: '',
+            mcpServers: [],
+            a2aAgents: [],
+            memoryType: 'TRANSIENT' as const
+          });
+        })
+      );
+    }),
+    shareReplay(1)
+  );
 
+  // Convert observable to signal - automatically manages subscription lifecycle
+  readonly metrics = toSignal(this.metricsPolling$, {
+    initialValue: {
+      conversationId: '',
+      chatModel: '',
+      embeddingModel: '',
+      vectorStoreName: '',
+      mcpServers: [],
+      a2aAgents: [],
+      memoryType: 'TRANSIENT' as const
+    }
+  });
+
+  constructor() {
     // Use effect for side effects based on signal changes
     effect(() => {
       const documentIds = this.currentDocumentIds();
@@ -66,33 +92,6 @@ export class AppComponent {
   // Method to handle agent message sending
   onAgentMessageSent(agent: A2AAgent, message: string): void {
     this.chatbox?.sendMessageToAgent(agent, message);
-  }
-
-  // Initialize metrics polling with improved error handling
-  private initMetricsPolling(): void {
-    // Fetch initial metrics
-    this.fetchMetrics();
-
-    // Set up interval to fetch metrics every 5 seconds
-    interval(5000)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.fetchMetrics();
-      });
-  }
-
-  private fetchMetrics(): void {
-    const { protocol, host } = this.getApiBaseUrl();
-
-    this.httpClient.get<PlatformMetrics>(`${protocol}//${host}/metrics`)
-      .subscribe({
-        next: (data) => {
-          this._metrics.set(data);
-        },
-        error: (error) => {
-          console.error('Error fetching metrics:', error);
-        }
-      });
   }
 
   private getApiBaseUrl(): { protocol: string; host: string } {
