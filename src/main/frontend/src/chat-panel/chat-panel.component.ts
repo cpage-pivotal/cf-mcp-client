@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,13 +12,12 @@ import { SidenavService } from '../services/sidenav.service';
   selector: 'app-chat-panel',
   standalone: true,
   imports: [
-    CommonModule,
     MatSidenavModule,
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
     MatChipsModule
-  ],
+],
   templateUrl: './chat-panel.component.html',
   styleUrl: './chat-panel.component.css'
 })

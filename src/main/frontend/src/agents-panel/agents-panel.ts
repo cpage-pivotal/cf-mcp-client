@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, input, output, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,7 +21,6 @@ export interface AgentMessageEvent {
   selector: 'app-agents-panel',
   standalone: true,
   imports: [
-    CommonModule,
     MatSidenavModule,
     MatButtonModule,
     MatIconModule,
@@ -30,7 +29,7 @@ export interface AgentMessageEvent {
     MatChipsModule,
     MatTooltipModule,
     MatDialogModule
-  ],
+],
   templateUrl: './agents-panel.html',
   styleUrl: './agents-panel.css'
 })

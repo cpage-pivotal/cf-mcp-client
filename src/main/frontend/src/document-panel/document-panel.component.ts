@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, Output, ViewChild, AfterViewInit, signal, computed } from '@angular/core';
 import { HttpClient, HttpEventType } from '@angular/common/http';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -31,10 +31,20 @@ export class DocumentHammerConfig extends HammerGestureConfig {
   selector: 'app-document-panel',
   standalone: true,
   imports: [
-    CommonModule, MatSidenavModule, MatButtonModule, MatIconModule,
-    MatListModule, MatSnackBarModule, FileSizePipe, MatProgressBarModule, MatTooltipModule, MatChipsModule,
-    MatExpansionModule, MatFormFieldModule, MatInputModule, FormsModule
-  ],
+    MatSidenavModule,
+    MatButtonModule,
+    MatIconModule,
+    MatListModule,
+    MatSnackBarModule,
+    FileSizePipe,
+    MatProgressBarModule,
+    MatTooltipModule,
+    MatChipsModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule
+],
   providers: [
     { provide: HAMMER_GESTURE_CONFIG, useClass: DocumentHammerConfig }
   ],

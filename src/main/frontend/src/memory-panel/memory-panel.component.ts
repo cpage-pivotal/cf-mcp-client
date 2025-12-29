@@ -1,5 +1,5 @@
 import {Component, Input, ViewChild, AfterViewInit, OnChanges, SimpleChanges, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
+
 import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -17,7 +17,6 @@ import {SidenavService} from '../services/sidenav.service';
   selector: 'app-memory-panel',
   standalone: true,
   imports: [
-    CommonModule,
     MatSidenavModule,
     MatButtonModule,
     MatIconModule,
@@ -26,7 +25,7 @@ import {SidenavService} from '../services/sidenav.service';
     MatInputModule,
     MatTooltipModule,
     MatChipsModule
-  ],
+],
   templateUrl: './memory-panel.component.html',
   styleUrl: './memory-panel.component.css'
 })
