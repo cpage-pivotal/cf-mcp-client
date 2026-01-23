@@ -18,7 +18,13 @@ import java.util.Optional;
 @Service
 public class DocumentService {
     private final VectorStore vectorStore;
-    private final TokenTextSplitter tokenSplitter = new TokenTextSplitter();
+    private final TokenTextSplitter tokenSplitter = TokenTextSplitter.builder()
+            .withChunkSize(512)
+            .withMinChunkSizeChars(100)
+            .withMinChunkLengthToEmbed(5)
+            .withMaxNumChunks(10000)
+            .withKeepSeparator(true)
+            .build();
     private final List<DocumentInfo> documentList = new ArrayList<>();
 
     public final static String DOCUMENT_ID = "documentId";
@@ -86,10 +92,15 @@ public class DocumentService {
         PagePdfDocumentReader pdfReader = new PagePdfDocumentReader(resource, PdfDocumentReaderConfig.defaultConfig());
 
         List<Document> documents = tokenSplitter.split(pdfReader.read());
+        List<Document> sanitizedDocuments = new ArrayList<>();
         for (Document document : documents) {
-            document.getMetadata().put(DOCUMENT_ID, fileId);
+            // Remove null characters that PostgreSQL can't handle
+            String sanitizedText = document.getText().replace("\u0000", "");
+            Document sanitizedDoc = new Document(sanitizedText, document.getMetadata());
+            sanitizedDoc.getMetadata().put(DOCUMENT_ID, fileId);
+            sanitizedDocuments.add(sanitizedDoc);
         }
-        vectorStore.write(documents);
+        vectorStore.write(sanitizedDocuments);
     }
 
     public void deleteDocuments() {
