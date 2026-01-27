@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { Component, Input, inject } from '@angular/core';
+import { NgClass, DOCUMENT } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { SidenavService } from '../../services/sidenav.service';
@@ -22,6 +22,8 @@ export class NavigationRailComponent {
     a2aAgents: [],
     memoryType: 'TRANSIENT'
   };
+
+  private readonly doc = inject(DOCUMENT);
 
   constructor(private sidenavService: SidenavService) {}
 
@@ -112,5 +114,14 @@ export class NavigationRailComponent {
       default:
         return { show: false, color: '', icon: '' };
     }
+  }
+
+  onLogout(): void {
+    // POST to /logout then redirect to login page
+    const form = this.doc.createElement('form');
+    form.method = 'POST';
+    form.action = '/logout';
+    this.doc.body.appendChild(form);
+    form.submit();
   }
 }

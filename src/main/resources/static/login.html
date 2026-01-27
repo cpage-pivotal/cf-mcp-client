@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanzu Tool Chat - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #7c6bc4 0%, #6a7fd2 50%, #8b78d0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            padding: 48px 40px 36px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-header .icon-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .login-header .material-icons {
+            font-size: 44px;
+            color: #6a7fd2;
+        }
+
+        .login-header h1 {
+            font-size: 26px;
+            font-weight: 500;
+            color: #222;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6a7fd2;
+            box-shadow: 0 0 0 2px rgba(106, 127, 210, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 13px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn .material-icons {
+            font-size: 20px;
+        }
+
+        .btn-primary {
+            background-color: #6a7fd2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #5a6fc2;
+            box-shadow: 0 4px 12px rgba(106, 127, 210, 0.35);
+        }
+
+        .btn-sso {
+            background-color: #3a3a4a;
+            color: white;
+            margin-top: 0;
+            display: none;
+        }
+
+        .btn-sso:hover {
+            background-color: #2a2a3a;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .divider {
+            display: none;
+            align-items: center;
+            margin: 16px 0;
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .divider::before {
+            margin-right: 14px;
+        }
+
+        .divider::after {
+            margin-left: 14px;
+        }
+
+        .error-message {
+            background-color: #fdecea;
+            color: #b71c1c;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .error-message .material-icons {
+            font-size: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 28px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 16px;
+                padding: 36px 24px 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="icon-wrapper">
+                <span class="material-icons">settings_suggest</span>
+            </div>
+            <h1>Tanzu Tool Chat</h1>
+            <p>Enter the access code to start chatting with your AI agent.</p>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <span class="material-icons">error_outline</span>
+            Invalid access code. Please try again.
+        </div>
+
+        <form action="/auth/login" method="POST">
+            <input type="hidden" name="username" value="user">
+            <div class="form-group">
+                <input type="password" id="password" name="password"
+                       placeholder="Access code" required autofocus>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <span class="material-icons">login</span>
+                Sign in
+            </button>
+        </form>
+
+        <div class="divider" id="divider">or</div>
+
+        <a id="ssoButton" class="btn btn-sso" href="#">
+            <span class="material-icons">badge</span>
+            <span id="ssoLabel">Sign in with SSO</span>
+        </a>
+
+        <div class="footer">Powered by Tanzu Platform</div>
+    </div>
+
+    <script>
+        if (window.location.search.includes('error')) {
+            document.getElementById('errorMessage').style.display = 'flex';
+        }
+
+        fetch('/auth/provider')
+            .then(response => response.json())
+            .then(data => {
+                if (data.provider && data.registrationId) {
+                    document.getElementById('ssoButton').style.display = 'flex';
+                    document.getElementById('ssoButton').href =
+                        '/oauth2/authorization/' + data.registrationId;
+                    document.getElementById('ssoLabel').textContent =
+                        'Sign in with ' + data.provider;
+                    document.getElementById('divider').style.display = 'flex';
+                }
+            })
+            .catch(() => {});
+    </script>
+</body>
+</html>

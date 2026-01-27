@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { Component, Input, inject } from '@angular/core';
+import { NgClass, DOCUMENT } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { SidenavService } from '../../services/sidenav.service';
 import { PlatformMetrics } from '../app.component';
@@ -21,6 +21,8 @@ export class BottomNavigationComponent {
     a2aAgents: [],
     memoryType: 'TRANSIENT'
   };
+
+  private readonly doc = inject(DOCUMENT);
 
   constructor(private sidenavService: SidenavService) {}
 
@@ -106,5 +108,13 @@ export class BottomNavigationComponent {
       default:
         return { show: false, color: '', icon: '' };
     }
+  }
+
+  onLogout(): void {
+    const form = this.doc.createElement('form');
+    form.method = 'POST';
+    form.action = '/logout';
+    this.doc.body.appendChild(form);
+    form.submit();
   }
 }

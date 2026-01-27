@@ -21,6 +21,15 @@
   align-items: center;
   padding: 8px 0;
   gap: 4px; /* Material Design 3 spacing */
+  flex: 1;
+}
+
+.nav-rail-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  border-top: 1px solid var(--md-sys-color-outline-variant, var(--mat-sys-outline-variant));
 }
 
 .nav-rail-item {
