@@ -4,7 +4,6 @@ import {
   Component,
   ElementRef,
   Inject,
-  Injector,
   Input,
   NgZone,
   OnDestroy,
@@ -212,7 +211,6 @@ export class ChatboxComponent implements OnDestroy, AfterViewInit {
   @ViewChild("chatboxMessages") private chatboxMessages?: ElementRef<HTMLDivElement>;
 
   constructor(
-    private injector: Injector,
     @Inject(DOCUMENT) private document: Document,
     private dialog: MatDialog,
     private http: HttpClient,

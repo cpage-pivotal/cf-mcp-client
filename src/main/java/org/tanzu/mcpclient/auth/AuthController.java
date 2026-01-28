@@ -1,5 +1,7 @@
 package org.tanzu.mcpclient.auth;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +18,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired(required = false)
     private ClientRegistrationRepository clientRegistrationRepository;
@@ -61,8 +65,8 @@ public class AuthController {
                         result.put("registrationId", registrationId);
                         return result;
                     }
-                } catch (Exception ignored) {
-                    // Registration not found, continue checking
+                } catch (Exception e) {
+                    logger.debug("OAuth2 registration '{}' not found: {}", registrationId, e.getMessage());
                 }
             }
         }

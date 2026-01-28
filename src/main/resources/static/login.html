@@ -126,11 +126,16 @@
 
         .btn-primary:hover {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12),
-                        0 2px 6px rgba(60, 104, 64, 0.2);
+                        0 2px 6px rgba(var(--md-sys-color-primary-rgb), 0.2);
         }
 
         .btn-primary:active {
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:focus-visible {
+            outline: 2px solid var(--md-sys-color-outline);
+            outline-offset: 2px;
         }
 
         .btn-sso {
@@ -142,11 +147,16 @@
 
         .btn-sso:hover {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12),
-                        0 2px 6px rgba(81, 99, 80, 0.2);
+                        0 2px 6px rgba(var(--md-sys-color-secondary-rgb), 0.2);
         }
 
         .btn-sso:active {
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-sso:focus-visible {
+            outline: 2px solid var(--md-sys-color-outline);
+            outline-offset: 2px;
         }
 
         .divider {
@@ -208,6 +218,19 @@
                 border-radius: 24px;
             }
         }
+
+        /* Screen reader only - visually hidden but accessible */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
     </style>
 </head>
 <body>
@@ -220,27 +243,29 @@
             <p>Enter the access code to start chatting with your AI agent.</p>
         </div>
 
-        <div class="error-message" id="errorMessage">
-            <span class="material-icons">error_outline</span>
-            Invalid access code. Please try again.
+        <div class="error-message" id="errorMessage" role="alert" aria-live="polite">
+            <span class="material-icons" aria-hidden="true">error_outline</span>
+            <span id="errorText">Invalid access code. Please try again.</span>
         </div>
 
         <form action="/auth/login" method="POST">
             <input type="hidden" name="username" value="user">
             <div class="form-group">
+                <label for="password" class="sr-only">Access code</label>
                 <input type="password" id="password" name="password"
-                       placeholder="Access code" required autofocus>
+                       placeholder="Access code" required autofocus
+                       aria-describedby="errorText">
             </div>
             <button type="submit" class="btn btn-primary">
-                <span class="material-icons">login</span>
+                <span class="material-icons" aria-hidden="true">login</span>
                 Sign in
             </button>
         </form>
 
         <div class="divider" id="divider">or</div>
 
-        <a id="ssoButton" class="btn btn-sso" href="#">
-            <span class="material-icons">badge</span>
+        <a id="ssoButton" class="btn btn-sso" href="#" role="button">
+            <span class="material-icons" aria-hidden="true">badge</span>
             <span id="ssoLabel">Sign in with SSO</span>
         </a>
 

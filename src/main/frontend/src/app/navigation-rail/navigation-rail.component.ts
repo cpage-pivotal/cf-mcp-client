@@ -1,8 +1,9 @@
 import { Component, Input, inject } from '@angular/core';
-import { NgClass, DOCUMENT } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { SidenavService } from '../../services/sidenav.service';
+import { AuthService } from '../../services/auth.service';
 import { PlatformMetrics } from '../app.component';
 
 @Component({
@@ -23,7 +24,7 @@ export class NavigationRailComponent {
     memoryType: 'TRANSIENT'
   };
 
-  private readonly doc = inject(DOCUMENT);
+  private readonly authService = inject(AuthService);
 
   constructor(private sidenavService: SidenavService) {}
 
@@ -117,11 +118,6 @@ export class NavigationRailComponent {
   }
 
   onLogout(): void {
-    // POST to /logout then redirect to login page
-    const form = this.doc.createElement('form');
-    form.method = 'POST';
-    form.action = '/logout';
-    this.doc.body.appendChild(form);
-    form.submit();
+    this.authService.logout();
   }
 }

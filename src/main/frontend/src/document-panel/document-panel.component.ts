@@ -80,6 +80,9 @@ export class DocumentPanelComponent implements AfterViewInit {
   // Computed signal to check if in manual mode
   isManualMode = computed(() => this.manualDocumentId().trim().length > 0);
 
+  /** Delay in ms to wait for Material expansion panel animation before scrolling */
+  private static readonly EXPANSION_ANIMATION_DELAY_MS = 150;
+
   @ViewChild('sidenav') sidenav!: MatSidenav;
   @ViewChild('advancedSection') advancedSection?: ElementRef<HTMLElement>;
   @ViewChild('sidenavContent') sidenavContent?: ElementRef<HTMLElement>;
@@ -392,13 +395,13 @@ export class DocumentPanelComponent implements AfterViewInit {
 
   onAdvancedSectionOpened(): void {
     this.isAdvancedSectionExpanded.set(true);
-    // Scroll the advanced section into view after expansion animation
+    // Scroll the advanced section into view after expansion animation starts
     setTimeout(() => {
       this.advancedSection?.nativeElement?.scrollIntoView({
         behavior: 'smooth',
         block: 'end'
       });
-    }, 150); // Wait for expansion animation to start
+    }, DocumentPanelComponent.EXPANSION_ANIMATION_DELAY_MS);
   }
 
   onAdvancedSectionClosed(): void {
