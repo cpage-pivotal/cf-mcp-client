@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Inject, Input, Output, ViewChild, AfterViewInit, signal, computed } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, Output, ViewChild, ElementRef, AfterViewInit, signal, computed } from '@angular/core';
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
@@ -80,7 +80,12 @@ export class DocumentPanelComponent implements AfterViewInit {
   // Computed signal to check if in manual mode
   isManualMode = computed(() => this.manualDocumentId().trim().length > 0);
 
+  /** Delay in ms to wait for Material expansion panel animation before scrolling */
+  private static readonly EXPANSION_ANIMATION_DELAY_MS = 150;
+
   @ViewChild('sidenav') sidenav!: MatSidenav;
+  @ViewChild('advancedSection') advancedSection?: ElementRef<HTMLElement>;
+  @ViewChild('sidenavContent') sidenavContent?: ElementRef<HTMLElement>;
 
   constructor(
     private httpClient: HttpClient,
@@ -388,8 +393,19 @@ export class DocumentPanelComponent implements AfterViewInit {
     this.emitCurrentDocumentIds();
   }
 
-  toggleAdvancedSection(): void {
-    this.isAdvancedSectionExpanded.set(!this.isAdvancedSectionExpanded());
+  onAdvancedSectionOpened(): void {
+    this.isAdvancedSectionExpanded.set(true);
+    // Scroll the advanced section into view after expansion animation starts
+    setTimeout(() => {
+      this.advancedSection?.nativeElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end'
+      });
+    }, DocumentPanelComponent.EXPANSION_ANIMATION_DELAY_MS);
+  }
+
+  onAdvancedSectionClosed(): void {
+    this.isAdvancedSectionExpanded.set(false);
   }
 
   // Helper method to emit the appropriate document IDs based on current mode

@@ -1,5 +1,6 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #sidenav mode="over" position="end" (openedChange)="onSidenavOpenedChange($event)">
+    <div #sidenavContent class="sidenav-scroll-container">
     <div class="sidenav-header">
       <h2 id="documents-panel-heading">Documents</h2>
       <button mat-icon-button (click)="toggleSidenav()" aria-label="Close documents panel">
@@ -214,11 +215,11 @@
     }
 
     <!-- Advanced Options Section -->
-    <section aria-labelledby="advanced-options-heading" class="advanced-section">
-      <mat-expansion-panel 
+    <section #advancedSection aria-labelledby="advanced-options-heading" class="advanced-section">
+      <mat-expansion-panel
         [expanded]="isAdvancedSectionExpanded()"
-        (opened)="isAdvancedSectionExpanded.set(true)"
-        (closed)="isAdvancedSectionExpanded.set(false)"
+        (opened)="onAdvancedSectionOpened()"
+        (closed)="onAdvancedSectionClosed()"
         class="advanced-expansion-panel">
         <mat-expansion-panel-header>
           <mat-panel-title id="advanced-options-heading">
@@ -284,6 +285,7 @@
         </div>
       </mat-expansion-panel>
     </section>
+    </div>
   </mat-sidenav>
 
   <mat-sidenav-content>

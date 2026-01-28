@@ -47,12 +47,33 @@
   flex-grow: 1;
   margin-bottom: var(--md-spacing-3); /* 12px using Material spacing */
   padding: var(--md-spacing-4); /* Increased padding for better visual separation */
-  scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: var(--md-sys-color-outline-variant) transparent;
   background-color: var(--md-sys-color-surface-dim);
   border-radius: var(--md-spacing-3); /* 12px rounded corners */
   border: 1px solid var(--md-sys-color-outline-variant);
+  position: relative; /* For positioning the scroll-to-bottom button */
+}
+
+/* Scroll to bottom floating action button */
+.scroll-to-bottom-fab {
+  position: sticky;
+  bottom: var(--md-spacing-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  opacity: 0.9;
+  box-shadow: var(--md-sys-elevation-3dp);
+  transition:
+    opacity var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-emphasized);
+  animation: md-slide-in-from-bottom var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.scroll-to-bottom-fab:hover {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: var(--md-sys-elevation-4dp);
 }
 
 .chatbox-messages::-webkit-scrollbar {

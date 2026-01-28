@@ -33,5 +33,18 @@
         </span>
       </div>
     }
+
+    <div class="bottom-nav-item">
+      <button
+        type="button"
+        class="bottom-nav-button"
+        (click)="onLogout()"
+        aria-label="Sign out">
+        <div class="bottom-nav-button-content">
+          <mat-icon class="bottom-nav-icon" aria-hidden="true">logout</mat-icon>
+          <span class="bottom-nav-label">Sign out</span>
+        </div>
+      </button>
+    </div>
   </div>
 </nav>

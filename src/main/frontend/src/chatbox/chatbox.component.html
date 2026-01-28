@@ -96,6 +96,16 @@
         </mat-card>
       </div>
     }
+
+    @if (userHasScrolledUp() && isStreaming()) {
+      <button mat-mini-fab
+              color="primary"
+              class="scroll-to-bottom-fab"
+              (click)="scrollToBottomAndResume()"
+              aria-label="Scroll to bottom">
+        <mat-icon>arrow_downward</mat-icon>
+      </button>
+    }
   </div>
   <div class="chatbox-footer" role="form" aria-label="Send message">
     <ng-form class="chat-input-container">

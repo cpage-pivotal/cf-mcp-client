@@ -22,6 +22,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "m3-color-system.css",
+                "input": "src/styles",
+                "output": "/"
               }
             ],
             "styles": [

@@ -1,13 +1,12 @@
 import {
-  afterNextRender,
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
   Inject,
-  Injector,
   Input,
+  NgZone,
   OnDestroy,
-  runInInjectionContext,
   ViewChild,
   signal,
   computed,
@@ -15,7 +14,7 @@ import {
 } from '@angular/core';
 import {DOCUMENT} from '@angular/common';
 import {HttpParams, HttpClient} from '@angular/common/http';
-import {MatFabButton} from '@angular/material/button';
+import {MatFabButton, MatMiniFabButton} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
 import {MatFormField} from '@angular/material/form-field';
 import {MatInput, MatInputModule} from '@angular/material/input';
@@ -69,12 +68,12 @@ interface StatusUpdate {
 @Component({
   selector: 'app-chatbox',
   standalone: true,
-  imports: [FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatFabButton, TextFieldModule, MatTooltip, MatExpansionModule],
+  imports: [FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatFabButton, MatMiniFabButton, TextFieldModule, MatTooltip, MatExpansionModule],
   templateUrl: './chatbox.component.html',
   styleUrl: './chatbox.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChatboxComponent implements OnDestroy {
+export class ChatboxComponent implements OnDestroy, AfterViewInit {
   @Input() documentIds: string[] = [];
 
   @Input() set metrics(value: PlatformMetrics) {
@@ -100,9 +99,15 @@ export class ChatboxComponent implements OnDestroy {
   private readonly _isStreaming = signal<boolean>(false);
   private readonly _isConnecting = signal<boolean>(false);
 
+  // Scroll tracking signals
+  private readonly _userHasScrolledUp = signal<boolean>(false);
+  private readonly scrollThreshold = 100; // pixels from bottom to consider "at bottom"
+
   // Public readonly signals
   readonly messages = this._messages.asReadonly();
   readonly chatMessage = this._chatMessage.asReadonly();
+  readonly userHasScrolledUp = this._userHasScrolledUp.asReadonly();
+  readonly isStreaming = this._isStreaming.asReadonly();
 
   // Computed signals for derived state
   readonly canSendMessage = computed(() =>
@@ -201,14 +206,15 @@ export class ChatboxComponent implements OnDestroy {
     reasoningContent: string;
     typing: boolean;
   } | null = null;
+  private scrollListenerCleanup?: () => void;
 
   @ViewChild("chatboxMessages") private chatboxMessages?: ElementRef<HTMLDivElement>;
 
   constructor(
-    private injector: Injector,
     @Inject(DOCUMENT) private document: Document,
     private dialog: MatDialog,
-    private http: HttpClient
+    private http: HttpClient,
+    private ngZone: NgZone
   ) {
     // Set up host and protocol
     if (this.document.location.hostname === 'localhost') {
@@ -222,11 +228,15 @@ export class ChatboxComponent implements OnDestroy {
     this.setupEffects();
   }
   
+  ngAfterViewInit(): void {
+    this.setupScrollListener();
+  }
+
   ngOnDestroy(): void {
     if (this.updateBatchTimeout) {
       clearTimeout(this.updateBatchTimeout);
     }
-    
+
     // Flush any pending update before destroying
     if (this.pendingUpdate) {
       this.immediateUpdateMessage(
@@ -235,16 +245,44 @@ export class ChatboxComponent implements OnDestroy {
         this.pendingUpdate.typing
       );
     }
+
+    // Clean up scroll listener
+    if (this.scrollListenerCleanup) {
+      this.scrollListenerCleanup();
+    }
+  }
+
+  private setupScrollListener(): void {
+    if (!this.chatboxMessages) return;
+
+    const element = this.chatboxMessages.nativeElement;
+    const handleScroll = () => {
+      const isNearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < this.scrollThreshold;
+      // Only update if the value changes to avoid unnecessary signal updates
+      if (this._userHasScrolledUp() !== !isNearBottom) {
+        this._userHasScrolledUp.set(!isNearBottom);
+      }
+    };
+
+    // Run outside Angular zone for performance (scroll events fire frequently)
+    this.ngZone.runOutsideAngular(() => {
+      element.addEventListener('scroll', handleScroll, { passive: true });
+    });
+
+    this.scrollListenerCleanup = () => {
+      element.removeEventListener('scroll', handleScroll);
+    };
   }
 
   private setupEffects(): void {
-    // Optimized auto-scroll - only trigger on message count changes, not content changes
+    // Auto-scroll effect - scrolls during streaming if user hasn't scrolled up
     effect(() => {
       const messageCount = this._messages().length;
       const lastBotIndex = this.lastBotMessageIndex();
-      
-      if (messageCount > 0) {
-        // Only scroll if we have a new message or the last bot message finished typing
+      const userScrolledUp = this._userHasScrolledUp();
+
+      if (messageCount > 0 && !userScrolledUp) {
+        // Scroll on new messages or when streaming completes
         const lastBot = lastBotIndex >= 0 ? this._messages()[lastBotIndex] : null;
         if (!lastBot?.typing) {
           // Use requestAnimationFrame for better performance
@@ -703,6 +741,11 @@ export class ChatboxComponent implements OnDestroy {
           this.pendingUpdate.typing
         );
         this.pendingUpdate = null;
+
+        // Auto-scroll during streaming if user hasn't scrolled up
+        if (!this._userHasScrolledUp()) {
+          requestAnimationFrame(() => this.scrollChatToBottom());
+        }
       }
       this.updateBatchTimeout = undefined;
     }, 16); // ~60fps update rate
@@ -863,18 +906,15 @@ export class ChatboxComponent implements OnDestroy {
     });
   }
 
+  scrollToBottomAndResume(): void {
+    this._userHasScrolledUp.set(false);
+    this.scrollChatToBottom();
+  }
+
   private scrollChatToBottom(): void {
-    runInInjectionContext(this.injector, () => {
-      afterNextRender({
-        read: () => {
-          if (this.chatboxMessages) {
-            this.chatboxMessages.nativeElement.lastElementChild?.scrollIntoView({
-              behavior: "smooth",
-              block: "start"
-            });
-          }
-        }
-      });
-    });
+    if (this.chatboxMessages) {
+      const element = this.chatboxMessages.nativeElement;
+      element.scrollTop = element.scrollHeight;
+    }
   }
 }

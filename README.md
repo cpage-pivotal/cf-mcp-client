@@ -32,6 +32,60 @@ cd tanzu-platform-chat
 cf push
 ```
 
+### Authentication
+
+The application requires authentication to access. There are two authentication methods available: access code and SSO. Both can be used simultaneously.
+
+#### Access Code Authentication
+
+By default, the application is protected with an access code. Users enter the code on the login page to gain access.
+
+If `APP_AUTH_SECRET` is not set, the access code defaults to `changeme`.
+
+**To override the default access code**, you have two options:
+
+**Option 1: Set as an environment variable**
+
+```bash
+cf set-env ai-tool-chat APP_AUTH_SECRET my-secret-code
+cf restart ai-tool-chat
+```
+
+**Option 2: Add to manifest.yml**
+
+Add the environment variable to your `manifest.yml`:
+
+```yaml
+env:
+  JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+  APP_AUTH_SECRET: ((APP_AUTH_SECRET))
+```
+
+Then provide the variable at push time:
+
+```bash
+cf push --var APP_AUTH_SECRET=my-secret-code
+```
+
+#### SSO Authentication (Optional)
+
+Single Sign-On is automatically enabled when a `p-identity` service is bound to the application. The login page will display a "Sign in with SSO" button alongside the access code form.
+
+1. Create a SSO service instance:
+
+```bash
+cf create-service p-identity uaa my-sso
+```
+
+2. Bind the service to your application:
+
+```bash
+cf bind-service ai-tool-chat my-sso
+cf restart ai-tool-chat
+```
+
+The SSO provider is auto-detected from the Cloud Foundry service binding — no additional configuration is required.
+
 ### Binding to Large Language Models (LLM's)
 
 1. Create a service instance that provides chat LLM capabilities:

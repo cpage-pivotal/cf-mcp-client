@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { SidenavService } from '../../services/sidenav.service';
+import { AuthService } from '../../services/auth.service';
 import { PlatformMetrics } from '../app.component';
 
 @Component({
@@ -21,6 +22,8 @@ export class BottomNavigationComponent {
     a2aAgents: [],
     memoryType: 'TRANSIENT'
   };
+
+  private readonly authService = inject(AuthService);
 
   constructor(private sidenavService: SidenavService) {}
 
@@ -106,5 +109,9 @@ export class BottomNavigationComponent {
       default:
         return { show: false, color: '', icon: '' };
     }
+  }
+
+  onLogout(): void {
+    this.authService.logout();
   }
 }

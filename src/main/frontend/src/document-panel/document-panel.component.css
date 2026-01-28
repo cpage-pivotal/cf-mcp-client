@@ -42,6 +42,32 @@ mat-sidenav {
   background-color: var(--md-sys-color-surface);
 }
 
+/* Scrollable container for sidenav content */
+.sidenav-scroll-container {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-sys-color-outline-variant) transparent;
+}
+
+.sidenav-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidenav-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidenav-scroll-container::-webkit-scrollbar-thumb {
+  background-color: var(--md-sys-color-outline-variant);
+  border-radius: 3px;
+}
+
+.sidenav-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--md-sys-color-outline);
+}
+
 /* Add padding to sidenav content to align with navigation rail */
 mat-sidenav .sidenav-header,
 mat-sidenav .upload-container,
@@ -254,8 +280,7 @@ mat-sidenav .sidenav-header {
 
 /* Documents List */
 .documents-list {
-  overflow-y: auto;
-  max-height: calc(100vh - 400px);
+  /* Documents list no longer needs overflow - parent sidenav-scroll-container handles scrolling */
 }
 
 .documents-list-header {
