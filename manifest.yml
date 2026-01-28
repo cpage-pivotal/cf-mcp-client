@@ -8,4 +8,3 @@ applications:
     path: target/cf-mcp-client-2.6.0.jar
     env:
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
-      APP_AUTH_SECRET: ((APP_AUTH_SECRET))

@@ -40,20 +40,32 @@ The application requires authentication to access. There are two authentication 
 
 By default, the application is protected with an access code. Users enter the code on the login page to gain access.
 
-1. Set the `APP_AUTH_SECRET` environment variable to your desired access code:
+If `APP_AUTH_SECRET` is not set, the access code defaults to `changeme`.
+
+**To override the default access code**, you have two options:
+
+**Option 1: Set as an environment variable**
 
 ```bash
 cf set-env ai-tool-chat APP_AUTH_SECRET my-secret-code
 cf restart ai-tool-chat
 ```
 
-If deploying with `manifest.yml`, provide the variable at push time:
+**Option 2: Add to manifest.yml**
+
+Add the environment variable to your `manifest.yml`:
+
+```yaml
+env:
+  JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+  APP_AUTH_SECRET: ((APP_AUTH_SECRET))
+```
+
+Then provide the variable at push time:
 
 ```bash
 cf push --var APP_AUTH_SECRET=my-secret-code
 ```
-
-If `APP_AUTH_SECRET` is not set, the access code defaults to `changeme`.
 
 #### SSO Authentication (Optional)
 

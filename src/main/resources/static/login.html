@@ -6,6 +6,7 @@
     <title>Tanzu Tool Chat - Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="m3-color-system.css">
     <style>
         * {
             margin: 0;
@@ -15,18 +16,19 @@
 
         body {
             font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #7c6bc4 0%, #6a7fd2 50%, #8b78d0 100%);
+            background-color: var(--md-sys-color-surface-container-low);
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            color: #333;
+            color: var(--md-sys-color-on-surface);
         }
 
         .login-container {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            background: var(--md-sys-color-surface-container-highest);
+            border-radius: 28px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05),
+                        0 4px 8px rgba(0, 0, 0, 0.08);
             padding: 48px 40px 36px;
             width: 100%;
             max-width: 400px;
@@ -41,63 +43,71 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 16px;
+            width: 64px;
+            height: 64px;
+            background-color: var(--md-sys-color-primary-container);
+            border-radius: 16px;
+            margin-bottom: 24px;
         }
 
         .login-header .material-icons {
-            font-size: 44px;
-            color: #6a7fd2;
+            font-size: 32px;
+            color: var(--md-sys-color-on-primary-container);
         }
 
         .login-header h1 {
-            font-size: 26px;
-            font-weight: 500;
-            color: #222;
+            font-size: 28px;
+            font-weight: 400;
+            color: var(--md-sys-color-on-surface);
             margin-bottom: 8px;
+            letter-spacing: 0;
         }
 
         .login-header p {
             font-size: 14px;
-            color: #666;
-            line-height: 1.5;
+            color: var(--md-sys-color-on-surface-variant);
+            line-height: 20px;
+            letter-spacing: 0.25px;
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 24px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 15px;
+            padding: 16px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 12px;
+            font-size: 16px;
             font-family: 'Roboto', sans-serif;
-            color: #333;
-            background: #fff;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            color: var(--md-sys-color-on-surface);
+            background: var(--md-sys-color-surface-container);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .form-group input::placeholder {
-            color: #999;
+            color: var(--md-sys-color-on-surface-variant);
+            opacity: 0.6;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #6a7fd2;
-            box-shadow: 0 0 0 2px rgba(106, 127, 210, 0.2);
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 1px var(--md-sys-color-primary);
         }
 
         .btn {
             width: 100%;
-            padding: 13px 24px;
+            padding: 14px 24px;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 100px;
+            font-size: 14px;
             font-family: 'Roboto', sans-serif;
             font-weight: 500;
+            letter-spacing: 0.1px;
             cursor: pointer;
-            transition: background-color 0.2s, box-shadow 0.2s;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -106,81 +116,96 @@
         }
 
         .btn .material-icons {
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .btn-primary {
-            background-color: #6a7fd2;
-            color: white;
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
         }
 
         .btn-primary:hover {
-            background-color: #5a6fc2;
-            box-shadow: 0 4px 12px rgba(106, 127, 210, 0.35);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12),
+                        0 2px 6px rgba(60, 104, 64, 0.2);
+        }
+
+        .btn-primary:active {
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .btn-sso {
-            background-color: #3a3a4a;
-            color: white;
+            background-color: var(--md-sys-color-secondary);
+            color: var(--md-sys-color-on-secondary);
             margin-top: 0;
             display: none;
         }
 
         .btn-sso:hover {
-            background-color: #2a2a3a;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12),
+                        0 2px 6px rgba(81, 99, 80, 0.2);
+        }
+
+        .btn-sso:active {
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .divider {
             display: none;
             align-items: center;
-            margin: 16px 0;
-            color: #aaa;
-            font-size: 13px;
+            margin: 20px 0;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .divider::before,
         .divider::after {
             content: '';
             flex: 1;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
         }
 
         .divider::before {
-            margin-right: 14px;
+            margin-right: 16px;
         }
 
         .divider::after {
-            margin-left: 14px;
+            margin-left: 16px;
         }
 
         .error-message {
-            background-color: #fdecea;
-            color: #b71c1c;
+            background-color: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 14px;
             margin-bottom: 20px;
             display: none;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            line-height: 20px;
+            letter-spacing: 0.25px;
         }
 
         .error-message .material-icons {
             font-size: 20px;
+            flex-shrink: 0;
         }
 
         .footer {
             text-align: center;
-            margin-top: 28px;
+            margin-top: 32px;
             font-size: 12px;
-            color: #999;
+            color: var(--md-sys-color-on-surface-variant);
+            letter-spacing: 0.4px;
         }
 
         @media (max-width: 480px) {
             .login-container {
                 margin: 16px;
                 padding: 36px 24px 28px;
+                border-radius: 24px;
             }
         }
     </style>
