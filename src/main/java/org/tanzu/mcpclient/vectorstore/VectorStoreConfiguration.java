@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.NonNull;
 import org.tanzu.mcpclient.model.ModelDiscoveryService;
@@ -27,9 +28,11 @@ public class VectorStoreConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(VectorStoreConfiguration.class);
 
     private final ModelDiscoveryService modelDiscoveryService;
+    private final Environment environment;
 
-    public VectorStoreConfiguration(ModelDiscoveryService modelDiscoveryService) {
+    public VectorStoreConfiguration(ModelDiscoveryService modelDiscoveryService, Environment environment) {
         this.modelDiscoveryService = modelDiscoveryService;
+        this.environment = environment;
     }
 
     @Bean
@@ -56,11 +59,16 @@ public class VectorStoreConfiguration {
             logger.info("No embedding model configured, using default dimensions: {}", dimensions);
         }
 
+        boolean schemaAlreadyExists = DatabaseAvailabilityUtil.isVectorStoreSchemaPresent(environment);
+        boolean shouldInitializeSchema = !schemaAlreadyExists;
+        logger.info("Vector store schema initialization: schemaExists={}, initializeSchema={}",
+                schemaAlreadyExists, shouldInitializeSchema);
+
         return PgVectorStore.builder(jdbcTemplate, embeddingModel)
                 .dimensions(dimensions)
                 .distanceType(COSINE_DISTANCE)
                 .indexType(HNSW)
-                .initializeSchema(true)
+                .initializeSchema(shouldInitializeSchema)
                 .schemaName("public")
                 .vectorTableName("vector_store")
                 .maxDocumentBatchSize(10000)

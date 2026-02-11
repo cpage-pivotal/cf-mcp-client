@@ -2,7 +2,6 @@ package org.tanzu.mcpclient.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.core.annotation.Order;
@@ -17,11 +16,19 @@ public class JdbcSessionDatabaseInitializer implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(JdbcSessionDatabaseInitializer.class);
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
+
+    public JdbcSessionDatabaseInitializer(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public void run(String... args) {
+        if (sessionTableExists()) {
+            logger.info("Spring Session tables already exist, skipping initialization");
+            return;
+        }
+
         logger.info("Initializing Spring Session tables");
 
         try {
@@ -50,15 +57,23 @@ public class JdbcSessionDatabaseInitializer implements CommandLineRunner {
                     "CONSTRAINT SPRING_SESSION_ATTRIBUTES_FK FOREIGN KEY (SESSION_PRIMARY_ID) " +
                     "REFERENCES SPRING_SESSION(PRIMARY_ID) ON DELETE CASCADE)");
 
-            // Verify tables exist
-            Integer sessionTableCount = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'spring_session'", Integer.class);
-
-            logger.info("SPRING_SESSION table exists: {}", (sessionTableCount != null && sessionTableCount > 0));
+            logger.info("Spring Session tables created successfully");
 
         } catch (Exception e) {
             logger.error("Failed to initialize database schema", e);
             throw new RuntimeException("Failed to initialize database schema", e);
+        }
+    }
+
+    private boolean sessionTableExists() {
+        try {
+            Integer count = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'spring_session'",
+                    Integer.class);
+            return count != null && count > 0;
+        } catch (Exception e) {
+            logger.warn("Could not check if Spring Session tables exist: {}", e.getMessage());
+            return false;
         }
     }
 }
