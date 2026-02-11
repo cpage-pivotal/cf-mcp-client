@@ -88,19 +88,29 @@ public class DocumentService {
     }
 
     private void writeToVectorStore(MultipartFile file, String fileId) {
-        Resource resource = file.getResource();
-        PagePdfDocumentReader pdfReader = new PagePdfDocumentReader(resource, PdfDocumentReaderConfig.defaultConfig());
+        try {
+            Resource resource = file.getResource();
+            PagePdfDocumentReader pdfReader = new PagePdfDocumentReader(resource, PdfDocumentReaderConfig.defaultConfig());
 
-        List<Document> documents = tokenSplitter.split(pdfReader.read());
-        List<Document> sanitizedDocuments = new ArrayList<>();
-        for (Document document : documents) {
-            // Remove null characters that PostgreSQL can't handle
-            String sanitizedText = document.getText().replace("\u0000", "");
-            Document sanitizedDoc = new Document(sanitizedText, document.getMetadata());
-            sanitizedDoc.getMetadata().put(DOCUMENT_ID, fileId);
-            sanitizedDocuments.add(sanitizedDoc);
+            List<Document> documents = tokenSplitter.split(pdfReader.read());
+            List<Document> sanitizedDocuments = new ArrayList<>();
+            for (Document document : documents) {
+                // Remove null characters that PostgreSQL can't handle
+                String sanitizedText = document.getText().replace("\u0000", "");
+                Document sanitizedDoc = new Document(sanitizedText, document.getMetadata());
+                sanitizedDoc.getMetadata().put(DOCUMENT_ID, fileId);
+                sanitizedDocuments.add(sanitizedDoc);
+            }
+            vectorStore.write(sanitizedDocuments);
+        } catch (IllegalArgumentException e) {
+            // This can occur with PDFs that have complex formatting or text positioning issues
+            // Common cause: "Comparison method violates its general contract" in ForkPDFLayoutTextStripper
+            throw new RuntimeException("Unable to process PDF. The document may have complex formatting that is not supported. " +
+                    "Please try a different PDF or contact support if this issue persists.", e);
+        } catch (Exception e) {
+            // Catch any other PDF processing errors
+            throw new RuntimeException("Unable to process PDF: " + e.getMessage(), e);
         }
-        vectorStore.write(sanitizedDocuments);
     }
 
     public void deleteDocuments() {

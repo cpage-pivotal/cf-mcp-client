@@ -9,10 +9,12 @@ import org.springframework.ai.chat.client.advisor.api.BaseChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.VectorStoreChatMemoryAdvisor;
 import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.tanzu.mcpclient.document.DocumentService;
 import org.tanzu.mcpclient.mcp.McpServerService;
 import org.tanzu.mcpclient.mcp.McpToolCallbackCacheService;
 import org.tanzu.mcpclient.memory.MemoryConfiguration;
@@ -21,6 +23,7 @@ import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 
@@ -135,8 +138,18 @@ public class ChatService {
         if (documentIds != null && !documentIds.isEmpty()) {
             logger.debug("Adding document context for documents: {}", documentIds);
 
-            // Use QuestionAnswerAdvisor builder (Spring AI 1.1.0-RC1 API)
-            spec = spec.advisors(QuestionAnswerAdvisor.builder(vectorStore).build());
+            // Build filter expression for document IDs
+            String filterExpression = buildDocumentFilterExpression(documentIds);
+            logger.debug("Using document filter expression: {}", filterExpression);
+
+            // Use QuestionAnswerAdvisor with document filtering (Spring AI 1.1.2 API)
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .filterExpression(filterExpression)
+                    .build();
+
+            spec = spec.advisors(QuestionAnswerAdvisor.builder(vectorStore)
+                    .searchRequest(searchRequest)
+                    .build());
         }
 
         // Add MCP tools if available
@@ -153,5 +166,37 @@ public class ChatService {
      */
     public List<McpServerService> getMcpServerServices() {
         return List.copyOf(mcpServerServices);
+    }
+
+    /**
+     * Builds a filter expression for multiple document IDs using OR logic.
+     * Format: "documentId == 'doc1' OR documentId == 'doc2' OR documentId == 'doc3'"
+     *
+     * This was accidentally removed in commit b9185c0 (Sept 14, 2025) and is now restored
+     * to fix the regression where ALL documents were queried instead of just the specified ones.
+     */
+    private String buildDocumentFilterExpression(List<String> documentIds) {
+        if (documentIds == null || documentIds.isEmpty()) {
+            return "";
+        }
+
+        // Filter out null or empty document IDs
+        List<String> validDocumentIds = documentIds.stream()
+                .filter(id -> id != null && !id.trim().isEmpty())
+                .toList();
+
+        if (validDocumentIds.isEmpty()) {
+            return "";
+        }
+
+        // For single document, use simple equality
+        if (validDocumentIds.size() == 1) {
+            return DocumentService.DOCUMENT_ID + " == '" + validDocumentIds.get(0) + "'";
+        }
+
+        // For multiple documents, use OR expressions
+        return validDocumentIds.stream()
+                .map(docId -> DocumentService.DOCUMENT_ID + " == '" + docId + "'")
+                .collect(Collectors.joining(" OR "));
     }
 }
