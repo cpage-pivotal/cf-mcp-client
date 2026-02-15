@@ -62,6 +62,7 @@ export class DocumentPanelComponent implements AfterViewInit {
   // Upload progress signals
   uploadProgress = signal(0);
   isUploading = signal(false);
+  isProcessing = signal(false);
   currentFileName = signal('');
 
   // Drag and drop signals (modern Angular pattern)
@@ -184,6 +185,7 @@ export class DocumentPanelComponent implements AfterViewInit {
     // Reset and initialize progress tracking
     this.uploadProgress.set(0);
     this.isUploading.set(true);
+    this.isProcessing.set(false);
     this.currentFileName.set(file.name);
 
     let host: string;
@@ -204,11 +206,18 @@ export class DocumentPanelComponent implements AfterViewInit {
         if (event.type === HttpEventType.UploadProgress) {
           // Calculate and update progress percentage
           if (event.total) {
-            this.uploadProgress.set(Math.round(100 * event.loaded / event.total));
+            const progress = Math.round(100 * event.loaded / event.total);
+            this.uploadProgress.set(progress);
+            // When upload bytes are fully sent, switch to processing state
+            // while waiting for the server to finish PDF extraction, splitting, and embedding
+            if (progress >= 100) {
+              this.isProcessing.set(true);
+            }
           }
         } else if (event.type === HttpEventType.Response) {
           // Upload complete - use the response which includes all documents
           this.isUploading.set(false);
+          this.isProcessing.set(false);
           this.snackBar.open('File uploaded successfully', 'Close', {
             duration: 3000
           });
@@ -223,6 +232,7 @@ export class DocumentPanelComponent implements AfterViewInit {
       error: (error) => {
         // Reset progress state on error
         this.isUploading.set(false);
+        this.isProcessing.set(false);
         console.error('Error uploading file:', error);
         this.snackBar.open('Error uploading file', 'Close', {
           duration: 3000

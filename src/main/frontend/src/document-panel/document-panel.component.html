@@ -109,14 +109,18 @@
         @if (isUploading()) {
           <div class="upload-progress-container" role="status" aria-live="polite" aria-label="File upload progress">
             <div class="upload-progress-header">
-              <mat-icon class="upload-icon" aria-hidden="true">{{ getFileTypeIcon(currentFileName()) }}</mat-icon>
+              <mat-icon class="upload-icon" aria-hidden="true">{{ isProcessing() ? 'settings' : getFileTypeIcon(currentFileName()) }}</mat-icon>
               <div class="upload-info">
                 <div class="file-name">{{ currentFileName() }}</div>
-                <div class="upload-status">Uploading...</div>
+                <div class="upload-status">{{ isProcessing() ? 'Processing document...' : 'Uploading...' }}</div>
               </div>
             </div>
-            <mat-progress-bar mode="determinate" [value]="uploadProgress()" class="upload-progress-bar" [attr.aria-valuenow]="uploadProgress()" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Upload progress: ' + uploadProgress() + ' percent'"></mat-progress-bar>
-            <div class="progress-percentage">{{ uploadProgress() }}%</div>
+            @if (isProcessing()) {
+              <mat-progress-bar mode="indeterminate" class="upload-progress-bar" aria-label="Processing document"></mat-progress-bar>
+            } @else {
+              <mat-progress-bar mode="determinate" [value]="uploadProgress()" class="upload-progress-bar" [attr.aria-valuenow]="uploadProgress()" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Upload progress: ' + uploadProgress() + ' percent'"></mat-progress-bar>
+              <div class="progress-percentage">{{ uploadProgress() }}%</div>
+            }
           </div>
         }
       </div>
